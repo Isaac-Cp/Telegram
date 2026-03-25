@@ -18,9 +18,21 @@ class Settings(BaseSettings):
     @field_validator("database_url", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
-        """Production fix: transform postgresql:// to postgresql+asyncpg:// if needed."""
-        if v.startswith("postgresql://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        """Production fix: transform postgres:// or postgresql:// to postgresql+asyncpg:// if needed."""
+        if not v or not isinstance(v, str):
+            return v
+            
+        if v.startswith("postgres://"):
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql://") and "+asyncpg" not in v:
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            
+        # Critical Render Fix: If hostname is 'postgres', it's likely a docker-compose carryover
+        if "@postgres:" in v or "@postgres/" in v:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("[SLIE Config] DATABASE_URL is using 'postgres' as host. This will fail on Render.")
+            
         return v
     
     # OpenAI, Groq, Gemini keys
