@@ -9,7 +9,16 @@ from slie.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(settings.database_url, echo=False)
+# Production-ready engine configuration with connection pooling
+engine = create_async_engine(
+    settings.database_url,
+    echo=False,
+    pool_size=20,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,
+    pool_pre_ping=True
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 def utcnow() -> datetime:

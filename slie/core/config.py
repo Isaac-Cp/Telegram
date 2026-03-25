@@ -1,6 +1,7 @@
 from functools import lru_cache
+from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +14,14 @@ class Settings(BaseSettings):
     database_url: str = Field("postgresql+asyncpg://postgres:postgres@localhost:5432/slie_db", alias="DATABASE_URL")
     redis_url: str = Field("redis://localhost:6379/0", alias="REDIS_URL")
     sentry_dsn: str | None = Field(None, alias="SENTRY_DSN")
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: str) -> str:
+        """Production fix: transform postgresql:// to postgresql+asyncpg:// if needed."""
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
     
     # OpenAI, Groq, Gemini keys
     openai_api_key: str = Field("", alias="OPENAI_API_KEY")
