@@ -21,7 +21,7 @@ class Group(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     seller_density: Mapped[float] = mapped_column(default=0.0)
     saturation_status: Mapped[str | None] = mapped_column(String(50)) # DISCUSSION_GROUP, MIXED_GROUP, SELLER_HUB
     eligible_for_join: Mapped[bool] = mapped_column(default=False)
-    status: Mapped[str] = mapped_column(String(20), default="DISCOVERED") # DISCOVERED, APPROVED, REJECTED, JOINED
+    status: Mapped[str] = mapped_column(String(50), default="DISCOVERED") # DISCOVERED, JOINED, REJECTED_LOW_MEMBERS, etc.
 
     market_analysis: Mapped["GroupMarketAnalysis | None"] = relationship(back_populates="group")
 

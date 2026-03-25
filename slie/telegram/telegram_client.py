@@ -98,6 +98,12 @@ class TelegramClientEngine:
             logger.error(f"[SLIE Telegram] Failed to send DM: {str(e)}")
             return False
 
+    def add_event_handler(self, callback, event_type):
+        """Add event handler to the client."""
+        if self.client:
+            self.client.add_event_handler(callback, event_type)
+            logger.info(f"[SLIE Telegram] Registered event handler: {callback.__name__}")
+
     async def disconnect(self):
         if self.client:
             await self.client.disconnect()

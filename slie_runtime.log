@@ -1,0 +1,183 @@
+2026-03-26 00:09:29,964 - __main__ - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 00:12:30,253 - __main__ - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 00:12:31,257 - __main__ - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 00:12:31,259 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 00:12:31,481 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 00:12:33,009 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 00:12:33,013 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 00:12:33,015 - __main__ - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 00:12:33,016 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 00:12:33,843 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV12K SUPPORT (1481783237)
+2026-03-26 00:12:33,876 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Moonwell Iptv (1617979642)
+2026-03-26 00:12:33,907 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: RESTREAM AND EXCHANGE IPTV (1368462423)
+2026-03-26 00:12:33,940 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV ITALIA & INTERNET ILLIMITATO & IPTV (1270384049)
+2026-03-26 00:12:34,238 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Exchanger & Reseller (1261610841)
+2026-03-26 00:12:34,340 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 00:12:34,714 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV HELP GROUP (1517346868)
+2026-03-26 00:12:34,776 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Panels Support Help Exchanges (1852297630)
+2026-03-26 00:12:34,800 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Extream Codes Iptv Help (1866019558)
+2026-03-26 00:12:34,860 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Iptv help (1557279346)
+2026-03-26 00:12:34,921 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Restream Helper (1723375214)
+2026-03-26 00:12:34,923 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 00:12:35,432 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Discussion (2373055998)
+2026-03-26 00:12:35,523 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV GOLDEN DISCUSSION (2125015560)
+2026-03-26 00:12:35,547 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV by Aftab (Discussion) (1868921054)
+2026-03-26 00:12:35,569 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Mate Discussion (2244109525)
+2026-03-26 00:12:35,606 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Eri IPtv discussion center (1548982906)
+2026-03-26 00:12:35,686 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 00:12:36,134 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Streaming Hell - Support (1325346244)
+2026-03-26 00:12:36,154 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: score808-help (1827442557)
+2026-03-26 00:12:36,175 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: helper streaming bot (3188512899)
+2026-03-26 00:12:36,176 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 00:12:36,491 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Tv Germany IPTV TIVIMATE Deutschland USA CANADA UK SWITZERLAND NETHERLANDS TV PREMIUM CHANNELS EN ANDROID TV SMART TV (1961367300)
+2026-03-26 00:12:36,513 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Smarter Pro App TV (IPTV) Channels (2451598200)
+2026-03-26 00:12:36,535 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Service channels firestick & Smart tv & Phone (1565267810)
+2026-03-26 00:12:36,536 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 00:12:36,935 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: #Xtream Codes (1835074844)
+2026-03-26 00:12:36,970 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Xtream codes UI (1190212020)
+2026-03-26 00:12:37,002 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: free xtream codes iptv app (1842803029)
+2026-03-26 00:12:37,041 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Stbemu Codes and Xtream Codes (1946962692)
+2026-03-26 00:12:37,077 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Storz24 | Xtream IPTV Codes (2678819686)
+2026-03-26 00:12:37,117 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: StbEmu Xtream Codes (2809798950)
+2026-03-26 00:12:37,153 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV XTREAM CODES M3U FILES ALL MOD APKS FREE (1831499782)
+2026-03-26 00:12:37,192 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: FREE ALL SERVER (2264927858)
+2026-03-26 00:12:37,292 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 00:12:38,371 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Listas m3u free (2076576320)
+2026-03-26 00:12:38,413 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Listas m3u free (2614499760)
+2026-03-26 00:12:38,455 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Listas m3u free (2050609667)
+2026-03-26 00:12:38,503 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: List M3U Turbo (1853634583)
+2026-03-26 00:12:38,543 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: LISTAS M3U PARÁ IPTV (1373902296)
+2026-03-26 00:12:38,587 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Iptv Italia Liste M3u (1223306480)
+2026-03-26 00:12:38,628 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: iptv listas m3u (2188576255)
+2026-03-26 00:12:38,714 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 00:12:39,039 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Reviews (1611485147)
+2026-03-26 00:12:39,064 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Reviews 2022 (1737336979)
+2026-03-26 00:12:39,088 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: iptv smarters lite (2172253786)
+2026-03-26 00:12:39,114 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: USA Reviews (2218213962)
+2026-03-26 00:12:39,142 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: VOD Reviews (2178181510)
+2026-03-26 00:12:39,177 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Great Reviews (1826317215)
+2026-03-26 00:12:39,191 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 00:12:39,191 - __main__ - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 00:15:33,707 - __main__ - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 00:15:34,147 - __main__ - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 00:15:34,149 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 00:15:34,456 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 00:15:35,824 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 00:15:35,825 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 00:15:35,825 - __main__ - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 00:15:35,826 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 00:15:36,297 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 00:15:36,711 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 00:15:37,271 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 00:15:37,585 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 00:15:37,877 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 00:15:38,308 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 00:15:38,749 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 00:15:39,082 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 00:15:39,105 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV12K SUPPORT (1481783237)
+2026-03-26 00:15:40,690 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV12K SUPPORT passed quality filter.
+2026-03-26 00:15:41,081 - slie.engagement.human_behavior_engine - INFO - [SLIE Engagement] message scheduled: group_join delayed by 22 minutes.
+2026-03-26 00:15:41,092 - __main__ - INFO - [SLIE Orchestrator] Joined group: IPTV12K SUPPORT
+2026-03-26 00:15:41,153 - slie.market_engine.seller_density_detector - INFO - [SLIE Market Engine] No messages found for group IPTV12K SUPPORT to analyze.
+2026-03-26 00:15:41,158 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Moonwell Iptv (1617979642)
+2026-03-26 00:15:42,441 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Moonwell Iptv: Msg freq 3 < 5
+2026-03-26 00:15:42,471 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1617979642: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(20)
+[SQL: UPDATE groups SET status=$1::VARCHAR, updated_at=$2::TIMESTAMP WITH TIME ZONE WHERE groups.telegram_id = $3::BIGINT]
+[parameters: ('REJECTED_LOW_ACTIVITY', datetime.datetime(2026, 3, 25, 23, 15, 42, 450678, tzinfo=datetime.timezone.utc), 1617979642)]
+(Background on this error at: https://sqlalche.me/e/20/dbapi)
+2026-03-26 00:15:42,472 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: RESTREAM AND EXCHANGE IPTV (1368462423)
+2026-03-26 00:15:43,683 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group RESTREAM AND EXCHANGE IPTV passed quality filter.
+2026-03-26 00:15:43,789 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:15:43,794 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV ITALIA & INTERNET ILLIMITATO & IPTV (1270384049)
+2026-03-26 00:15:45,000 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV ITALIA & INTERNET ILLIMITATO & IPTV passed quality filter.
+2026-03-26 00:15:45,023 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:15:46,222 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:15:46,243 - __main__ - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 00:16:49,630 - __main__ - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 00:16:50,186 - __main__ - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 00:16:50,190 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 00:16:50,396 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 00:16:51,878 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 00:16:51,882 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 00:16:51,891 - __main__ - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 00:16:51,895 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 00:16:52,869 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 00:16:53,339 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 00:16:53,994 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 00:16:54,321 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 00:16:54,665 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 00:16:55,331 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 00:16:56,206 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 00:16:56,865 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 00:16:57,398 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Moonwell Iptv (1617979642)
+2026-03-26 00:17:02,525 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Moonwell Iptv: Msg freq 3 < 5
+2026-03-26 00:17:03,727 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1617979642: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(20)
+[SQL: UPDATE groups SET status=$1::VARCHAR, updated_at=$2::TIMESTAMP WITH TIME ZONE WHERE groups.telegram_id = $3::BIGINT]
+[parameters: ('REJECTED_LOW_ACTIVITY', datetime.datetime(2026, 3, 25, 23, 17, 3, 582370, tzinfo=datetime.timezone.utc), 1617979642)]
+(Background on this error at: https://sqlalche.me/e/20/dbapi)
+2026-03-26 00:17:03,733 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV Exchanger & Reseller (1261610841)
+2026-03-26 00:17:05,531 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV Exchanger & Reseller passed quality filter.
+2026-03-26 00:17:05,796 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:17:10,047 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:17:13,050 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:17:13,074 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV HELP GROUP (1517346868)
+2026-03-26 00:17:15,406 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV HELP GROUP passed quality filter.
+2026-03-26 00:17:16,181 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:17:16,211 - __main__ - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 00:17:55,396 - __main__ - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 00:17:56,137 - __main__ - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 00:17:56,145 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 00:17:56,343 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 00:17:57,874 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 00:17:57,887 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 00:17:57,890 - __main__ - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 00:17:57,893 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 00:17:58,941 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 00:17:59,371 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 00:17:59,827 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 00:18:00,229 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 00:18:00,568 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 00:18:01,098 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 00:18:01,702 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 00:18:02,116 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 00:18:02,144 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Moonwell Iptv (1617979642)
+2026-03-26 00:18:03,528 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Moonwell Iptv: Msg freq 3 < 5
+2026-03-26 00:18:04,207 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1617979642: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(20)
+[SQL: UPDATE groups SET status=$1::VARCHAR, updated_at=$2::TIMESTAMP WITH TIME ZONE WHERE groups.telegram_id = $3::BIGINT]
+[parameters: ('REJECTED_LOW_ACTIVITY', datetime.datetime(2026, 3, 25, 23, 18, 4, 176031, tzinfo=datetime.timezone.utc), 1617979642)]
+(Background on this error at: https://sqlalche.me/e/20/dbapi)
+2026-03-26 00:18:05,660 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 00:18:05,661 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Panels Support Help Exchanges (1852297630)
+2026-03-26 00:18:06,136 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Panels Support Help Exchanges: Members 183 < 200
+2026-03-26 00:18:06,193 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Extream Codes Iptv Help (1866019558)
+2026-03-26 00:18:06,741 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Extream Codes Iptv Help: Members 84 < 200
+2026-03-26 00:18:07,327 - __main__ - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 00:18:49,467 - __main__ - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 00:18:49,744 - __main__ - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 00:18:49,748 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 00:18:50,039 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 00:18:51,449 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 00:18:51,450 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 00:18:51,451 - __main__ - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 00:18:51,452 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 00:18:52,026 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 00:18:52,448 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 00:18:53,565 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 00:18:54,330 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 00:18:54,852 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 00:18:55,398 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 00:18:55,904 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 00:18:56,551 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 00:18:56,705 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Moonwell Iptv (1617979642)
+2026-03-26 00:18:57,838 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Moonwell Iptv: Msg freq 3 < 5
+2026-03-26 00:18:58,176 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1617979642: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(20)
+[SQL: UPDATE groups SET status=$1::VARCHAR, updated_at=$2::TIMESTAMP WITH TIME ZONE WHERE groups.telegram_id = $3::BIGINT]
+[parameters: ('REJECTED_LOW_ACTIVITY', datetime.datetime(2026, 3, 25, 23, 18, 58, 155547, tzinfo=datetime.timezone.utc), 1617979642)]
+(Background on this error at: https://sqlalche.me/e/20/dbapi)
+2026-03-26 00:18:58,177 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: Iptv help (1557279346)
+2026-03-26 00:18:58,777 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Iptv help: Members 35 < 200
+2026-03-26 00:18:59,431 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV Restream Helper (1723375214)
+2026-03-26 00:18:59,886 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group IPTV Restream Helper: Members 4 < 200
+2026-03-26 00:18:59,930 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV Discussion (2373055998)
+2026-03-26 00:19:00,502 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group IPTV Discussion: Members 85 < 200
+2026-03-26 00:19:00,746 - __main__ - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.

@@ -4,6 +4,8 @@ from slie.core.database import AsyncSessionLocal
 from slie.models.conversation_models import Message
 from slie.models.lead_models import User, Lead
 from slie.intelligence.pain_signal_detector import pain_detector
+from slie.lead_engine.opportunity_scoring import opportunity_engine
+from slie.lead_engine.ltv_engine import ltv_engine
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
@@ -58,7 +60,7 @@ class MessageIntelligenceEngine:
             
             # 3. If intent is high, create/update Lead
             if intent_score > 0:
-                logger.info(f"[SLIE Message Intelligence] Lead detected: {user.username} - Intent: {classification} ({intent_score})")
+                logger.info(f"[SLIE Message Intelligence] Potential lead detected: @{user.username or user.telegram_user_id}")
                 
                 # Check for urgency keywords
                 urgency_score = self._calculate_urgency(body)
@@ -69,9 +71,14 @@ class MessageIntelligenceEngine:
                     message_text=body,
                     intent_score=intent_score,
                     urgency_score=urgency_score,
-                    priority_level="LOW" # Will be updated by scoring engine
+                    priority_level="LOW"
                 )
                 db.add(lead)
+                await db.flush() # Get lead.id
+
+                # Trigger Intelligence Scoring (Step 9 & 10)
+                await opportunity_engine.calculate_score(lead.id)
+                await ltv_engine.calculate_ltv(user.id)
             
             await db.commit()
 
