@@ -20,7 +20,7 @@ async def verify_database_connection():
     Connect to PostgreSQL, verify availability, and check for required tables.
     """
     settings = get_settings()
-    engine = create_async_engine(settings.database_url)
+    engine = create_async_engine(settings.sqlalchemy_database_url)
     
     max_retries = 10
     retry_delay = 30 # seconds
@@ -30,15 +30,17 @@ async def verify_database_connection():
             async with engine.connect() as conn:
                 # 1. Verify availability
                 await conn.execute(text("SELECT 1"))
-                logger.info(f"SLIE DB Initialization: Database connected successfully to {settings.database_url}")
+                logger.info(f"SLIE DB Initialization: Database connected successfully to {settings.sqlalchemy_database_url}")
                 
                 # 2. Check for required tables (Step 4 DB Audit)
-                # Using standard information_schema query
-                query = text("""
-                    SELECT table_name 
-                    FROM information_schema.tables 
-                    WHERE table_schema = 'public'
-                """)
+                if engine.url.drivername.startswith("sqlite"):
+                    query = text("SELECT name FROM sqlite_master WHERE type='table'")
+                else:
+                    query = text("""
+                        SELECT table_name 
+                        FROM information_schema.tables 
+                        WHERE table_schema = 'public'
+                    """)
                 result = await conn.execute(query)
                 existing_tables = {row[0] for row in result.fetchall()}
                 

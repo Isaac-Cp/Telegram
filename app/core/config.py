@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +11,34 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_v1_prefix: str = "/api/v1"
     database_url: str = Field("postgresql+asyncpg://postgres:postgres@localhost:5432/slie_db", alias="DATABASE_URL")
+    
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: str) -> str:
+        """Production fix: transform postgres:// or postgresql:// to postgresql+asyncpg:// if needed."""
+        if not v or not isinstance(v, str):
+            return v
+            
+        if v.startswith("postgres://"):
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql://") and "+asyncpg" not in v:
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif v.startswith("sqlite:///"):
+            v = v.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
+            
+        # Critical Render Fix: If hostname is 'postgres', it's likely a docker-compose carryover
+        if "@postgres:" in v or "@postgres/" in v:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("[SLIE Config] DATABASE_URL is using 'postgres' as host. This will fail on Render.")
+            
+        return v
+
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        """Redundant but kept for compatibility with existing code calling this property."""
+        return self.database_url
+
     redis_url: str = Field("redis://localhost:6379/0", alias="REDIS_URL")
     sentry_dsn: str | None = Field(None, alias="SENTRY_DSN")
     

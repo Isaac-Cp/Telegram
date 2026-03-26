@@ -7,11 +7,12 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY app ./app
+COPY slie ./slie
 COPY docs ./docs
 COPY alembic.ini ./
 COPY migrations ./migrations
 
-RUN pip install --upgrade pip && pip install .
+RUN pip install --upgrade pip && pip install . && pip install aiosqlite
 
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
 

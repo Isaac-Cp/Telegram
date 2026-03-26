@@ -18,6 +18,7 @@ dependencies = [
   "asyncpg>=0.29.0",
   "redis>=5.1.0",
   "sqlalchemy>=2.0.36",
+  "aiosqlite>=0.17.0",
   "uvicorn[standard]>=0.32.0",
   "telethon>=1.36.0",
   "praw>=7.7.1",
