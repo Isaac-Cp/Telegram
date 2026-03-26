@@ -9,16 +9,22 @@ from slie.core.config import get_settings
 
 settings = get_settings()
 
-# Production-ready engine configuration with connection pooling
-engine = create_async_engine(
-    settings.database_url,
-    echo=False,
-    pool_size=20,
-    max_overflow=10,
-    pool_timeout=30,
-    pool_recycle=1800,
-    pool_pre_ping=True
-)
+# Production-ready engine configuration
+if settings.database_url.startswith("sqlite"):
+    engine = create_async_engine(
+        settings.database_url,
+        echo=False
+    )
+else:
+    engine = create_async_engine(
+        settings.database_url,
+        echo=False,
+        pool_size=20,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=1800,
+        pool_pre_ping=True
+    )
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 def utcnow() -> datetime:

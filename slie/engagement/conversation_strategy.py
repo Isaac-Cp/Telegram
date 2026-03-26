@@ -36,15 +36,16 @@ class ConversationStrategyAI:
             else:
                 return
 
-        # 3. Stage 2: Wait for user response (Simulated)
-        # In the real system, this would be handled by a separate listener or scheduler.
-        # logger.info(f"[SLIE Engagement] Stage 2: Waiting for response from {user_id}")
+        # 3. Stage 2: Wait for user response (Simulated delay)
+        # For the MVP, we wait 10 seconds before DMing.
+        await asyncio.sleep(10) 
         
-        # 4. Stage 3: Send helpful DM (Condition: If authorized and delay passed)
-        # For the MVP, we might trigger this after a delay or if the user replies.
-        # if await human_engine.authorize_action("dm"):
-        #     dm_text = "Hey again! Just wanted to follow up on your question in the group. If you're still looking for a stable setup, I've got some suggestions that might work better for you. Let me know if you want to chat!"
-        #     await telegram_engine.send_private_message(user_id, dm_text)
-        #     await memory_engine.log_interaction(str(user_id), None, dm_text, role="assistant")
+        # 4. Stage 3: Send helpful DM
+        if await human_engine.authorize_action("dm"):
+            dm_text = "Hey again! Just wanted to follow up on your question in the group. If you're still looking for a stable setup, I've got some suggestions that might work better for you. Let me know if you want to chat!"
+            success = await telegram_engine.send_private_message(user_id, dm_text)
+            if success:
+                await memory_engine.log_interaction(str(user_id), None, dm_text, role="assistant")
+                logger.info(f"[SLIE Engagement] Stage 3 complete for lead {lead_id}")
 
 conversation_strategy = ConversationStrategyAI()

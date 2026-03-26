@@ -9,7 +9,8 @@ from app.core.config import get_settings
 settings = get_settings()
 
 # Sync engine (for existing code)
-engine = create_engine(settings.database_url.replace("postgresql+asyncpg", "postgresql+psycopg"), pool_pre_ping=True)
+sync_db_url = settings.database_url.replace("postgresql+asyncpg", "postgresql+psycopg").replace("sqlite+aiosqlite", "sqlite")
+engine = create_engine(sync_db_url, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, class_=Session)
 
 # Async engine (for new asyncpg-based code)

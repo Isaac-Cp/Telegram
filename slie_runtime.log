@@ -181,3 +181,294 @@
 2026-03-26 00:18:59,930 - __main__ - INFO - [SLIE Orchestrator] Analyzing group: IPTV Discussion (2373055998)
 2026-03-26 00:19:00,502 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group IPTV Discussion: Members 85 < 200
 2026-03-26 00:19:00,746 - __main__ - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 01:02:40,747 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:04:55,018 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:08:42,265 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:08:46,549 - slie.api.main - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 01:08:46,551 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:08:46,755 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 01:08:47,862 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 01:08:47,864 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 01:08:47,866 - slie.api.main - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 01:08:47,867 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 01:08:48,352 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV12K SUPPORT (1481783237)
+2026-03-26 01:08:48,545 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Moonwell Iptv (1617979642)
+2026-03-26 01:08:48,745 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: RESTREAM AND EXCHANGE IPTV (1368462423)
+2026-03-26 01:08:48,965 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV ITALIA & INTERNET ILLIMITATO & IPTV (1270384049)
+2026-03-26 01:08:49,468 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Exchanger & Reseller (1261610841)
+2026-03-26 01:08:49,851 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 01:08:50,174 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV HELP GROUP (1517346868)
+2026-03-26 01:08:50,526 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Panels Support Help Exchanges (1852297630)
+2026-03-26 01:08:50,658 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Extream Codes Iptv Help (1866019558)
+2026-03-26 01:08:51,003 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Iptv help (1557279346)
+2026-03-26 01:08:51,399 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Restream Helper (1723375214)
+2026-03-26 01:08:51,404 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 01:08:51,743 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Discussion (2373055998)
+2026-03-26 01:08:52,280 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV GOLDEN DISCUSSION (2125015560)
+2026-03-26 01:08:52,432 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV by Aftab (Discussion) (1868921054)
+2026-03-26 01:08:52,634 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Mate Discussion (2244109525)
+2026-03-26 01:08:52,837 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Eri IPtv discussion center (1548982906)
+2026-03-26 01:08:53,040 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 01:08:53,373 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Streaming Hell - Support (1325346244)
+2026-03-26 01:08:53,584 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: score808-help (1827442557)
+2026-03-26 01:08:53,738 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: helper streaming bot (3188512899)
+2026-03-26 01:08:53,745 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 01:08:54,151 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Tv Germany IPTV TIVIMATE Deutschland USA CANADA UK SWITZERLAND NETHERLANDS TV PREMIUM CHANNELS EN ANDROID TV SMART TV (1961367300)
+2026-03-26 01:08:54,307 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Smarter Pro App TV (IPTV) Channels (2451598200)
+2026-03-26 01:08:54,441 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Service channels firestick & Smart tv & Phone (1565267810)
+2026-03-26 01:08:54,446 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 01:08:54,791 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: #Xtream Codes (1835074844)
+2026-03-26 01:08:54,947 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Xtream codes UI (1190212020)
+2026-03-26 01:08:55,096 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: free xtream codes iptv app (1842803029)
+2026-03-26 01:08:55,313 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Stbemu Codes and Xtream Codes (1946962692)
+2026-03-26 01:08:55,441 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Storz24 | Xtream IPTV Codes (2678819686)
+2026-03-26 01:08:55,581 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: StbEmu Xtream Codes (2809798950)
+2026-03-26 01:08:55,706 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV XTREAM CODES M3U FILES ALL MOD APKS FREE (1831499782)
+2026-03-26 01:08:55,842 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: FREE ALL SERVER (2264927858)
+2026-03-26 01:08:56,175 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 01:08:56,699 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Listas m3u free (2076576320)
+2026-03-26 01:08:56,832 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Listas m3u free (2614499760)
+2026-03-26 01:08:57,023 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Listas m3u free (2050609667)
+2026-03-26 01:08:57,164 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: List M3U Turbo (1853634583)
+2026-03-26 01:08:57,328 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: LISTAS M3U PARÁ IPTV (1373902296)
+2026-03-26 01:08:57,480 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: Iptv Italia Liste M3u (1223306480)
+2026-03-26 01:08:57,595 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: iptv listas m3u (2188576255)
+2026-03-26 01:08:57,748 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 01:08:58,063 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Reviews (1611485147)
+2026-03-26 01:08:58,176 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Reviews 2022 (1737336979)
+2026-03-26 01:08:58,316 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: iptv smarters lite (2172253786)
+2026-03-26 01:08:58,443 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: USA Reviews (2218213962)
+2026-03-26 01:08:58,606 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: VOD Reviews (2178181510)
+2026-03-26 01:08:58,746 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Group discovered: IPTV Great Reviews (1826317215)
+2026-03-26 01:08:58,750 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 01:08:58,761 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV12K SUPPORT (1481783237)
+2026-03-26 01:08:59,842 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV12K SUPPORT passed quality filter.
+2026-03-26 01:09:02,000 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] Redis connection failed, falling back to in-memory: Error 22 connecting to 127.0.0.1:6379. The remote computer refused the network connection.
+2026-03-26 01:09:02,019 - slie.engagement.human_behavior_engine - INFO - [SLIE Engagement] message scheduled: group_join delayed by 18 minutes.
+2026-03-26 01:09:02,023 - slie.api.main - INFO - [SLIE Orchestrator] Joined group: IPTV12K SUPPORT
+2026-03-26 01:09:02,061 - slie.market_engine.seller_density_detector - INFO - [SLIE Market Engine] No messages found for group IPTV12K SUPPORT to analyze.
+2026-03-26 01:09:02,097 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: Moonwell Iptv (1617979642)
+2026-03-26 01:09:02,883 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Moonwell Iptv: Msg freq 3 < 5
+2026-03-26 01:09:03,016 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: RESTREAM AND EXCHANGE IPTV (1368462423)
+2026-03-26 01:09:03,847 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group RESTREAM AND EXCHANGE IPTV passed quality filter.
+2026-03-26 01:09:04,126 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:09:04,131 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV ITALIA & INTERNET ILLIMITATO & IPTV (1270384049)
+2026-03-26 01:09:05,025 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV ITALIA & INTERNET ILLIMITATO & IPTV passed quality filter.
+2026-03-26 01:09:05,185 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:09:06,579 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:09:06,790 - slie.api.main - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 01:27:45,916 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:28:21,465 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:35:45,930 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:36:27,486 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:36:27,533 - slie.api.main - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 01:36:27,536 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:36:27,779 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 01:36:28,602 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 01:36:28,604 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 01:36:28,607 - slie.api.main - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 01:36:28,608 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 01:36:28,609 - slie.api.main - INFO - [SLIE Lead Orchestrator] Starting engagement engine...
+2026-03-26 01:36:28,709 - telethon.network.mtprotosender - INFO - Disconnecting from 149.154.167.91:443/TcpFull...
+2026-03-26 01:36:28,712 - telethon.network.mtprotosender - INFO - Disconnection from 149.154.167.91:443/TcpFull complete!
+2026-03-26 01:36:28,719 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client disconnected.
+2026-03-26 01:36:28,723 - slie.api.main - INFO - Streamexpert Lead Intelligence Engine shutdown complete.
+2026-03-26 01:36:44,822 - slie.api.main - INFO - Starting Streamexpert Lead Intelligence Engine in production mode...
+2026-03-26 01:36:44,862 - slie.api.main - INFO - [SLIE Database] Tables initialized successfully.
+2026-03-26 01:36:44,864 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:36:45,381 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.91:443/TcpFull complete!
+2026-03-26 01:36:46,416 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Client connected and authorized.
+2026-03-26 01:36:46,417 - slie.telegram.telegram_client - INFO - [SLIE Telegram] Registered event handler: process_message
+2026-03-26 01:36:46,418 - slie.api.main - INFO - [SLIE Orchestrator] Starting background engine...
+2026-03-26 01:36:46,419 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 01:36:46,420 - slie.api.main - INFO - [SLIE Lead Orchestrator] Starting engagement engine...
+2026-03-26 01:36:46,782 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 01:36:47,063 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 01:36:47,320 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 01:36:47,688 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 01:36:47,890 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 01:36:48,172 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 01:36:48,661 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 01:36:48,879 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 01:36:48,887 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV Exchanger & Reseller (1261610841)
+2026-03-26 01:36:50,106 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV Exchanger & Reseller passed quality filter.
+2026-03-26 01:36:54,681 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] Redis connection failed, falling back to in-memory: Error 22 connecting to localhost:6379. The remote computer refused the network connection.
+2026-03-26 01:36:54,693 - slie.engagement.human_behavior_engine - INFO - [SLIE Engagement] message scheduled: group_join delayed by 15 minutes.
+2026-03-26 01:36:54,696 - slie.api.main - INFO - [SLIE Orchestrator] Joined group: IPTV Exchanger & Reseller
+2026-03-26 01:36:54,725 - slie.market_engine.seller_density_detector - INFO - [SLIE Market Engine] No messages found for group IPTV Exchanger & Reseller to analyze.
+2026-03-26 01:36:56,674 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:36:57,614 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:36:57,626 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV HELP GROUP (1517346868)
+2026-03-26 01:36:58,577 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Group IPTV HELP GROUP passed quality filter.
+2026-03-26 01:36:58,757 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:36:59,527 - slie.engagement.human_behavior_engine - WARNING - [SLIE Safety] cooldown activated: group_join - Hourly limit reached (1).
+2026-03-26 01:36:59,727 - slie.api.main - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 01:39:22,303 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 01:39:36,403 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 01:39:37,348 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 01:39:38,074 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 01:39:38,535 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 01:39:38,973 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 01:39:40,068 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 01:39:40,870 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 01:39:41,331 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 54
+2026-03-26 01:39:41,504 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: Panels Support Help Exchanges (1852297630)
+2026-03-26 01:39:42,823 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Panels Support Help Exchanges: Members 183 < 200
+2026-03-26 01:39:52,252 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1852297630: (sqlite3.OperationalError) database is locked
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-26 01:39:52,269 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: Extream Codes Iptv Help (1866019558)
+2026-03-26 01:39:52,719 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Extream Codes Iptv Help: Members 84 < 200
+2026-03-26 01:40:05,909 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: Iptv help (1557279346)
+2026-03-26 01:40:06,234 - slie.discovery.group_analyzer - INFO - [SLIE Discovery] Rejecting group Iptv help: Members 35 < 200
+2026-03-26 01:40:09,599 - slie.api.main - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 01:47:00,091 - telethon.network.connection.connection - WARNING - Server closed the connection: [WinError 121] The semaphore timeout period has expired
+2026-03-26 01:47:12,396 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: [WinError 121] The semaphore timeout period has expired
+2026-03-26 01:47:14,312 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2026-03-26 01:47:15,208 - telethon.network.connection.connection - WARNING - Server closed the connection: [WinError 121] The semaphore timeout period has expired
+2026-03-26 01:47:18,222 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: [WinError 121] The semaphore timeout period has expired
+2026-03-26 01:47:18,228 - telethon.network.connection.connection - INFO - <class 'OSError'> during disconnect: [WinError 121] The semaphore timeout period has expired
+2026-03-26 01:47:18,252 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:47:19,275 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2026-03-26 01:47:19,350 - telethon.network.connection.connection - INFO - <class 'OSError'> during disconnect: [WinError 121] The semaphore timeout period has expired
+2026-03-26 01:47:19,392 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:47:28,812 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: TimeoutError: 
+2026-03-26 01:47:29,518 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: TimeoutError: 
+2026-03-26 01:47:36,925 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: ConnectionAbortedError: [WinError 1236] The network connection was aborted by the local system
+2026-03-26 01:47:37,999 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:38,257 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: ConnectionAbortedError: [WinError 1236] The network connection was aborted by the local system
+2026-03-26 01:47:39,278 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:42,466 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:42,976 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:43,800 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:45,704 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:45,143 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:46,839 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:47,032 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 1 with ConnectionError
+2026-03-26 01:47:47,852 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 1 with ConnectionError
+2026-03-26 01:47:48,044 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:47:48,047 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:48,858 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:47:48,861 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:49,057 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:49,873 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:50,075 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:51,401 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:52,378 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:52,754 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:54,417 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:54,716 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:56,176 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:56,787 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:57,682 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 2 with ConnectionError
+2026-03-26 01:47:58,237 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 2 with ConnectionError
+2026-03-26 01:47:58,968 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:47:58,971 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:47:59,243 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:47:59,247 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:00,251 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:00,096 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:01,262 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:01,811 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:02,449 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:03,447 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:03,738 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:04,754 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:04,863 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:05,762 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 3 with ConnectionError
+2026-03-26 01:48:06,097 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:06,773 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:48:06,778 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:07,480 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 3 with ConnectionError
+2026-03-26 01:48:07,789 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:08,732 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:48:08,897 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:08,805 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:10,146 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:10,215 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:11,156 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:11,404 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:12,174 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:12,493 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:13,179 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 4 with ConnectionError
+2026-03-26 01:48:13,874 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:14,190 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.91:443/TcpFull...
+2026-03-26 01:48:14,194 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:14,879 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:15,198 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:15,884 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 4 with ConnectionError
+2026-03-26 01:48:18,112 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:18,115 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:19,118 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:19,446 - telethon.network.mtprotosender - WARNING - Attempt 2 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:20,124 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:21,139 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:20,877 - telethon.network.mtprotosender - WARNING - Attempt 3 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:22,144 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 5 with ConnectionError
+2026-03-26 01:48:22,226 - telethon.network.mtprotosender - WARNING - Attempt 4 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:23,241 - telethon.network.mtprotosender - WARNING - Attempt 5 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:23,156 - telethon.network.mtprotosender - ERROR - Automatic reconnection failed 5 time(s)
+2026-03-26 01:48:23,311 - telethon.network.mtprotosender - INFO - Disconnecting from 149.154.167.91:443/TcpFull...
+2026-03-26 01:48:23,320 - telethon.network.mtprotosender - INFO - Disconnection from 149.154.167.91:443/TcpFull complete!
+2026-03-26 01:48:23,343 - asyncio - ERROR - Future exception was never retrieved
+future: <Future finished exception=ConnectionError('Connection to Telegram failed 5 time(s)')>
+ConnectionError: Connection to Telegram failed 5 time(s)
+2026-03-26 01:48:24,254 - telethon.network.mtprotosender - WARNING - Attempt 6 at connecting failed: OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+2026-03-26 01:48:25,257 - telethon.network.mtprotosender - INFO - Failed reconnection attempt 5 with ConnectionError
+2026-03-26 01:48:28,696 - telethon.network.mtprotosender - ERROR - Automatic reconnection failed 5 time(s)
+2026-03-26 01:48:28,710 - telethon.network.mtprotosender - INFO - Disconnecting from 149.154.167.91:443/TcpFull...
+2026-03-26 01:48:28,713 - telethon.network.mtprotosender - INFO - Disconnection from 149.154.167.91:443/TcpFull complete!
+2026-03-26 01:48:28,729 - asyncio - ERROR - Future exception was never retrieved
+future: <Future finished exception=ConnectionError('Connection to Telegram failed 5 time(s)')>
+ConnectionError: Connection to Telegram failed 5 time(s)
+2026-03-26 02:07:00,361 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 02:07:01,559 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv: Cannot send requests while disconnected
+2026-03-26 02:07:01,628 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 02:07:01,779 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv help: Cannot send requests while disconnected
+2026-03-26 02:07:01,863 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 02:07:01,995 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv discussion: Cannot send requests while disconnected
+2026-03-26 02:07:02,081 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 02:07:02,247 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for streaming help: Cannot send requests while disconnected
+2026-03-26 02:07:02,314 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 02:07:02,414 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for smart tv channels: Cannot send requests while disconnected
+2026-03-26 02:07:02,545 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 02:07:02,647 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for xtream codes: Cannot send requests while disconnected
+2026-03-26 02:07:03,080 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 02:07:03,831 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for m3u list: Cannot send requests while disconnected
+2026-03-26 02:07:03,838 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 02:07:03,974 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv reviews: Cannot send requests while disconnected
+2026-03-26 02:07:04,096 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 0
+2026-03-26 02:07:05,329 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV Restream Helper (1723375214)
+2026-03-26 02:07:08,058 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1723375214: Cannot send requests while disconnected
+2026-03-26 02:07:08,113 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV Discussion (2373055998)
+2026-03-26 02:07:08,176 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2373055998: Cannot send requests while disconnected
+2026-03-26 02:07:19,190 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2086665342: Cannot send requests while disconnected
+2026-03-26 02:07:22,497 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2097550505: Cannot send requests while disconnected
+2026-03-26 02:07:22,513 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV GOLDEN DISCUSSION (2125015560)
+2026-03-26 02:07:22,657 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2125015560: Cannot send requests while disconnected
+2026-03-26 02:07:23,928 - slie.api.main - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.
+2026-03-26 02:10:13,562 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv
+2026-03-26 02:10:22,248 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv: Cannot send requests while disconnected
+2026-03-26 02:10:22,586 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv help
+2026-03-26 02:10:22,952 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv help: Cannot send requests while disconnected
+2026-03-26 02:10:23,271 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv discussion
+2026-03-26 02:10:23,871 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv discussion: Cannot send requests while disconnected
+2026-03-26 02:10:24,318 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: streaming help
+2026-03-26 02:10:24,903 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for streaming help: Cannot send requests while disconnected
+2026-03-26 02:10:25,270 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: smart tv channels
+2026-03-26 02:10:25,272 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for smart tv channels: Cannot send requests while disconnected
+2026-03-26 02:10:26,436 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: xtream codes
+2026-03-26 02:10:27,403 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for xtream codes: Cannot send requests while disconnected
+2026-03-26 02:10:27,899 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: m3u list
+2026-03-26 02:10:28,600 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for m3u list: Cannot send requests while disconnected
+2026-03-26 02:10:28,816 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Searching for groups with keyword: iptv reviews
+2026-03-26 02:10:29,027 - slie.discovery.group_discovery - ERROR - [SLIE Discovery] Error searching for iptv reviews: Cannot send requests while disconnected
+2026-03-26 02:10:29,029 - slie.discovery.group_discovery - INFO - [SLIE Discovery] Total unique groups discovered: 0
+2026-03-26 02:10:55,501 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV Restream Helper (1723375214)
+2026-03-26 02:10:58,065 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 1723375214: Cannot send requests while disconnected
+2026-03-26 02:10:58,066 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV Discussion (2373055998)
+2026-03-26 02:10:58,214 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2373055998: Cannot send requests while disconnected
+2026-03-26 02:11:19,952 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2086665342: Cannot send requests while disconnected
+2026-03-26 02:11:33,299 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2097550505: Cannot send requests while disconnected
+2026-03-26 02:11:33,301 - slie.api.main - INFO - [SLIE Orchestrator] Analyzing group: IPTV GOLDEN DISCUSSION (2125015560)
+2026-03-26 02:11:33,408 - slie.discovery.group_analyzer - ERROR - [SLIE Discovery] Error analyzing group 2125015560: Cannot send requests while disconnected
+2026-03-26 02:11:36,034 - slie.api.main - INFO - [SLIE Orchestrator] Cycle complete. Sleeping for 30 min.

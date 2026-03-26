@@ -70,11 +70,11 @@ def dashboard_page():
                     colors: {
                         elite: {
                             50: '#f0f4ff', 100: '#e0e8ff', 200: '#c1d1ff', 300: '#92afff',
-                            400: '#5c83ff', 500: '#2d54ff', 600: '#1a36eb', 700: '#1427c7',
-                            800: '#1622a1', 900: '#182380', 950: '#0a0e2e',
+                            400: '#5c83ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+                            800: '#1e40af', 900: '#1e3a8a', 950: '#000000',
                         },
                         surface: {
-                            800: '#1e293b', 900: '#0f172a', 950: '#020617',
+                            800: '#121212', 900: '#0a0a0a', 950: '#000000',
                         }
                     },
                     fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
@@ -84,31 +84,32 @@ def dashboard_page():
     </script>
     <style>
         body {
-            background-color: #020617;
+            background-color: #000000;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(45, 84, 255, 0.1) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(26, 54, 235, 0.08) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0px, transparent 100%);
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.03) 0px, transparent 50%);
             min-height: 100vh;
         }
         .glass-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            background: #0d0d0d;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-card:hover {
-            border-color: rgba(45, 84, 255, 0.2);
-            background: rgba(15, 23, 42, 0.8);
+            border-color: rgba(59, 130, 246, 0.4);
+            background: #141414;
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.8);
         }
         .sidebar-active {
-            background: linear-gradient(90deg, rgba(45, 84, 255, 0.2) 0%, transparent 100%);
-            border-left: 3px solid #2d54ff;
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
             color: #fff;
         }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(45, 84, 255, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
         .live-dot {
             width: 8px; height: 8px; background: #10b981;
             border-radius: 50%; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
@@ -119,7 +120,7 @@ def dashboard_page():
             70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
-        .stat-glow { filter: drop-shadow(0 0 8px rgba(45, 84, 255, 0.3)); }
+        .stat-glow { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.2)); }
         @media (max-width: 1024px) {
             .sidebar-open aside { transform: translateX(0); }
             .sidebar-open .backdrop { display: block; }
@@ -505,7 +506,7 @@ def dashboard_page():
                         labels: ['COMMUNITY LEADERS', 'POWER USERS', 'REGULAR MEMBERS'],
                         datasets: [{
                             data: influenceData,
-                            backgroundColor: ['#2d54ff', '#92afff', '#1e293b'],
+                            backgroundColor: ['#3b82f6', '#60a5fa', '#1e293b'],
                             borderWidth: 0,
                             hoverOffset: 20,
                             borderRadius: 10
@@ -532,8 +533,8 @@ def dashboard_page():
                 ltvChart.update();
             } else {
                 const gradient = ltvCtx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, '#5c83ff');
-                gradient.addColorStop(1, '#2d54ff');
+                gradient.addColorStop(0, '#60a5fa');
+                gradient.addColorStop(1, '#3b82f6');
 
                 ltvChart = new Chart(ltvCtx, {
                     type: 'bar',

@@ -3,6 +3,7 @@ from datetime import datetime
 from slie.core.database import AsyncSessionLocal
 from slie.models.conversation_models import Message
 from slie.models.lead_models import User, Lead
+from slie.models.group_models import Group
 from slie.intelligence.pain_signal_detector import pain_detector
 from slie.lead_engine.opportunity_scoring import opportunity_engine
 from slie.lead_engine.ltv_engine import ltv_engine
@@ -27,6 +28,11 @@ class MessageIntelligenceEngine:
         
         # 1. Store Message in DB
         async with AsyncSessionLocal() as db:
+            # Get group id
+            group_stmt = select(Group.id).where(Group.telegram_id == telegram_group_id)
+            group_result = await db.execute(group_stmt)
+            group_db_id = group_result.scalar_one_or_none()
+
             # Get or create user
             user_stmt = select(User).where(User.telegram_user_id == telegram_user_id)
             user_result = await db.execute(user_stmt)
@@ -67,7 +73,7 @@ class MessageIntelligenceEngine:
                 
                 lead = Lead(
                     user_id=user.id,
-                    group_id=None, # Will be set if group is tracked
+                    group_id=group_db_id, # Linked to the group
                     message_text=body,
                     intent_score=intent_score,
                     urgency_score=urgency_score,
