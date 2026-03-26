@@ -51,13 +51,15 @@ async def lifespan(application: FastAPI):
         logger.info("Database tables created automatically.")
         
     # 7. Start schedulers and background tasks
-    if settings.scheduler_enabled:
+    if settings.scheduler_enabled and settings.environment != "production":
         scheduler.start()
         # Start message scanning in background
         asyncio.create_task(slie_message_scanning())
         # Start Human Behavior Simulation Engine background tasks (Module 3)
         asyncio.create_task(response_engine.manage_active_hours())
         logger.info("SLIE Background Schedulers and Scrapers started.")
+    elif settings.environment == "production":
+        logger.info("Skipping background schedulers in production environment.")
         
     yield
     
