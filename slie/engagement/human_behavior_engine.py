@@ -21,8 +21,8 @@ class HumanBehaviorEngine:
     
     LIMITS = {
         "group_join": {"daily": 2, "hourly": 1},
-        "public_reply": {"daily": 5, "hourly": 3},
-        "dm": {"daily": 10, "hourly": 2}
+        "public_reply": {"daily": 15, "hourly": 5},
+        "dm": {"daily": 3, "hourly": 1}
     }
 
     DELAYS = {

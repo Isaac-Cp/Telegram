@@ -12,7 +12,7 @@ from app.services.conversations import create_conversation, ingest_inbound_messa
 router = APIRouter()
 
 
-@router.post("/conversations", response_model=ConversationRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ConversationRead, status_code=status.HTTP_201_CREATED)
 def create_conversation_endpoint(
     payload: ConversationCreate,
     db: Session = Depends(get_db),

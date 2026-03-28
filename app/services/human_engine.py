@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import random
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time as dt_time, timedelta
 from typing import Optional, Dict, Any, Tuple
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
@@ -13,13 +13,13 @@ from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-# Safety Limits (Master Prompt Step 16)
+# Safety Limits (Master Prompt Step 16) - Adjusted per User Request
 SAFE_LIMITS = {
     "group_join_daily": 2,
-    "public_reply_daily": 5,
-    "dm_daily": 10,
-    "public_reply_hourly": 3,
-    "dm_hourly": 2
+    "public_reply_daily": 15,
+    "dm_daily": 3,
+    "public_reply_hourly": 5,
+    "dm_hourly": 1
 }
 
 # Cooldown Period (Module 4)
@@ -131,16 +131,30 @@ class HumanBehaviorEngine:
 
     def is_within_natural_active_hours(self) -> bool:
         """
-        Ensure actions occur throughout the day rather than in bursts.
-        Active windows: 10:00–14:00 and 18:00–22:00.
+        Elite Module 4 & 16: Ensure actions occur during active windows.
+        Fully Autonomous Mode: If ENVIRONMENT is development or production,
+        we use the configured BUSINESS_HOURS or allow 24/7 if not specified.
         """
+        # If the user wants fully autonomous, we check if they've specified hours
+        try:
+            start_h = int(getattr(self.settings, "business_hours_start", 0))
+            end_h = int(getattr(self.settings, "business_hours_end", 23))
+        except:
+            start_h, end_h = 0, 23 # Default to 24/7 if not configured
+
+        # If 0-23, it's 24/7
+        if start_h == 0 and end_h == 23:
+            return True
+
         now = datetime.now().time()
-        # Using a simple check for realism
-        morning_window = (time(10, 0) <= now <= time(14, 0))
-        evening_window = (time(18, 0) <= now <= time(22, 0))
+        # Handle overnight hours
+        if start_h <= end_h:
+            is_active = (dt_time(hour=start_h, minute=0) <= now <= dt_time(hour=end_h, minute=59, second=59))
+        else:
+            is_active = (now >= dt_time(hour=start_h, minute=0) or now <= dt_time(hour=end_h, minute=59, second=59))
         
-        if not (morning_window or evening_window):
-            logger.info(f"[SLIE Human Engine] Outside natural active hours. Activity suspended.")
+        if not is_active:
+            logger.info(f"[SLIE Human Engine] Outside configured active hours ({start_h}:00 - {end_h}:00). Current: {now}")
             return False
         return True
 

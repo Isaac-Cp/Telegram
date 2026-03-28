@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time as dt_time
 from typing import List
 
 from sqlalchemy import select, and_, func, case
@@ -103,18 +103,27 @@ class ResponseEngine:
     def is_within_active_hours(self) -> bool:
         """
         Elite Module 4: Human Behavior Engine - Random Activity Windows.
-        Active hours: 10:00–14:00 and 18:00–22:00.
-        Outside active hours bot should sleep.
+        Fully Autonomous Mode: Follows BUSINESS_HOURS from .env or allows 24/7.
         """
+        try:
+            start_h = int(getattr(self.settings, "business_hours_start", 0))
+            end_h = int(getattr(self.settings, "business_hours_end", 23))
+        except:
+            start_h, end_h = 0, 23
+
+        # If 0-23, it's 24/7
+        if start_h == 0 and end_h == 23:
+            return True
+
         now = datetime.now().time()
-        morning_start = datetime.strptime("10:00", "%H:%M").time()
-        morning_end = datetime.strptime("14:00", "%H:%M").time()
-        evening_start = datetime.strptime("18:00", "%H:%M").time()
-        evening_end = datetime.strptime("22:00", "%H:%M").time()
+        # Handle overnight hours (e.g., 22:00 to 06:00)
+        if start_h <= end_h:
+            is_active = (dt_time(hour=start_h, minute=0) <= now <= dt_time(hour=end_h, minute=59, second=59))
+        else:
+            is_active = (now >= dt_time(hour=start_h, minute=0) or now <= dt_time(hour=end_h, minute=59, second=59))
         
-        is_active = (morning_start <= now <= morning_end) or (evening_start <= now <= evening_end)
         if not is_active:
-            logger.info(f"Current time {now} is outside active hours. Human Behavior Engine: SLEEP.")
+            logger.info(f"Current time {now} is outside configured active hours ({start_h}:00-{end_h}:00). Human Behavior Engine: SLEEP.")
         return is_active
 
     async def apply_random_delay(self, action_type: str):
@@ -278,23 +287,30 @@ class ResponseEngine:
 
         # Find an account that can perform a public reply (Module 8)
         account = await telegram_client_manager.rotate_account("public_reply")
-        if not account:
-            logger.info("No active Telegram accounts with remaining public reply limits.")
-            return
-
-        client = await telegram_client_manager.get_client(phone_number=account.phone_number)
+        
+        if account:
+            client = await telegram_client_manager.get_client(phone_number=account.phone_number)
+            phone_number = account.phone_number
+        else:
+            # Fallback to .env account if session string exists
+            if self.settings.telegram_session_string:
+                client = await telegram_client_manager.get_client()
+                phone_number = self.settings.telegram_phone
+            else:
+                logger.info("No active Telegram accounts with remaining public reply limits.")
+                return
         
         with SessionLocal() as db:
-            # Elite Module 14: Prioritize leads based on Priority Tiers (Tier 1 and Tier 2)
-            # Only HIGH priority leads should trigger automated engagement (Module 1)
+            # Elite Module 14: Prioritize leads based on Priority Tiers
+            # Fully Autonomous Mode: Include HIGH and MEDIUM leads (User Request)
             leads = db.execute(
                 select(Lead).where(
                     and_(
-                        Lead.priority_level == "HIGH",
+                        Lead.priority_level.in_(["HIGH", "MEDIUM"]),
                         Lead.public_reply_sent == False,
                         Lead.conversion_stage == ConversionStage.NEW
                     )
-                ).order_by(desc(Lead.opportunity_score)).limit(1)
+                ).order_by(desc(Lead.opportunity_score)).limit(5)
             ).scalars().all()
             
             for lead in leads:
@@ -313,7 +329,8 @@ class ResponseEngine:
                     await client.send_message(group.telegram_id, response_text, reply_to=lead.telegram_message_id)
 
                     # Track account limit (Module 8)
-                    await telegram_client_manager.track_account_limits(account.phone_number, "public_reply")
+                    if account:
+                        await telegram_client_manager.track_account_limits(phone_number, "public_reply")
 
                     # Mark as sent and update CRM
                     lead.public_reply_sent = True
@@ -337,7 +354,7 @@ class ResponseEngine:
                     )
                     db.add(new_conv)
                     db.commit()
-                    logger.info(f"[SLIE Human Engine] Public reply sent to lead {lead.username} using account {account.phone_number}")
+                    logger.info(f"[SLIE Human Engine] Public reply sent to lead {lead.username} using account {phone_number}")
                 except Exception as e:
                     logger.error(f"Error processing public reply: {e}")
 
@@ -355,33 +372,39 @@ class ResponseEngine:
 
         # Find an account that can send a DM (Module 8)
         account = await telegram_client_manager.rotate_account("dm")
-        if not account:
-            logger.info("No active Telegram accounts with remaining DM limits.")
-            return
-
-        client = await telegram_client_manager.get_client(phone_number=account.phone_number)
+        
+        if account:
+            client = await telegram_client_manager.get_client(phone_number=account.phone_number)
+            phone_number = account.phone_number
+        else:
+            # Fallback to .env account if session string exists
+            if self.settings.telegram_session_string:
+                client = await telegram_client_manager.get_client()
+                phone_number = self.settings.telegram_phone
+            else:
+                logger.info("No active Telegram accounts with remaining DM limits.")
+                return
 
         with SessionLocal() as db:
             # Elite Module 14, 15 & 16: Prioritize Tier 1 leads for DM follow-up
-            # Only HIGH priority leads should trigger automated engagement (Module 1)
+            # Fully Autonomous Mode: Include HIGH and MEDIUM leads (User Request)
             
             min_wait = datetime.utcnow() - timedelta(minutes=15)
-            last_24h = datetime.utcnow() - timedelta(hours=24)
+            last_wait = datetime.utcnow() - timedelta(minutes=30)
             
             leads = db.execute(
                 select(Lead).where(
                     and_(
-                        Lead.priority_level == "HIGH",
-                        Lead.public_reply_sent == True,
+                        Lead.priority_level.in_(["HIGH", "MEDIUM"]),
                         Lead.dm_sent == False,
-                        Lead.conversion_stage == ConversionStage.CONTACTED,
+                        Lead.conversion_stage.in_([ConversionStage.NEW, ConversionStage.CONTACTED]),
                         Lead.last_contact <= min_wait,
-                        # Rule: Do not send DM if any contact (public or private) was within 24 hours
-                        Lead.last_contact <= last_24h,
+                        # Rule: Do not send DM if any contact (public or private) was within 30 minutes
+                        (Lead.last_contact.is_(None) | (Lead.last_contact <= last_wait)),
                         # Rule: Stop if converted
                         Lead.conversion_stage != ConversionStage.CONVERTED
                     )
-                ).order_by(desc(Lead.opportunity_score)).limit(1)
+                ).order_by(desc(Lead.opportunity_score)).limit(5)
             ).scalars().all()
 
             for lead in leads:
@@ -396,19 +419,20 @@ class ResponseEngine:
                     await client.send_message(lead.telegram_user_id, dm_text)
 
                     # Track account limit (Module 8)
-                    await telegram_client_manager.track_account_limits(account.phone_number, "dm")
+                    if account:
+                        await telegram_client_manager.track_account_limits(phone_number, "dm")
 
                     # Mark as sent and update CRM
                     lead.dm_sent = True
                     lead.last_contact = datetime.utcnow()
-                    lead.conversion_stage = ConversionStage.DMed
+                    lead.conversion_stage = ConversionStage.CONTACTED
                     
                     # Log to Memory Engine (Module 15)
                     memory_engine.log_message_interaction(
                         user_id=lead.user_id,
-                        group_id=None,
+                        group_id=lead.group_id,
                         message_text=dm_text,
-                        message_type="dm_message"
+                        message_type="direct_message"
                     )
                     
                     # Store DM in conversation history (Module 10)
@@ -420,9 +444,8 @@ class ResponseEngine:
                         timestamp=datetime.utcnow()
                     )
                     db.add(new_conv)
-                    
                     db.commit()
-                    logger.info(f"[SLIE Human Engine] Private DM sent to lead {lead.username} using account {account.phone_number}")
+                    logger.info(f"[SLIE Human Engine] Private DM sent to lead {lead.username} using account {phone_number}")
                 except Exception as e:
                     logger.error(f"Error processing private DM: {e}")
 

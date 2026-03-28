@@ -10,17 +10,17 @@ from app.services.contacts import create_consent, create_contact, get_contact, l
 router = APIRouter()
 
 
-@router.post("/contacts", response_model=ContactRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ContactRead, status_code=status.HTTP_201_CREATED)
 def create_contact_endpoint(payload: ContactCreate, db: Session = Depends(get_db)) -> ContactRead:
     return create_contact(db, payload)
 
 
-@router.get("/contacts", response_model=list[ContactRead])
+@router.get("/", response_model=list[ContactRead])
 def list_contacts_endpoint(db: Session = Depends(get_db)) -> list[ContactRead]:
     return list_contacts(db)
 
 
-@router.get("/contacts/{contact_id}", response_model=ContactRead)
+@router.get("/{contact_id}", response_model=ContactRead)
 def get_contact_endpoint(contact_id: UUID, db: Session = Depends(get_db)) -> ContactRead:
     contact = get_contact(db, contact_id)
     if contact is None:

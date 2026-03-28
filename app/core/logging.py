@@ -10,7 +10,8 @@ def configure_logging() -> None:
         level=getattr(logging, settings.log_level.upper()),
         format="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
         handlers=[
-            logging.StreamHandler(sys.stdout)
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler("slie_production.log")
         ]
     )
     

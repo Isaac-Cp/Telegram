@@ -77,8 +77,8 @@ class Settings(BaseSettings):
     scheduler_enabled: bool = True
     auto_create_tables: bool = Field(False, alias="AUTO_CREATE_TABLES")
     default_follow_up_delay_minutes: int = 1440
-    business_hours_start: int = 9
-    business_hours_end: int = 18
+    business_hours_start: int = Field(0, alias="BUSINESS_HOURS_START")
+    business_hours_end: int = Field(23, alias="BUSINESS_HOURS_END")
 
 
 @lru_cache

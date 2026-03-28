@@ -3,7 +3,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get("/")
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
 

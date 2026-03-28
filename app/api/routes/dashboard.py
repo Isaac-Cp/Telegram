@@ -45,12 +45,12 @@ def reseller_prospects_endpoint(db: Session = Depends(get_db)):
 def conversations_endpoint(db: Session = Depends(get_db)):
     return get_conversations_elite(db)
 
-@router.get("/dashboard/summary", response_model=DashboardSummary)
+@router.get("/summary", response_model=DashboardSummary)
 def dashboard_summary_endpoint(db: Session = Depends(get_db)) -> DashboardSummary:
     return get_dashboard_summary(db)
 
 
-@router.get("/dashboard", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def dashboard_page():
     return """
 <!DOCTYPE html>
@@ -368,7 +368,7 @@ def dashboard_page():
 
         async function updateDashboard() {
             try {
-                const res = await fetch('/api/v1/stats');
+                const res = await fetch('/api/v1/dashboard/stats');
                 if (!res.ok) throw new Error('Network response was not ok');
                 const data = await res.json();
 

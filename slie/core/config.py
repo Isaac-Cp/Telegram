@@ -26,6 +26,8 @@ class Settings(BaseSettings):
             v = v.replace("postgres://", "postgresql+asyncpg://", 1)
         elif v.startswith("postgresql://") and "+asyncpg" not in v:
             v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif v.startswith("sqlite:///"):
+            v = v.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
             
         # Critical Render Fix: If hostname is 'postgres', it's likely a docker-compose carryover
         if "@postgres:" in v or "@postgres/" in v:
@@ -34,6 +36,11 @@ class Settings(BaseSettings):
             logger.warning("[SLIE Config] DATABASE_URL is using 'postgres' as host. This will fail on Render.")
             
         return v
+
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        """Compatibility property."""
+        return self.database_url
     
     # OpenAI, Groq, Gemini keys
     openai_api_key: str = Field("", alias="OPENAI_API_KEY")
