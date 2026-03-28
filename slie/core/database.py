@@ -11,9 +11,11 @@ settings = get_settings()
 
 # Production-ready engine configuration
 if settings.database_url.startswith("sqlite"):
+    from sqlalchemy.pool import NullPool
     engine = create_async_engine(
         settings.sqlalchemy_database_url,
-        echo=False
+        echo=False,
+        poolclass=NullPool
     )
 else:
     engine = create_async_engine(

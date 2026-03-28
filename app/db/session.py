@@ -10,11 +10,42 @@ settings = get_settings()
 
 # Sync engine (for existing code)
 sync_db_url = settings.sqlalchemy_database_url.replace("postgresql+asyncpg", "postgresql+psycopg").replace("sqlite+aiosqlite", "sqlite")
-engine = create_engine(sync_db_url, pool_pre_ping=True)
+
+# Connection Pool Optimization (Fixes: QueuePool limit of size x overflow y reached)
+# For SQLite, we switch to NullPool to disable pooling entirely, 
+# which prevents QueuePool overflow errors in serverless/high-concurrency environments.
+if "sqlite" in sync_db_url:
+    from sqlalchemy.pool import NullPool
+    engine_args = {
+        "poolclass": NullPool,
+    }
+else:
+    # PostgreSQL production defaults with pooling
+    engine_args = {
+        "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_timeout": 30,
+    }
+
+engine = create_engine(sync_db_url, **engine_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, class_=Session)
 
 # Async engine (for new asyncpg-based code)
-async_engine = create_async_engine(settings.sqlalchemy_database_url, pool_pre_ping=True)
+if "sqlite" in settings.sqlalchemy_database_url:
+    from sqlalchemy.pool import NullPool
+    async_engine_args = {
+        "poolclass": NullPool,
+    }
+else:
+    async_engine_args = {
+        "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_timeout": 30,
+    }
+
+async_engine = create_async_engine(settings.sqlalchemy_database_url, **async_engine_args)
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, expire_on_commit=False, class_=AsyncSession)
 
 def get_db() -> Generator[Session, None, None]:

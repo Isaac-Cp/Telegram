@@ -320,6 +320,11 @@ class ResponseEngine:
                     group = db.execute(select(Group).where(Group.id == lead.group_id)).scalar_one_or_none()
                     if not group: continue
 
+                    # Fully Autonomous Mode: Auto-approve all detected leads (User Request)
+                    # We skip the manual 'approved' flag check because we want the bot to work on its own.
+                    # Lead analysis and priority (HIGH/MEDIUM) are already handled during detection.
+                    
+                    # 1. Select persona for this lead (Module 5)
                     persona = power_upgrades_service.select_persona(lead)
                     response_text = await self.generate_public_response(lead.id, lead.original_message, persona)
                     
