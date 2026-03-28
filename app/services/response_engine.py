@@ -303,8 +303,8 @@ class ResponseEngine:
         with SessionLocal() as db:
             # Elite Module 14: Prioritize leads based on Priority Tiers
             # Fully Autonomous Mode: Include HIGH and MEDIUM leads (User Request)
-            leads = db.execute(
-                select(Lead).where(
+            lead_ids = db.execute(
+                select(Lead.id).where(
                     and_(
                         Lead.priority_level.in_(["HIGH", "MEDIUM"]),
                         Lead.public_reply_sent == False,
@@ -312,18 +312,19 @@ class ResponseEngine:
                     )
                 ).order_by(desc(Lead.opportunity_score)).limit(5)
             ).scalars().all()
-            
-            for lead in leads:
-                try:
-                    await human_engine.apply_randomized_delay("public_reply")
+        
+        for lead_id in lead_ids:
+            try:
+                # IMPORTANT: Apply delay OUTSIDE of session block to prevent QueuePool overflow
+                await human_engine.apply_randomized_delay("public_reply")
+
+                with SessionLocal() as db:
+                    lead = db.get(Lead, lead_id)
+                    if not lead: continue
 
                     group = db.execute(select(Group).where(Group.id == lead.group_id)).scalar_one_or_none()
                     if not group: continue
 
-                    # Fully Autonomous Mode: Auto-approve all detected leads (User Request)
-                    # We skip the manual 'approved' flag check because we want the bot to work on its own.
-                    # Lead analysis and priority (HIGH/MEDIUM) are already handled during detection.
-                    
                     # 1. Select persona for this lead (Module 5)
                     persona = power_upgrades_service.select_persona(lead)
                     response_text = await self.generate_public_response(lead.id, lead.original_message, persona)
@@ -360,8 +361,8 @@ class ResponseEngine:
                     db.add(new_conv)
                     db.commit()
                     logger.info(f"[SLIE Human Engine] Public reply sent to lead {lead.username} using account {phone_number}")
-                except Exception as e:
-                    logger.error(f"Error processing public reply: {e}")
+            except Exception as e:
+                logger.error(f"Error processing public reply for lead {lead_id}: {e}")
 
     async def process_private_dms(self):
         """
@@ -397,8 +398,8 @@ class ResponseEngine:
             min_wait = datetime.utcnow() - timedelta(minutes=15)
             last_wait = datetime.utcnow() - timedelta(minutes=30)
             
-            leads = db.execute(
-                select(Lead).where(
+            lead_ids = db.execute(
+                select(Lead.id).where(
                     and_(
                         Lead.priority_level.in_(["HIGH", "MEDIUM"]),
                         Lead.dm_sent == False,
@@ -412,9 +413,14 @@ class ResponseEngine:
                 ).order_by(desc(Lead.opportunity_score)).limit(5)
             ).scalars().all()
 
-            for lead in leads:
-                try:
-                    await human_engine.apply_randomized_delay("dm")
+        for lead_id in lead_ids:
+            try:
+                # IMPORTANT: Apply delay OUTSIDE of session block to prevent QueuePool overflow
+                await human_engine.apply_randomized_delay("dm")
+
+                with SessionLocal() as db:
+                    lead = db.get(Lead, lead_id)
+                    if not lead: continue
 
                     dm_text = await self.generate_private_dm(lead)
                     
@@ -451,7 +457,7 @@ class ResponseEngine:
                     db.add(new_conv)
                     db.commit()
                     logger.info(f"[SLIE Human Engine] Private DM sent to lead {lead.username} using account {phone_number}")
-                except Exception as e:
-                    logger.error(f"Error processing private DM: {e}")
+            except Exception as e:
+                logger.error(f"Error processing private DM for lead {lead_id}: {e}")
 
 response_engine = ResponseEngine()

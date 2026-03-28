@@ -23,9 +23,10 @@ else:
     # PostgreSQL production defaults with pooling
     engine_args = {
         "pool_pre_ping": True,
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_timeout": 30,
+        "pool_size": 20,
+        "max_overflow": 40,
+        "pool_timeout": 60,
+        "pool_recycle": 1800,
     }
 
 engine = create_engine(sync_db_url, **engine_args)
@@ -40,9 +41,10 @@ if "sqlite" in settings.sqlalchemy_database_url:
 else:
     async_engine_args = {
         "pool_pre_ping": True,
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_timeout": 30,
+        "pool_size": 20,
+        "max_overflow": 40,
+        "pool_timeout": 60,
+        "pool_recycle": 1800,
     }
 
 async_engine = create_async_engine(settings.sqlalchemy_database_url, **async_engine_args)

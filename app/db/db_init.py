@@ -20,7 +20,14 @@ async def verify_database_connection():
     Connect to PostgreSQL, verify availability, and check for required tables.
     """
     settings = get_settings()
-    engine = create_async_engine(settings.sqlalchemy_database_url)
+    
+    # Use NullPool for SQLite to avoid QueuePool overflow during verification
+    engine_args = {}
+    if settings.database_url.startswith("sqlite"):
+        from sqlalchemy.pool import NullPool
+        engine_args["poolclass"] = NullPool
+    
+    engine = create_async_engine(settings.sqlalchemy_database_url, **engine_args)
     
     max_retries = 10
     retry_delay = 30 # seconds

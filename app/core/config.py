@@ -1,3 +1,5 @@
+import re
+import logging
 from functools import lru_cache
 
 from pydantic import Field, field_validator
@@ -19,16 +21,22 @@ class Settings(BaseSettings):
         if not v or not isinstance(v, str):
             return v
             
+        # Handle Render/Heroku legacy prefix
         if v.startswith("postgres://"):
-            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
-        elif v.startswith("postgresql://") and "+asyncpg" not in v:
+            v = v.replace("postgres://", "postgresql://", 1)
+            
+        # Ensure async driver for database_url (which is used for create_async_engine)
+        if v.startswith("postgresql://"):
             v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql+") and "+asyncpg" not in v:
+            # If it's something like postgresql+psycopg2://, we still want asyncpg for the async engine
+            # We split by + and :// to replace the driver part
+            v = re.sub(r"postgresql\+[^:]+://", "postgresql+asyncpg://", v)
         elif v.startswith("sqlite:///"):
             v = v.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
             
         # Critical Render Fix: If hostname is 'postgres', it's likely a docker-compose carryover
         if "@postgres:" in v or "@postgres/" in v:
-            import logging
             logger = logging.getLogger(__name__)
             logger.warning("[SLIE Config] DATABASE_URL is using 'postgres' as host. This will fail on Render.")
             
