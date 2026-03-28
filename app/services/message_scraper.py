@@ -194,6 +194,7 @@ class MessageScraper:
 
         message_text = event.message.message or ""
         
+        # 1. Update status and log inbound message
         with SessionLocal() as db:
             # Check if this user is a lead in our system
             lead = db.execute(
@@ -225,37 +226,44 @@ class MessageScraper:
             )
             
             db.commit()
+            # Capture lead.id before closing session
+            lead_id = lead.id
 
-            # Find an account that can send a DM (Module 8)
-            account = await telegram_client_manager.rotate_account("dm")
-            if not account:
-                logger.warning("No accounts available to send DM reply.")
-                return
+        # 2. Find an account that can send a DM (Module 8) - OUTSIDE DB SESSION
+        account = await telegram_client_manager.rotate_account("dm")
+        if not account:
+            logger.warning("No accounts available to send DM reply.")
+            return
 
-            client = await telegram_client_manager.get_client(phone_number=account.phone_number)
+        client = await telegram_client_manager.get_client(phone_number=account.phone_number)
 
-            # Generate AI Response (Module 10)
+        # 3. Generate AI Response (Module 10) - OUTSIDE DB SESSION
+        # Re-fetch lead for persona selection (generate_ai_reply handles its own session for history)
+        with SessionLocal() as db:
+            lead = db.get(Lead, lead_id)
             reply_text = await self.generate_ai_reply(lead, message_text)
 
-            # Apply DM simulation behavior (Module 4)
-            # Typing delay: 3-10s
-            await response_engine.simulate_typing(client, sender.id)
+        # 4. Apply DM simulation behavior (Module 4) - OUTSIDE DB SESSION
+        # Typing delay: 3-10s
+        await response_engine.simulate_typing(client, sender.id)
 
-            # Send the AI response
-            await client.send_message(sender.id, reply_text)
+        # 5. Send the AI response - OUTSIDE DB SESSION
+        await client.send_message(sender.id, reply_text)
 
-            # Log to Memory Engine (Module 15)
-            memory_engine.log_message_interaction(
-                user_id=lead.user_id,
-                group_id=None,
-                message_text=reply_text,
-                message_type="dm_message"
-            )
+        # 6. Final logging and tracking - NEW SESSIONS
+        memory_engine.log_message_interaction(
+            user_id=lead.user_id,
+            group_id=None,
+            message_text=reply_text,
+            message_type="dm_message"
+        )
 
-            # Track account limit (Module 8)
-            await telegram_client_manager.track_account_limits(account.phone_number, "dm")
+        # Track account limit (Module 8)
+        await telegram_client_manager.track_account_limits(account.phone_number, "dm")
 
-            # Store AI response in history
+        # Store AI response in history
+        with SessionLocal() as db:
+            lead = db.get(Lead, lead_id)
             persona = response_engine.power_upgrades_service.select_persona(lead)
             ai_msg = LeadConversation(
                 lead_id=lead.id,
@@ -265,7 +273,8 @@ class MessageScraper:
             )
             db.add(ai_msg)
             db.commit()
-            logger.info(f"AI Response sent to lead {sender.id} using account {account.phone_number}")
+            
+        logger.info(f"AI Response sent to lead {sender.id} using account {account.phone_number}")
 
     async def save_message(self, event, sender):
         """
@@ -286,8 +295,9 @@ class MessageScraper:
             telegram_user_id = sender.id
             chat_id = event.chat_id
 
+            # 1. INITIAL DB OPERATIONS: Check duplicate, Update/Create User, Save Message
             with SessionLocal() as db:
-                # 1. Check for duplicates
+                # Check for duplicates
                 existing = db.execute(
                     select(Message).where(
                         Message.telegram_id == event.message.id,
@@ -297,7 +307,7 @@ class MessageScraper:
                 if existing:
                     return
 
-                # 2. Get or Create Global User Profile (Step 6)
+                # Get or Create Global User Profile (Step 6)
                 user = db.execute(
                     select(User).where(User.telegram_user_id == telegram_user_id)
                 ).scalar_one_or_none()
@@ -307,7 +317,7 @@ class MessageScraper:
                         telegram_user_id=telegram_user_id,
                         username=getattr(sender, 'username', None),
                         first_seen=datetime.utcnow(),
-                        last_seen=datetime.utcnow(), # Ensure last_seen is set
+                        last_seen=datetime.utcnow(),
                         groups_seen=0,
                         messages_today=0,
                         message_frequency=0,
@@ -317,25 +327,21 @@ class MessageScraper:
                     db.add(user)
                     db.flush()
 
-                # Update User activity metrics (Step 6)
+                # Update User activity metrics
                 today = datetime.utcnow().date()
                 last_seen_date = user.last_seen.date() if user.last_seen else None
-                
                 user.last_seen = datetime.utcnow()
                 user.message_frequency += 1
                 
-                # Module 4 Step 6: messages_today tracking
                 if last_seen_date == today:
                     user.messages_today += 1
                 else:
                     user.messages_today = 1
                 
-                # Module 4 Step 6: groups_seen tracking & Cross-Group Identity Tracking
                 group = db.execute(select(Group).where(Group.telegram_id == chat_id)).scalar_one_or_none()
                 group_id = group.id if group else None
 
                 if group_id:
-                    # Check if this user has been seen in this group before
                     identity = db.execute(
                         select(CrossGroupIdentity).where(
                             CrossGroupIdentity.user_id == user.id,
@@ -344,7 +350,6 @@ class MessageScraper:
                     ).scalar_one_or_none()
 
                     if not identity:
-                        # New group for this user
                         identity = CrossGroupIdentity(
                             user_id=user.id,
                             group_id=group_id,
@@ -353,94 +358,71 @@ class MessageScraper:
                         )
                         db.add(identity)
                         user.groups_seen += 1
-                        logger.info(f"[Identity Tracking] User {user.username} detected in new group: {chat_id}")
                     else:
                         identity.last_seen_in_group = datetime.utcnow()
                 
-                # 3. Save raw message
+                # Save raw message
                 new_msg = Message(
                     telegram_id=event.message.id,
-                    telegram_message_id=event.message.id, # MODULE 1 - INFLUENCE GRAPH
+                    telegram_message_id=event.message.id,
                     telegram_group_id=chat_id,
                     telegram_user_id=telegram_user_id,
                     username=user.username,
-                    reply_to_message_id=event.message.reply_to_msg_id if hasattr(event.message, 'reply_to_msg_id') else None, # MODULE 1 - INFLUENCE GRAPH
+                    reply_to_message_id=event.message.reply_to_msg_id if hasattr(event.message, 'reply_to_msg_id') else None,
                     body=message_text,
                     sent_at=event.message.date,
                     reply_count=event.message.replies.replies if event.message.replies else 0
                 )
                 db.add(new_msg)
                 db.flush()
-
-                # MODULE 1: INFLUENCE GRAPH UPDATE
+                
+                # Capture IDs for later use
+                message_id = new_msg.id
+                user_id = user.id
+                
+                # Influence Graph Update
                 if group_id:
                     influence_engine.update_influence_score(user.id, group_id)
+                
+                db.commit()
 
-                # 4. STEP 3 — PAIN SIGNAL DETECTION
-                pain_signals = await lead_scoring_engine.detect_pain_signals(message_text)
-                has_pain = any(len(v) > 0 for v in pain_signals.values())
+            # 2. ASYNC AI ANALYSIS: Detect Pain Signals and Analyze AI - OUTSIDE DB SESSION
+            pain_signals = await lead_scoring_engine.detect_pain_signals(message_text)
+            has_pain = any(len(v) > 0 for v in pain_signals.values())
 
-                # 5. STEP 4 — NLP CLASSIFICATION (only if keywords found or for random sampling)
-                # For efficiency, we AI-classify messages with keywords or randomly 5% of others
-                import random
-                if has_pain or random.random() < 0.05:
-                    ai_result = await lead_scoring_engine.analyze_message_ai(str(new_msg.id), message_text)
-                    intent_type = ai_result.get("intent_type", "general_discussion")
+            import random
+            if has_pain or random.random() < 0.05:
+                # Perform long-running AI analysis outside the session
+                ai_result = await lead_scoring_engine.analyze_message_ai(str(message_id), message_text)
+                intent_type = ai_result.get("intent_type", "general_discussion")
 
-                    # MODULE 2: COMPETITOR WEAKNESS SCANNER
+                # 3. FINAL DB UPDATES: Update User metrics and Lead Creation - NEW SESSION
+                with SessionLocal() as db:
+                    user = db.get(User, user_id)
+                    
+                    # Competitor scanner (might be async, ideally outside session too if it uses AI)
                     if intent_type == "complaint":
+                        # If analyze_message_for_competitors is async, it should be outside session
                         await competitor_scanner.analyze_message_for_competitors(message_text)
-
-                    # STEP 4: ACTIVITY TRACKING (complaints/technical_questions)
-                    if intent_type == "complaint":
                         user.complaints_count += 1
                     elif intent_type == "help_request":
                         user.technical_questions_count += 1
 
-                    # STEP 5 — LEAD CREATION
-                    if intent_type in ["complaint", "help_request"]:
-                        # Lead creation logic follows...
-                        if not group_id:
-                             group = db.execute(select(Group).where(Group.telegram_id == chat_id)).scalar_one_or_none()
-                             group_id = group.id if group else None
+                    # LEAD CREATION (Step 5)
+                    await lead_scoring_engine.create_lead(
+                        user_id=telegram_user_id,
+                        username=user.username,
+                        group_id=chat_id,
+                        message_text=message_text,
+                        message_id=message_id,
+                        ai_analysis=ai_result,
+                        pain_signals=pain_signals
+                    )
+                    
+                    db.commit()
 
-                        existing_lead = db.execute(
-                            select(Lead).where(
-                                Lead.user_id == user.id,
-                                Lead.group_id == group_id
-                            )
-                        ).scalar_one_or_none()
-
-                        if not existing_lead:
-                            # Create new lead entry (Module 4 Step 5)
-                            lead = Lead(
-                                user_id=user.id,
-                                group_id=group_id,
-                                message_text=message_text,
-                                intent_type=intent_type,
-                                timestamp=datetime.utcnow(),
-                                conversion_stage=ConversionStage.NEW
-                            )
-                            db.add(lead)
-                            db.flush()
-                            logger.info(f"[SLIE Lead Engine] Lead created: {user.username} in {chat_id}")
-                            
-                            # Log to Memory Engine (Module 7)
-                            memory_engine.log_message_interaction(
-                                user_id=user.id,
-                                group_id=group_id,
-                                message_text=message_text,
-                                message_type="group_message"
-                            )
-                            
-                            # Run lead scoring (Module 8)
-                            await lead_scoring_engine.calculate_lead_score(lead.id, message_text, ai_result)
-                            
-                            # MODULE 3: CONVERSION PROBABILITY
-                            conversion_engine.calculate_conversion_probability(lead.id)
-
-                db.commit()
-                logger.debug(f"Saved and analyzed message {event.message.id} from group {chat_id}")
+            # Community conversion tracking
+            await conversion_engine.track_message_conversion_potential(message_id, message_text)
         except Exception as e:
             logger.error(f"Error in Message Intelligence Engine: {e}")
 

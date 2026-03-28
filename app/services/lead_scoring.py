@@ -60,6 +60,7 @@ class LeadScoringEngine:
         """
         
         try:
+            # 1. AI CALL - OUTSIDE SESSION
             content = await ai_service.chat_completion(
                 prompt=prompt,
                 response_format="json_object"
@@ -70,7 +71,7 @@ class LeadScoringEngine:
 
             result = json.loads(content)
             
-            # Store in DB (Module 6 - SLIE Elite)
+            # 2. STORE IN DB - BRIEF SESSION
             with SessionLocal() as db:
                 analysis = MessageAnalysis(
                     message_id=message_id,
@@ -85,21 +86,6 @@ class LeadScoringEngine:
         except Exception as e:
             logger.error(f"AI classification failed: {e}")
             return {"intent_type": "general_discussion", "intent_score": 0, "confidence": 0}
-
-    async def detect_pain_signals(self, message_text: str) -> dict:
-        """
-        STEP 3 — PAIN SIGNAL DETECTION (Message Intelligence Engine)
-        Categorize keywords into Frustration, Help Requests, and Technical Issues.
-        """
-        text = message_text.lower()
-        signals = {
-            "frustration": ["buffering", "lagging", "freezing", "server down", "not working"],
-            "help_requests": ["any good iptv", "recommend provider", "iptv suggestion", "best iptv service"],
-            "technical_issues": ["xtream", "panel", "server location", "stream quality"]
-        }
-        
-        detected = {cat: [kw for kw in kws if kw in text] for cat, kws in signals.items()}
-        return detected
 
     async def calculate_predictive_buyer_score(self, user_uuid: str, message_text: str) -> int:
         """
@@ -126,12 +112,14 @@ class LeadScoringEngine:
             score += 20
             
         # 4. Activity Spike (10 pts - based on last 10 messages)
-        from app.models.message import Message
-        from app.models.user import User
-        from datetime import timedelta
+        # Use a brief session for lookups
         with SessionLocal() as db:
+            from app.models.user import User
+            from app.models.message import Message
+            from datetime import timedelta
             user = db.get(User, user_uuid)
             if user:
+                # 4. Activity Spike (10 pts - based on last 10 messages)
                 recent_count = db.query(Message).filter(
                     Message.telegram_user_id == user.telegram_user_id,
                     Message.sent_at >= datetime.utcnow() - timedelta(hours=1)
@@ -145,13 +133,11 @@ class LeadScoringEngine:
                     # +5 points for every additional group seen in, up to 20 points
                     group_bonus = min((user.groups_seen - 1) * 5, 20)
                     score += group_bonus
-                    logger.debug(f"[Identity Tracking] User {user.username} seen in {user.groups_seen} groups. Group Bonus: +{group_bonus}")
 
                 if user.complaints_count > 1:
                     # +10 points for recurring complaints across groups
                     complaint_bonus = min(user.complaints_count * 5, 30)
                     score += complaint_bonus
-                    logger.debug(f"[Identity Tracking] User {user.username} has {user.complaints_count} total complaints. Complaint Bonus: +{complaint_bonus}")
 
         # Determine category based on thresholds (Module 5 Thresholds)
         category = "COLD"
@@ -168,53 +154,48 @@ class LeadScoringEngine:
         Calculates the lead score and determines strength using SLIE Elite formula (Module 7):
         score = intent_score + urgency_bonus + question_bonus
         """
+        # 1. Fetch data - BRIEF SESSION
         with SessionLocal() as db:
             lead = db.get(Lead, lead_id)
             if not lead:
                 return 0, "ignore"
-            
-            # 1. Intent Score (from AI Module 6)
-            intent_score = ai_result.get("intent_score", 0)
-            
-            # 2. Urgency Bonus (2 if urgent phrases detected)
-            has_urgency = any(kw in message_text.lower() for kw in URGENCY_KEYWORDS)
-            urgency_bonus = 2 if has_urgency else 0
-            
-            # 3. Question Bonus (1 if question detected)
-            question_bonus = 1 if "?" in message_text else 0
-            
-            # 4. Predictive Buyer Engine Integration (Module 5)
-            buyer_score = await self.calculate_predictive_buyer_score(lead.user_id, message_text)
-            
-            # Total Formula (Module 7 spec)
-            total_score = intent_score + urgency_bonus + question_bonus
-            
-            # Final classification based on combined signals
-            strength = "ignore"
-            if total_score >= 8 or buyer_score > 70:
-                strength = "strong lead"
-            elif total_score >= 5 or buyer_score > 40:
-                strength = "potential lead"
-            
-            # Update Lead record
-            lead.lead_score = total_score
-            lead.lead_strength = strength
-            db.commit()
-                
-            logger.info(f"[SLIE Lead Engine] Lead {lead_id} scored {total_score} (Strength: {strength})")
-            return total_score, strength
+            user_id = lead.user_id
+
+        # 2. Intent Score (from AI Module 6)
+        intent_score = ai_result.get("intent_score", 0)
         
-        # Strength rules (Module 7 spec)
-        if total_score >= 8:
-            strength = "high lead"
-        elif total_score >= 5:
-            strength = "medium lead"
-        else:
-            strength = "ignore"
-            
+        # 3. Urgency Bonus (2 if urgent phrases detected)
+        has_urgency = any(kw in message_text.lower() for kw in URGENCY_KEYWORDS)
+        urgency_bonus = 2 if has_urgency else 0
+        
+        # 4. Question Bonus (1 if question detected)
+        question_bonus = 1 if "?" in message_text else 0
+        
+        # 5. Predictive Buyer Engine Integration (Module 5) - ASYNC (OUTSIDE SESSION)
+        buyer_score = await self.calculate_predictive_buyer_score(user_id, message_text)
+        
+        # Total Formula (Module 7 spec)
+        total_score = intent_score + urgency_bonus + question_bonus
+        
+        # Final classification based on combined signals
+        strength = "ignore"
+        if total_score >= 8 or buyer_score > 70:
+            strength = "strong lead"
+        elif total_score >= 5 or buyer_score > 40:
+            strength = "potential lead"
+        
+        # 6. Update Lead record - NEW BRIEF SESSION
+        with SessionLocal() as db:
+            lead = db.get(Lead, lead_id)
+            if lead:
+                lead.lead_score = total_score
+                lead.lead_strength = strength
+                db.commit()
+                
+        logger.info(f"[SLIE Lead Engine] Lead {lead_id} scored {total_score} (Strength: {strength})")
         return total_score, strength
 
-    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None):
+    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None, ai_analysis: dict = None, pain_signals: dict = None):
         """
         Performs full pipeline: Analyze -> Score -> Create Lead
         """
@@ -223,7 +204,7 @@ class LeadScoringEngine:
             logger.info(f"Skipping duplicate contact for user {user_id}")
             return None
 
-        # 1. Get or Create Lead
+        # 1. Get or Create Lead - BRIEF SESSION
         with SessionLocal() as db:
             from app.models.user import User
             user = db.execute(select(User).where(User.telegram_user_id == user_id)).scalar_one_or_none()
@@ -252,62 +233,38 @@ class LeadScoringEngine:
                 )
                 db.add(lead)
                 db.flush()
-
-            # 2. OPPORTUNITY SCORING (Module 1)
-            opp_score, priority = await opportunity_engine.score_lead(lead.id)
             
-            # 3. LTV SCORING (Module 2)
-            ltv_score, ltv_tier = ltv_engine.calculate_ltv_score(lead.id)
-
-            # 4. Trigger Async Power Upgrades
-            db.refresh(lead)
-            asyncio.create_task(power_upgrades_service.detect_lead_temperature(lead.id, message_text))
-            asyncio.create_task(opportunity_engine.process_lead_opportunity(lead.id)) # Keeps old logic for now if needed
-            asyncio.create_task(memory_engine.generate_conversation_summary(lead.id))
-
-            # Store initial history
-            new_conv = LeadConversation(
-                lead_id=lead.id,
-                message=message_text,
-                sender="User",
-                timestamp=datetime.utcnow()
-            )
-            db.add(new_conv)
+            lead_id = lead.id
             db.commit()
-            
-            logger.info(f"[SLIE Lead Engine] Lead processed: {username} (Opp: {opp_score}/{priority}, LTV: {ltv_score}/{ltv_tier})")
-            return lead
-            
-            # Store initial message in history
-            db.refresh(new_lead)
 
-            # Elite Module 2: Lead Temperature Detection (Async)
-            asyncio.create_task(power_upgrades_service.detect_lead_temperature(new_lead.id, message_text))
+        # 2. OPPORTUNITY SCORING (Module 1) - ASYNC (OUTSIDE SESSION)
+        opp_score, priority = await opportunity_engine.score_lead(lead_id)
+        
+        # 3. LTV SCORING (Module 2) - SYNCHRONOUS
+        ltv_score, ltv_tier = ltv_engine.calculate_ltv_score(lead_id)
 
-            # Elite Module 14: Intent-Aware Influence & Opportunity Engine (Async)
-            asyncio.create_task(opportunity_engine.process_lead_opportunity(new_lead.id))
+        # 4. Trigger Async Power Upgrades - OUTSIDE SESSION
+        asyncio.create_task(power_upgrades_service.detect_lead_temperature(lead_id, message_text))
+        asyncio.create_task(opportunity_engine.process_lead_opportunity(lead_id))
+        asyncio.create_task(memory_engine.generate_conversation_summary(lead_id))
 
-            # Elite Module 15: Memory Engine - Generate Summary (Async)
-            asyncio.create_task(memory_engine.generate_conversation_summary(new_lead.id))
-
-            # Elite Module 16: LTV Engine - Calculate Score (Async)
-            # Run after a short delay to ensure memory summary is ready
-            async def run_ltv_delayed(lid):
-                await asyncio.sleep(2)
-                ltv_engine.calculate_ltv_score(lid)
-            asyncio.create_task(run_ltv_delayed(new_lead.id))
-
-            new_conv = LeadConversation(
-                lead_id=new_lead.id,
-                message=message_text,
-                sender="User",
-                timestamp=datetime.utcnow()
-            )
-            db.add(new_conv)
-            db.commit()
-            
-            logger.info(f"New lead created and history started: {username} ({strength}, score: {score})")
-            return new_lead
+        # 5. Store initial history and final update - BRIEF SESSION
+        with SessionLocal() as db:
+            lead = db.get(Lead, lead_id)
+            if lead:
+                new_conv = LeadConversation(
+                    lead_id=lead.id,
+                    message=message_text,
+                    sender="User",
+                    timestamp=datetime.utcnow()
+                )
+                db.add(new_conv)
+                db.commit()
+                db.refresh(lead)
+                
+                logger.info(f"[SLIE Lead Engine] Lead processed: {username} (Opp: {opp_score}/{priority}, LTV: {ltv_score}/{ltv_tier})")
+                return lead
+        return None
 
     async def get_top_leads(self, limit: int = 10) -> List[Lead]:
         """

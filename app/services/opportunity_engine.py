@@ -109,50 +109,59 @@ class OpportunityScoringEngine:
         Calculate an opportunity_score using weighted factors (Master Prompt Step 9).
         Output: opportunity_score (0-10), priority_level (HIGH, MEDIUM, LOW)
         """
+        # 1. Fetch initial data - BRIEF SESSION
         with SessionLocal() as db:
             lead = db.get(Lead, lead_id)
             if not lead or not lead.user:
                 return 0.0, "LOW"
+            
+            original_message = lead.original_message
+            user_id = lead.user.id
+            # Capture user object for synchronous calculation
+            user = lead.user
+            
+            # 2. Urgency Score (30% weight) - SYNCHRONOUS
+            urgency_score = self.calculate_urgency_score(lead, original_message, db)
+            
+            # 3. Activity Score (20% weight) - SYNCHRONOUS
+            activity_score = self.calculate_activity_score(user)
 
-            # 1. Intent Score (50% weight)
-            intent_score = await self.calculate_intent_score(lead.original_message)
-            
-            # 2. Urgency Score (30% weight)
-            urgency_score = self.calculate_urgency_score(lead, lead.original_message, db)
-            
-            # 3. Activity Score (20% weight)
-            activity_score = self.calculate_activity_score(lead.user)
-            
-            # SCORING MODEL (Master Prompt Step 9)
-            # opportunity_score = (intent_score * 0.5) + (urgency_score * 0.3) + (activity_score * 0.2)
-            opportunity_score = (intent_score * 0.5) + (urgency_score * 0.3) + (activity_score * 0.2)
-            opportunity_score = round(max(0.0, min(10.0, opportunity_score)), 2)
-            
-            # PRIORITY LOGIC (Master Prompt Step 9)
-            if opportunity_score >= 7.5:
-                priority = "HIGH"
-            elif opportunity_score >= 5.0:
-                priority = "MEDIUM"
-            else:
-                priority = "LOW"
-            
-            # Update Lead record
-            lead.opportunity_score = opportunity_score
-            lead.priority_level = priority
-            
-            # Save detailed metrics to LeadOpportunity
-            opp = db.execute(select(LeadOpportunity).where(LeadOpportunity.lead_id == lead.id)).scalar_one_or_none()
-            if not opp:
-                opp = LeadOpportunity(lead_id=lead.id)
-                db.add(opp)
-            
-            opp.intent_score = intent_score
-            opp.urgency_score = urgency_score
-            opp.opportunity_score = opportunity_score
-            opp.priority_level = priority
-            
-            db.commit()
-            logger.info(f"[SLIE Lead Engine] high priority lead detected: {lead.id} - Score: {opportunity_score}")
-            return opportunity_score, priority
+        # 4. Intent Score (50% weight) - ASYNC AI CALL (OUTSIDE SESSION)
+        intent_score = await self.calculate_intent_score(original_message)
+        
+        # SCORING MODEL (Master Prompt Step 9)
+        opportunity_score = (intent_score * 0.5) + (urgency_score * 0.3) + (activity_score * 0.2)
+        opportunity_score = round(max(0.0, min(10.0, opportunity_score)), 2)
+        
+        # PRIORITY LOGIC (Master Prompt Step 9)
+        if opportunity_score >= 7.5:
+            priority = "HIGH"
+        elif opportunity_score >= 5.0:
+            priority = "MEDIUM"
+        else:
+            priority = "LOW"
+        
+        # 5. Final Update - NEW BRIEF SESSION
+        with SessionLocal() as db:
+            lead = db.get(Lead, lead_id)
+            if lead:
+                lead.opportunity_score = opportunity_score
+                lead.priority_level = priority
+                
+                # Save detailed metrics to LeadOpportunity
+                opp = db.execute(select(LeadOpportunity).where(LeadOpportunity.lead_id == lead.id)).scalar_one_or_none()
+                if not opp:
+                    opp = LeadOpportunity(lead_id=lead.id)
+                    db.add(opp)
+                
+                opp.intent_score = intent_score
+                opp.urgency_score = urgency_score
+                opp.opportunity_score = opportunity_score
+                opp.priority_level = priority
+                
+                db.commit()
+                logger.info(f"[SLIE Opportunity Engine] high priority lead detected: {lead.id} - Score: {opportunity_score}")
+                
+        return opportunity_score, priority
 
 opportunity_engine = OpportunityScoringEngine()
