@@ -84,7 +84,6 @@ class MessageIntelligenceScanner:
         # Let's ensure the message is saved in the messages table first.
         # This is already handled by the message_scraper listener in background.
         # But we need the DB record ID.
-        import time
         msg_record = None
         for _ in range(5): # Retry a few times as the scraper might be async
             with SessionLocal() as db:
@@ -96,8 +95,12 @@ class MessageIntelligenceScanner:
                 ).scalar_one_or_none()
                 if msg_record:
                     break
+            # Wait a bit before retrying, but don't hold the connection
             await asyncio.sleep(0.5)
 
+        # If not found after retries, it might still be saving or failed
+        # We can still create the lead without the message link if necessary,
+        # but create_lead prefers it.
         await lead_scoring_engine.create_lead(
             user_id=sender.id,
             username=getattr(sender, 'username', None),

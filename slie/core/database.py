@@ -22,8 +22,8 @@ else:
         settings.sqlalchemy_database_url,
         echo=False,
         pool_size=20,
-        max_overflow=40,
-        pool_timeout=60,
+        max_overflow=100,
+        pool_timeout=120,
         pool_recycle=1800,
         pool_pre_ping=True
     )
