@@ -1,0 +1,99 @@
+from enum import Enum
+
+
+class ConversionStage(str, Enum):
+    NEW = "NEW"
+    CONTACTED = "CONTACTED"
+    RESPONDED = "RESPONDED"
+    INTERESTED = "INTERESTED"
+    CONVERTED = "CONVERTED"
+
+
+class ContactStatus(str, Enum):
+    NEW = "NEW"
+    ACTIVE = "ACTIVE"
+    CLOSED = "CLOSED"
+
+
+class ConsentChannel(str, Enum):
+    TELEGRAM = "TELEGRAM"
+    EMAIL = "EMAIL"
+    PHONE = "PHONE"
+
+
+class ConsentScope(str, Enum):
+    SUPPORT_UPDATES = "SUPPORT_UPDATES"
+    DEMO_FOLLOW_UPS = "DEMO_FOLLOW_UPS"
+    PRODUCT_UPDATES = "PRODUCT_UPDATES"
+    RESELLER_PROGRAM = "RESELLER_PROGRAM"
+
+
+class LifecycleStage(str, Enum):
+    NEW = "NEW"
+    QUALIFIED = "QUALIFIED"
+    SUPPORT_ACTIVE = "SUPPORT_ACTIVE"
+    DEMO_SCHEDULED = "DEMO_SCHEDULED"
+    CUSTOMER = "CUSTOMER"
+    RESELLER_INTEREST = "RESELLER_INTEREST"
+    CLOSED = "CLOSED"
+
+
+class ConversationStatus(str, Enum):
+    OPEN = "OPEN"
+    PENDING = "PENDING"
+    CLOSED = "CLOSED"
+
+
+class MessageDirection(str, Enum):
+    INBOUND = "INBOUND"
+    OUTBOUND = "OUTBOUND"
+
+
+class TicketStatus(str, Enum):
+    OPEN = "OPEN"
+    PENDING = "PENDING"
+    RESOLVED = "RESOLVED"
+    CLOSED = "CLOSED"
+
+
+class TicketPriority(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+class TicketCategory(str, Enum):
+    TECH_SUPPORT = "TECH_SUPPORT"
+    BILLING = "BILLING"
+    DEMO_REQUEST = "DEMO_REQUEST"
+    RESELLER_INQUIRY = "RESELLER_INQUIRY"
+    GENERAL = "GENERAL"
+
+
+class FollowUpJobType(str, Enum):
+    SUPPORT_CHECKIN = "SUPPORT_CHECKIN"
+    DEMO_REMINDER = "DEMO_REMINDER"
+    RESELLER_FOLLOW_UP = "RESELLER_FOLLOW_UP"
+    CONVERSATION_CLOSURE = "CONVERSATION_CLOSURE"
+
+
+class FollowUpJobStatus(str, Enum):
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class EventType(str, Enum):
+    USER_STARTED_CHAT = "USER_STARTED_CHAT"
+    CONSENT_GRANTED = "CONSENT_GRANTED"
+    CONSENT_REVOKED = "CONSENT_REVOKED"
+    MESSAGE_RECEIVED = "MESSAGE_RECEIVED"
+    MESSAGE_SENT = "MESSAGE_SENT"
+    TICKET_OPENED = "TICKET_OPENED"
+    TICKET_RESOLVED = "TICKET_RESOLVED"
+    FOLLOW_UP_QUEUED = "FOLLOW_UP_QUEUED"
+    FOLLOW_UP_CANCELLED = "FOLLOW_UP_CANCELLED"
+    CONVERSATION_CLOSED = "CONVERSATION_CLOSED"
+

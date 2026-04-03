@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: telegram-crm-api
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ready
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: RUN_MIGRATIONS_ON_STARTUP
+        value: false
+      - key: BACKGROUND_WORKERS_ENABLED
+        value: false
+      - key: TELEGRAM_ENABLED
+        value: false
+      - key: REDIS_REQUIRED
+        value: false
+      - key: DATABASE_CONNECT_MAX_RETRIES
+        value: 3
+      - key: DATABASE_CONNECT_RETRY_DELAY_SECONDS
+        value: 5
+      - key: DATABASE_URL
+        sync: false
