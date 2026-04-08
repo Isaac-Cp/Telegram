@@ -74,4 +74,61 @@ class SellerDensityDetector:
             
             return seller_ratio, market_type
 
+    def analyze_message_batch(self, messages: List[str]) -> 'MarketAnalysisSnapshot':
+        """
+        Analyze a batch of message texts and return market analysis snapshot.
+        Used for testing and direct message analysis.
+        """
+        total_messages = len(messages)
+        if total_messages == 0:
+            return MarketAnalysisSnapshot(
+                market_type="DISCUSSION GROUP",
+                seller_ratio=0.0,
+                duplicate_promo_ratio=0.0
+            )
+
+        # Count promotional messages
+        promo_count = 0
+        seen_promos = set()
+        duplicate_count = 0
+        
+        for msg in messages:
+            text = msg.lower()
+            # Check for promotional content
+            if any(phrase in text for phrase in PROMOTIONAL_PHRASES):
+                promo_count += 1
+                # Check for duplicates
+                if text in seen_promos:
+                    duplicate_count += 1
+                else:
+                    seen_promos.add(text)
+        
+        seller_ratio = promo_count / total_messages
+        duplicate_promo_ratio = duplicate_count / promo_count if promo_count > 0 else 0
+        
+        # Determine market type
+        if seller_ratio > 0.15:
+            market_type = "SELLER HUB"
+        elif any(phrase in " ".join(messages).lower() for phrase in BUYER_SIGNALS):
+            market_type = "BUYER COMMUNITY"
+        elif seller_ratio >= 0.10:
+            market_type = "MIXED GROUP"
+        else:
+            market_type = "DISCUSSION GROUP"
+        
+        return MarketAnalysisSnapshot(
+            market_type=market_type,
+            seller_ratio=seller_ratio,
+            duplicate_promo_ratio=duplicate_promo_ratio
+        )
+
+
+class MarketAnalysisSnapshot:
+    """Snapshot of market analysis results."""
+    def __init__(self, market_type: str, seller_ratio: float, duplicate_promo_ratio: float):
+        self.market_type = market_type
+        self.seller_ratio = seller_ratio
+        self.duplicate_promo_ratio = duplicate_promo_ratio
+
+
 seller_detector = SellerDensityDetector()

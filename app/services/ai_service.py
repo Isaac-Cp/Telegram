@@ -1,8 +1,13 @@
 import logging
 import json
 from typing import Any, Optional
+import warnings
 import openai
 from groq import AsyncGroq
+
+# Suppress the google.generativeai deprecation warning
+warnings.filterwarnings("ignore", message="All support for the `google.generativeai` package has ended", category=FutureWarning)
+
 import google.generativeai as genai
 from app.core.config import get_settings
 
