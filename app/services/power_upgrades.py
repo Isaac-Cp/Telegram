@@ -39,23 +39,39 @@ PERSONAS = {
 
 class PowerUpgradesService:
     def __init__(self):
-        self._initialize_personas()
+        self._personas_initialized = False
 
     def _initialize_personas(self):
         """Initialize personas in the database if they don't exist."""
-        with SessionLocal() as db:
-            count = db.query(func.count(Persona.id)).scalar()
-            if count == 0:
-                for name, data in PERSONAS.items():
-                    persona = Persona(
-                        name=data["name"],
-                        role=data["role"],
-                        expertise=data["expertise"],
-                        tone=data["tone"]
-                    )
-                    db.add(persona)
-                db.commit()
-                logger.info("Initialized default expert personas.")
+        if self._personas_initialized:
+            return
+
+        try:
+            with SessionLocal() as db:
+                try:
+                    count = db.query(func.count(Persona.id)).scalar()
+                    if count == 0:
+                        for name, data in PERSONAS.items():
+                            persona = Persona(
+                                name=data["name"],
+                                role=data["role"],
+                                expertise=data["expertise"],
+                                tone=data["tone"]
+                            )
+                            db.add(persona)
+                        db.commit()
+                        logger.info("Initialized default expert personas.")
+                except Exception as db_exc:
+                    logger.warning("Failed to initialize personas: %s", db_exc)
+        except Exception as exc:
+            logger.warning("PowerUpgradesService unable to initialize personas: %s", exc)
+        finally:
+            self._personas_initialized = True
+    
+    async def ensure_personas_initialized(self):
+        """Async wrapper to initialize personas - call from background task."""
+        if not self._personas_initialized:
+            self._initialize_personas()
 
     async def detect_lead_temperature(self, lead_id: str, message_text: str):
         """
@@ -117,41 +133,49 @@ class PowerUpgradesService:
         Assign persona when lead conversation begins.
         Maintain same persona throughout conversation.
         """
-        with SessionLocal() as db:
-            # Check if lead already has an assigned persona
-            if lead.persona_id:
-                persona = db.query(Persona).filter(Persona.name == lead.persona_id).first()
-                if persona:
-                    return {
+        self._initialize_personas()
+
+        try:
+            with SessionLocal() as db:
+                # Check if lead already has an assigned persona
+                if lead.persona_id:
+                    persona = db.query(Persona).filter(Persona.name == lead.persona_id).first()
+                    if persona:
+                        return {
+                            "name": persona.name,
+                            "role": persona.role,
+                            "expertise": persona.expertise,
+                            "tone": persona.tone
+                        }
+
+                # Rotate: Select a random persona from the database
+                import random
+                all_personas = db.query(Persona).all()
+                if not all_personas:
+                    # Fallback to dictionary if DB is somehow empty
+                    persona_name = random.choice(list(PERSONAS.keys()))
+                    data = PERSONAS[persona_name]
+                else:
+                    persona = random.choice(all_personas)
+                    persona_name = persona.name
+                    data = {
                         "name": persona.name,
                         "role": persona.role,
                         "expertise": persona.expertise,
                         "tone": persona.tone
                     }
 
-            # Rotate: Select a random persona from the database
+                # Persist assignment in lead model
+                db_lead = db.get(Lead, lead.id)
+                if db_lead:
+                    db_lead.persona_id = persona_name
+                    db.commit()
+        except Exception as exc:
+            logger.warning("PowerUpgradesService select_persona fallback to static personas: %s", exc)
             import random
-            all_personas = db.query(Persona).all()
-            if not all_personas:
-                # Fallback to dictionary if DB is somehow empty
-                persona_name = random.choice(list(PERSONAS.keys()))
-                data = PERSONAS[persona_name]
-            else:
-                persona = random.choice(all_personas)
-                persona_name = persona.name
-                data = {
-                    "name": persona.name,
-                    "role": persona.role,
-                    "expertise": persona.expertise,
-                    "tone": persona.tone
-                }
-            
-            # Persist assignment in lead model
-            db_lead = db.get(Lead, lead.id)
-            if db_lead:
-                db_lead.persona_id = persona_name
-                db.commit()
-                
+            persona_name = random.choice(list(PERSONAS.keys()))
+            data = PERSONAS[persona_name]
+
         return data
 
     async def run_opportunity_clustering(self):

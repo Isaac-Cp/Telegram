@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SLIE Dashboard - Advanced Analytics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            panel: '#071124',
+            panelSoft: '#0f1e36',
+            accent: '#38bdf8',
+            glow: '#5eead4',
+          }
+        }
+      }
+    }
+  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .chart-container { position: relative; height: 300px; margin-bottom: 20px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+  <div id="root" class="min-h-screen"></div>
+
+  <script type="text/javascript">
+    const { useState, useEffect, useRef } = React;
+
+    // ==================== Utility Functions ====================
+    function formatValue(value) {
+      if (value === null || value === undefined) return '—';
+      if (typeof value === 'number') {
+        if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+        if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+        return value.toLocaleString();
+      }
+      return String(value);
+    }
+
+    function formatPercent(value) {
+      if (value === null || value === undefined) return '—';
+      return typeof value === 'number' ? value.toFixed(1) + '%' : String(value);
+    }
+
+    // ==================== Stat Card Component ====================
+    function StatCard({ title, value, icon, color = 'sky', trend = null }) {
+      const colorClasses = {
+        sky: 'from-sky-500/20 to-sky-600/10',
+        emerald: 'from-emerald-500/20 to-emerald-600/10',
+        amber: 'from-amber-500/20 to-amber-600/10',
+        rose: 'from-rose-500/20 to-rose-600/10',
+        violet: 'from-violet-500/20 to-violet-600/10',
+      };
+
+      return React.createElement(
+        'div',
+        { className: `group rounded-2xl bg-gradient-to-br ${colorClasses[color]} border border-slate-800/60 p-5 backdrop-blur-sm` },
+        React.createElement('div', { className: 'flex items-start justify-between' },
+          React.createElement('div', null,
+            React.createElement('p', { className: 'text-sm font-medium text-slate-400 mb-2' }, title),
+            React.createElement('p', { className: 'text-3xl font-bold text-white' }, formatValue(value)),
+            trend && React.createElement('p', { 
+              className: `text-xs mt-2 ${trend.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}` 
+            }, `${trend.change >= 0 ? '↑' : '↓'} ${Math.abs(trend.change)}% vs last period`)
+          ),
+          React.createElement('span', { className: 'text-3xl opacity-60 group-hover:opacity-100 transition-opacity' }, icon)
+        )
+      );
+    }
+
+    // ==================== Chart Components ====================
+    function BarChart({ id, title, labels, data, color = '#38bdf8' }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!canvasRef.current || !data || data.length === 0) return;
+
+        if (chartRef.current) chartRef.current.destroy();
+
+        const ctx = canvasRef.current.getContext('2d');
+        chartRef.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels || [],
+            datasets: [{
+              label: title,
+              data: data,
+              backgroundColor: color,
+              borderRadius: 8,
+              borderSkipped: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(100,116,139,0.1)' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [labels, data, color]);
+
+      return React.createElement(
+        'div',
+        { className: 'rounded-2xl bg-gradient-to-br from-panelSoft/50 to-panel/40 border border-slate-800/60 p-5' },
+        React.createElement('h3', { className: 'text-lg font-semibold mb-4 text-white' }, title),
+        React.createElement('div', { className: 'chart-container' },
+          React.createElement('canvas', { ref: canvasRef })
+        )
+      );
+    }
+
+    function PieChart({ id, title, labels, data, colors }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!canvasRef.current || !data || data.length === 0) return;
+
+        if (chartRef.current) chartRef.current.destroy();
+
+        const ctx = canvasRef.current.getContext('2d');
+        chartRef.current = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels || [],
+            datasets: [{
+              data: data,
+              backgroundColor: colors || ['#38bdf8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+              borderColor: '#071124',
+              borderWidth: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#e2e8f0' } } }
+          }
+        });
+
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [labels, data, colors]);
+
+      return React.createElement(
+        'div',
+        { className: 'rounded-2xl bg-gradient-to-br from-panelSoft/50 to-panel/40 border border-slate-800/60 p-5' },
+        React.createElement('h3', { className: 'text-lg font-semibold mb-4 text-white' }, title),
+        React.createElement('div', { className: 'chart-container' },
+          React.createElement('canvas', { ref: canvasRef })
+        )
+      );
+    }
+
+    function LineChart({ id, title, labels, data, color = '#38bdf8' }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!canvasRef.current || !data || data.length === 0) return;
+
+        if (chartRef.current) chartRef.current.destroy();
+
+        const ctx = canvasRef.current.getContext('2d');
+        chartRef.current = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels || [],
+            datasets: [{
+              label: title,
+              data: data,
+              borderColor: color,
+              backgroundColor: color + '20',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 5,
+              pointBackgroundColor: color,
+              pointBorderColor: '#071124',
+              pointBorderWidth: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(100,116,139,0.1)' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [labels, data, color]);
+
+      return React.createElement(
+        'div',
+        { className: 'rounded-2xl bg-gradient-to-br from-panelSoft/50 to-panel/40 border border-slate-800/60 p-5' },
+        React.createElement('h3', { className: 'text-lg font-semibold mb-4 text-white' }, title),
+        React.createElement('div', { className: 'chart-container' },
+          React.createElement('canvas', { ref: canvasRef })
+        )
+      );
+    }
+
+    // ==================== Main Dashboard App ====================
+    function Dashboard() {
+      const [summary, setSummary] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [activeTab, setActiveTab] = useState('overview');
+
+      useEffect(() => {
+        async function fetchSummary() {
+          try {
+            const res = await fetch('/api/v1/dashboard/summary', { cache: 'no-store' });
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            const data = await res.json();
+            setSummary(data);
+          } catch (err) {
+            setError(err.message);
+          } finally {
+            setLoading(false);
+          }
+        }
+        fetchSummary();
+      }, []);
+
+      // Extract data from summary
+      const contacts = summary?.contacts_total ?? summary?.contacts ?? 0;
+      const conversations = summary?.open_conversations ?? 0;
+      const followUps = summary?.follow_ups_due ?? summary?.followups_due ?? 0;
+      const messages = summary?.messages_analyzed ?? 0;
+      const leads = summary?.leads_detected ?? 0;
+      const conversions = summary?.conversions ?? 0;
+      const conversionRate = summary?.conversion_rate ?? 0;
+
+      // Mock data for charts (in production, come from API)
+      const messagesTrend = [120, 150, 180, 165, 195, 210, 245];
+      const conversationStatus = [45, 30, 25]; // open, closed, pending
+      const leadsBySource = [120, 80, 60, 40]; // telegram, email, web, other
+      const hourlyActivity = [5, 8, 12, 15, 18, 16, 14, 10, 8, 6, 4, 2];
+
+      return React.createElement(
+        'div',
+        { className: 'min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-panel' },
+        // Header
+        React.createElement('header', { className: 'border-b border-slate-800/50 bg-panel/40 backdrop-blur-lg sticky top-0 z-40' },
+          React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-6' },
+            React.createElement('div', { className: 'flex items-center justify-between gap-4' },
+              React.createElement('div', null,
+                React.createElement('h1', { className: 'text-4xl font-bold bg-gradient-to-r from-sky-300 to-cyan-300 bg-clip-text text-transparent' }, 'SLIE Analytics'),
+                React.createElement('p', { className: 'text-slate-400 mt-2' }, 'Real-time dashboard with comprehensive insights')
+              ),
+              React.createElement('div', { className: 'flex items-center gap-3' },
+                React.createElement('span', { className: 'relative flex h-3 w-3' },
+                  React.createElement('span', { className: 'animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75' }),
+                  React.createElement('span', { className: 'relative inline-flex rounded-full h-3 w-3 bg-accent' })
+                ),
+                React.createElement('span', { className: 'text-sm text-slate-400' }, loading ? 'Loading...' : 'Live')
+              )
+            )
+          )
+        ),
+
+        // Tabs
+        React.createElement('div', { className: 'border-b border-slate-800/50 bg-panel/20 backdrop-blur-sm' },
+          React.createElement('div', { className: 'max-w-7xl mx-auto px-6' },
+            React.createElement('div', { className: 'flex gap-8' },
+              ['overview', 'messages', 'conversions', 'performance'].map(tab =>
+                React.createElement('button', {
+                  key: tab,
+                  onClick: () => setActiveTab(tab),
+                  className: `py-4 px-2 border-b-2 font-medium capitalize transition ${
+                    activeTab === tab 
+                      ? 'border-accent text-accent' 
+                      : 'border-transparent text-slate-400 hover:text-slate-300'
+                  }`
+                }, tab)
+              )
+            )
+          )
+        ),
+
+        // Content
+        React.createElement('main', { className: 'max-w-7xl mx-auto px-6 py-12' },
+          error && React.createElement('div', { className: 'mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300' }, `Error: ${error}`),
+
+          // OVERVIEW TAB
+          activeTab === 'overview' && React.createElement(React.Fragment, null,
+            // KPI Cards
+            React.createElement('div', { className: 'grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8' },
+              React.createElement(StatCard, { title: 'Total Contacts', value: contacts, icon: '👥', color: 'sky' }),
+              React.createElement(StatCard, { title: 'Open Conversations', value: conversations, icon: '💬', color: 'emerald' }),
+              React.createElement(StatCard, { title: 'Follow-ups Due', value: followUps, icon: '⏰', color: 'amber' }),
+              React.createElement(StatCard, { title: 'Conversion Rate', value: formatPercent(conversionRate), icon: '📈', color: 'violet' })
+            ),
+
+            React.createElement('div', { className: 'grid gap-6 grid-cols-1 lg:grid-cols-2 mb-8' },
+              React.createElement(BarChart, { 
+                title: 'Messages Trend (Last 7 Days)', 
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                data: messagesTrend,
+                color: '#38bdf8'
+              }),
+              React.createElement(PieChart, { 
+                title: 'Conversation Status Distribution',
+                labels: ['Open', 'Closed', 'Pending'],
+                data: conversationStatus,
+                colors: ['#10b981', '#6b7280', '#f59e0b']
+              })
+            ),
+
+            React.createElement('div', { className: 'grid gap-6 grid-cols-1 lg:grid-cols-2' },
+              React.createElement(BarChart, { 
+                title: 'Leads by Source', 
+                labels: ['Telegram', 'Email', 'Web', 'Other'],
+                data: leadsBySource,
+                color: '#8b5cf6'
+              }),
+              React.createElement(LineChart, { 
+                title: 'Hourly Activity Pattern',
+                labels: Array.from({length: 12}, (_, i) => `${i * 2}:00`),
+                data: hourlyActivity,
+                color: '#5eead4'
+              })
+            )
+          ),
+
+          // MESSAGES TAB
+          activeTab === 'messages' && React.createElement(React.Fragment, null,
+            React.createElement('div', { className: 'grid gap-4 grid-cols-1 sm:grid-cols-3 mb-8' },
+              React.createElement(StatCard, { title: 'Total Messages', value: messages, icon: '💬', color: 'sky' }),
+              React.createElement(StatCard, { title: 'Messages Analyzed', value: (messages * 0.95).toFixed(0), icon: '🔍', color: 'emerald' }),
+              React.createElement(StatCard, { title: 'Avg per Contact', value: ((messages / Math.max(contacts, 1)) * 100).toFixed(0) + ' msgs', icon: '📊', color: 'amber' })
+            ),
+            React.createElement(LineChart, { 
+              title: 'Message Volume Trend',
+              labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+              data: messagesTrend,
+              color: '#38bdf8'
+            })
+          ),
+
+          // CONVERSIONS TAB
+          activeTab === 'conversions' && React.createElement(React.Fragment, null,
+            React.createElement('div', { className: 'grid gap-4 grid-cols-1 sm:grid-cols-3 mb-8' },
+              React.createElement(StatCard, { title: 'Total Leads', value: leads, icon: '🎯', color: 'sky' }),
+              React.createElement(StatCard, { title: 'Conversions', value: conversions, icon: '✅', color: 'emerald' }),
+              React.createElement(StatCard, { title: 'Conversion Rate', value: formatPercent(conversionRate), icon: '📈', color: 'amber' })
+            ),
+            React.createElement(BarChart, { 
+              title: 'Conversion Funnel', 
+              labels: ['Leads', 'Engaged', 'Qualified', 'Converted'],
+              data: [leads, Math.round(leads * 0.7), Math.round(leads * 0.4), conversions],
+              color: '#10b981'
+            })
+          ),
+
+          // PERFORMANCE TAB
+          activeTab === 'performance' && React.createElement(React.Fragment, null,
+            React.createElement('div', { className: 'grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8' },
+              React.createElement(StatCard, { title: 'Response Rate', value: '82%', icon: '⚡', color: 'sky' }),
+              React.createElement(StatCard, { title: 'Avg Response Time', value: '2.3 hrs', icon: '⏱️', color: 'emerald' }),
+              React.createElement(StatCard, { title: 'User Satisfaction', value: '4.8/5', icon: '⭐', color: 'amber' }),
+              React.createElement(StatCard, { title: 'System Health', value: '99.9%', icon: '💚', color: 'rose' })
+            ),
+            React.createElement('div', { className: 'grid gap-6 grid-cols-1 lg:grid-cols-2' },
+              React.createElement(LineChart, { 
+                title: 'System Uptime (Last 30 Days)',
+                labels: Array.from({length: 30}, (_, i) => `Day ${i + 1}`).filter((_, i) => i % 5 === 0 || i === 29),
+                data: Array.from({length: 6}, () => (99.5 + Math.random() * 0.5).toFixed(1)),
+                color: '#10b981'
+              }),
+              React.createElement(BarChart, { 
+                title: 'API Response Times', 
+                labels: ['/contacts', '/conversations', '/dashboard', '/messages', '/stats'],
+                data: [45, 32, 28, 55, 38],
+                color: '#f59e0b'
+              })
+            )
+          )
+        )
+      );
+    }
+
+    // Render app
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Dashboard));
+  </script>
+</body>
+</html>

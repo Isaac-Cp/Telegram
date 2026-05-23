@@ -1,9 +1,37 @@
 import re
 import logging
 from functools import lru_cache
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def normalize_database_url(value: str) -> str:
+    """Normalize DATABASE_URL for SQLAlchemy asyncpg usage.
+
+    Render/Neon URLs often arrive as `postgres://...?...sslmode=require`.
+    We force the async driver and strip SSL query params so SSL is supplied
+    through engine connect args instead of leaking unsupported kwargs to asyncpg.
+    """
+    if not value or not isinstance(value, str):
+        return value
+
+    if value.startswith("postgres://"):
+        value = value.replace("postgres://", "postgresql://", 1)
+
+    if value.startswith("postgresql://"):
+        value = value.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif value.startswith("postgresql+") and "+asyncpg" not in value:
+        value = re.sub(r"postgresql\+[^:]+://", "postgresql+asyncpg://", value)
+
+    parsed = urlparse(value)
+    query_params = parse_qs(parsed.query)
+    for param in ("sslmode", "ssl", "sslcert", "sslkey", "sslrootcert"):
+        query_params.pop(param, None)
+
+    query = urlencode(query_params, doseq=True) if query_params else ""
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, query, parsed.fragment))
 
 
 class Settings(BaseSettings):
@@ -17,24 +45,9 @@ class Settings(BaseSettings):
     @field_validator("database_url", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
-        """Production fix: transform postgres:// or postgresql:// to postgresql+asyncpg:// if needed."""
-        if not v or not isinstance(v, str):
-            return v
-            
-        # Handle Render/Heroku legacy prefix
-        if v.startswith("postgres://"):
-            v = v.replace("postgres://", "postgresql://", 1)
-            
-        # Ensure async driver for database_url (which is used for create_async_engine)
-        if v.startswith("postgresql://"):
-            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
-        elif v.startswith("postgresql+") and "+asyncpg" not in v:
-            # If it's something like postgresql+psycopg2://, we still want asyncpg for the async engine
-            # We split by + and :// to replace the driver part
-            v = re.sub(r"postgresql\+[^:]+://", "postgresql+asyncpg://", v)
-        elif v.startswith("sqlite:///"):
-            v = v.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
-            
+        """Normalize database URLs from Render/Neon/Heroku into asyncpg format."""
+        v = normalize_database_url(v)
+
         # Critical Render Fix: If hostname is 'postgres', it's likely a docker-compose carryover
         if "@postgres:" in v or "@postgres/" in v:
             logger = logging.getLogger(__name__)
@@ -87,6 +100,26 @@ class Settings(BaseSettings):
     default_follow_up_delay_minutes: int = 1440
     business_hours_start: int = Field(0, alias="BUSINESS_HOURS_START")
     business_hours_end: int = Field(23, alias="BUSINESS_HOURS_END")
+    background_workers_enabled: bool = Field(True, alias="BACKGROUND_WORKERS_ENABLED")
+
+    # Database cleanup retention settings
+    cleanup_enabled: bool = Field(True, alias="CLEANUP_ENABLED")
+    cleanup_batch_size: int = Field(1000, alias="CLEANUP_BATCH_SIZE")
+    messages_retention_days: int = Field(90, alias="MESSAGES_RETENTION_DAYS")
+    activity_events_retention_days: int = Field(90, alias="ACTIVITY_EVENTS_RETENTION_DAYS")
+    unified_conversations_retention_days: int = Field(30, alias="UNIFIED_CONVERSATIONS_RETENTION_DAYS")
+    follow_up_jobs_retention_days: int = Field(30, alias="FOLLOW_UP_JOBS_RETENTION_DAYS")
+    group_join_history_retention_days: int = Field(90, alias="GROUP_JOIN_HISTORY_RETENTION_DAYS")
+    metrics_snapshots_retention_days: int = Field(365, alias="METRICS_SNAPSHOTS_RETENTION_DAYS")
+    lead_conversations_retention_days: int = Field(30, alias="LEAD_CONVERSATIONS_RETENTION_DAYS")
+
+    # Email Settings
+    smtp_host: str = Field("smtp.gmail.com", alias="SMTP_HOST")
+    smtp_port: int = Field(587, alias="SMTP_PORT")
+    smtp_user: str = Field("", alias="SMTP_USER")
+    smtp_password: str = Field("", alias="SMTP_PASSWORD")
+    emails_enabled: bool = Field(False, alias="EMAILS_ENABLED")
+    admin_email: str = Field("", alias="ADMIN_EMAIL")
 
 
 @lru_cache

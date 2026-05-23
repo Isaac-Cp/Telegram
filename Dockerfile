@@ -14,5 +14,5 @@ COPY migrations ./migrations
 
 RUN pip install --upgrade pip && pip install . && pip install aiosqlite
 
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"]
 

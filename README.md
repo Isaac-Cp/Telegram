@@ -13,11 +13,15 @@ Compliant Telegram IPTV support and CRM scaffold built for opt-in workflows only
 ## Quick Start
 
 1. Copy `.env.example` to `.env` and fill in the values you need.
-2. Start dependencies:
+2. Start the full stack with Docker:
 
 ```bash
-docker compose up -d postgres redis
+docker compose up -d
 ```
+
+This starts `api`, `postgres`, and `redis` together. The `api` service runs both the FastAPI website and the Telegram bot background tasks in the same process, so the bot and dashboard start together.
+
+The compose file configures `REDIS_URL=redis://redis:6379/0` for the API service and persists Redis data in `redis_data`.
 
 3. Install the app:
 
@@ -35,6 +39,12 @@ alembic upgrade head
 
 ```bash
 uvicorn app.main:app --reload
+```
+
+6. Open the local dashboard at:
+
+```bash
+http://localhost:8000/dashboard/
 ```
 
 ## Safe Product Boundaries

@@ -35,8 +35,7 @@ class Settings(BaseSettings):
             # If it's something like postgresql+psycopg2://, we still want asyncpg for the async engine
             # We split by + and :// to replace the driver part
             v = re.sub(r"postgresql\+[^:]+://", "postgresql+asyncpg://", v)
-        elif v.startswith("sqlite:///"):
-            v = v.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
+        # SQLite is no longer supported; assume Postgres URLs for production
             
         # Critical Render Fix: If hostname is 'postgres', it's likely a docker-compose carryover
         if "@postgres:" in v or "@postgres/" in v:

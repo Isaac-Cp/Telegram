@@ -36,7 +36,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["app*"]
+include = ["app*", "slie*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

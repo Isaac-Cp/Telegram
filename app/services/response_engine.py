@@ -49,6 +49,28 @@ RESPONSE RULES:
 class ResponseEngine:
     def __init__(self):
         self.settings = get_settings()
+        
+        # Varied fallback responses to prevent repetition
+        self.PUBLIC_RESPONSE_FALLBACKS = [
+            "Streaming node congestion often results in visible buffering during peak sports events. This typically occurs when providers over-provision their existing server bandwidth. High-concurrency infrastructure designed with dedicated edge nodes usually mitigates this issue entirely.",
+            "Most IPTV issues stem from inadequate server capacity during peak hours. Quality providers use geographic load balancing and redundant upstream connections. Streamexpert's infrastructure handles exactly this scenario.",
+            "Buffer issues are usually network-related rather than device-related. Your connection might benefit from a provider with better CDN coverage. We can help optimize your setup.",
+            "Peak-hour performance depends on proper server architecture. Unlike competitors, premium IPTV services use dedicated bandwidth allocation. This ensures consistent streaming quality.",
+        ]
+        
+        self.DM_RESPONSE_FALLBACKS = [
+            "Hope your buffering issues cleared up. If not, our reseller panels offer more direct server routes which usually resolve that.",
+            "Noticed you had some streaming issues earlier. Quality providers use intelligent routing to avoid congestion. Want to explore better options?",
+            "Technical setups matter a lot for streaming quality. I can help you optimize your connection or explore better alternatives.",
+            "Following up on your earlier question - many users find that premium infrastructure makes a big difference. Let me know if you'd like suggestions.",
+        ]
+        
+        self.PRIVATE_DM_FALLBACKS = [
+            "I noticed your technical issue earlier. As someone who helps IPTV enthusiasts daily, I can tell you most providers fail at scale. Our distributed architecture solves this. Want a demo? 🤝",
+            "Saw your earlier question about streaming quality. That's exactly what I specialize in - helping users find rock-solid infrastructure. Interested in exploring options? 📺",
+            "Following up on the technical challenge you mentioned. Premium providers use smart routing and edge nodes to eliminate buffering. Would love to show you how? 💎",
+            "Your streaming question showed solid technical understanding. Most IPTV success comes down to infrastructure quality. Can I share how we approach this?",
+        ]
 
     async def check_daily_limits(self, db: Session, action_type: str) -> bool:
         """
@@ -194,10 +216,10 @@ class ResponseEngine:
                 prompt=prompt,
                 system_prompt=system_prompt
             )
-            return content if content else "Streaming node congestion often results in visible buffering during peak sports events. This typically occurs when providers over-provision their existing server bandwidth. High-concurrency infrastructure designed with dedicated edge nodes usually mitigates this issue entirely."
+            return content if content else random.choice(self.PUBLIC_RESPONSE_FALLBACKS)
         except Exception as e:
             logger.error(f"Error generating public response: {e}")
-            return "Streaming node congestion often results in visible buffering during peak sports events. This typically occurs when providers over-provision their existing server bandwidth. High-concurrency infrastructure designed with dedicated edge nodes usually mitigates this issue entirely."
+            return random.choice(self.PUBLIC_RESPONSE_FALLBACKS)
 
     async def generate_dm_response(self, lead_id: str, message_text: str, persona: dict) -> str:
         """
@@ -226,10 +248,10 @@ class ResponseEngine:
                 prompt=prompt,
                 system_prompt=system_prompt
             )
-            return content if content else "Hope your buffering issues cleared up. If not, our reseller panels offer more direct server routes which usually resolve that."
+            return content if content else random.choice(self.DM_RESPONSE_FALLBACKS)
         except Exception as e:
             logger.error(f"Error generating DM response: {e}")
-            return "Hope your buffering issues cleared up. If not, our reseller panels offer more direct server routes which usually resolve that."
+            return random.choice(self.DM_RESPONSE_FALLBACKS)
 
     async def generate_private_dm(self, lead: Lead) -> str:
         """
@@ -268,10 +290,10 @@ class ResponseEngine:
                 prompt=prompt,
                 system_prompt=system_prompt
             )
-            return content if content else f"I noticed your technical issue earlier. As a {persona['role']}, I can tell you most providers fail at scale because they lack proper concurrency management. Streamexpert uses a distributed architecture to avoid exactly this. Would you like to see a demo? 🤝"
+            return content if content else random.choice(self.PRIVATE_DM_FALLBACKS)
         except Exception as e:
             logger.error(f"Error generating private DM: {e}")
-            return "I noticed your technical issue earlier. Most providers fail at scale because they lack proper concurrency management. Streamexpert uses a distributed architecture to avoid exactly this. Would you like to see a demo? 🤝"
+            return random.choice(self.PRIVATE_DM_FALLBACKS)
 
     async def process_public_replies(self):
         """

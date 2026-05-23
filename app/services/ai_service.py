@@ -30,10 +30,13 @@ class AIService:
         if self.settings.gemini_api_key:
             genai.configure(api_key=self.settings.gemini_api_key)
 
-    async def chat_completion(self, prompt: str, system_prompt: str = None, response_format: str = "text") -> Optional[str]:
+    async def chat_completion(self, prompt: str, system_prompt: str = None, response_format: str = "text", timeout: int = 30) -> Optional[str]:
         """
         Executes a chat completion with fallback: OpenAI -> Groq -> Gemini
+        Includes timeout protection to prevent hanging.
         """
+        import asyncio
+        
         # 1. Try OpenAI
         if self.openai_client:
             try:
@@ -47,13 +50,18 @@ class AIService:
                 if response_format == "json_object":
                     extra_args["response_format"] = {"type": "json_object"}
 
-                response = await self.openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=messages,
-                    temperature=0.0,
-                    **extra_args
+                response = await asyncio.wait_for(
+                    self.openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=messages,
+                        temperature=0.8,
+                        **extra_args
+                    ),
+                    timeout=timeout
                 )
                 return response.choices[0].message.content.strip()
+            except asyncio.TimeoutError:
+                logger.warning(f"OpenAI timeout after {timeout}s")
             except Exception as e:
                 logger.error(f"OpenAI completion failed: {e}")
 
@@ -70,13 +78,18 @@ class AIService:
                 if response_format == "json_object":
                     extra_args["response_format"] = {"type": "json_object"}
 
-                response = await self.groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=messages,
-                    temperature=0.0,
-                    **extra_args
+                response = await asyncio.wait_for(
+                    self.groq_client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=messages,
+                        temperature=0.8,
+                        **extra_args
+                    ),
+                    timeout=timeout
                 )
                 return response.choices[0].message.content.strip()
+            except asyncio.TimeoutError:
+                logger.warning(f"Groq timeout after {timeout}s")
             except Exception as e:
                 logger.error(f"Groq completion failed: {e}")
 
@@ -93,14 +106,20 @@ class AIService:
                 if response_format == "json_object":
                     generation_config["response_mime_type"] = "application/json"
 
-                response = model.generate_content(
-                    full_prompt,
-                    generation_config=genai.types.GenerationConfig(
-                        temperature=0.0,
-                        **generation_config
-                    )
+                response = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        model.generate_content,
+                        full_prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=0.8,
+                            **generation_config
+                        )
+                    ),
+                    timeout=timeout
                 )
                 return response.text.strip()
+            except asyncio.TimeoutError:
+                logger.warning(f"Gemini timeout after {timeout}s")
             except Exception as e:
                 logger.error(f"Gemini completion failed: {e}")
 

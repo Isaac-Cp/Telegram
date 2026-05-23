@@ -1,40 +1,54 @@
-version: "3.9"
-
 services:
   api:
     build: .
     restart: always
     env_file:
       - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/slie_db
     ports:
       - "8000:8000"
     volumes:
       - ./app:/app/app
+      - ./slie:/app/slie
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     restart: always
     environment:
-      POSTGRES_DB: streamexpert_support
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: slie_db
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_v2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
-    image: redis:7
+    image: redis:8.2-alpine
     restart: always
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redis_data_v2:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_data:
-  redis_data:
+  redis_data_v2:
+  postgres_data_v2:
 

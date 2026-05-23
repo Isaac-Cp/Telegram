@@ -15,6 +15,7 @@ from app.jobs.tasks import (
     slie_private_dms,
     slie_reddit_discovery,
     slie_power_upgrades,
+    cleanup_database,
 )
 
 settings = get_settings()
@@ -37,4 +38,7 @@ scheduler.add_job(slie_public_replies, "interval", minutes=2, id="slie_public_re
 scheduler.add_job(slie_private_dms, "interval", minutes=2, id="slie_private_dms", replace_existing=True)
 scheduler.add_job(slie_reddit_discovery, "interval", hours=1, id="slie_reddit_discovery", replace_existing=True)
 scheduler.add_job(slie_power_upgrades, "interval", minutes=30, id="slie_power_upgrades", replace_existing=True)
+
+# Database cleanup job
+scheduler.add_job(cleanup_database, "cron", hour=3, minute=0, id="database_cleanup", replace_existing=True)
 

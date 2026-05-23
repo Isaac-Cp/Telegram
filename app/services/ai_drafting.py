@@ -23,12 +23,12 @@ def draft_support_reply(user_message: str) -> str:
     if client is None:
         return "Thanks for reaching out. We have your request logged and a support agent can review the issue and reply shortly."
 
-    completion = client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
             {"role": "system", "content": SUPPORT_DRAFT_SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ],
     )
-    return completion.output_text
+    return completion.choices[0].message.content
 

@@ -1,4 +1,5 @@
 import logging
+import random
 from datetime import datetime
 from typing import List, Optional
 
@@ -16,6 +17,14 @@ logger = logging.getLogger(__name__)
 
 SPAM_PHRASES = [
     "buy now", "cheap iptv", "promo", "contact admin"
+]
+
+# Varied fallback responses for AI reply generation to prevent all messages looking the same
+AI_REPLY_FALLBACKS = [
+    "That's a valid technical concern. As a technical specialist, I'd like to provide a detailed explanation of how our infrastructure handles that. Would you like a trial to test our compatibility directly? 🤝",
+    "Great question about the technical side of things. Most device compatibility issues are resolved through our custom panels. Shall we set up a quick test for you? 📺",
+    "Your question shows good technical thinking. The infrastructure behind quality IPTV is often overlooked. I'd love to explain how we approach this - interested? 💎",
+    "That's exactly the kind of challenge I help users solve daily. Our setup process is designed to handle those scenarios seamlessly. Want to explore how it works?",
 ]
 
 from app.services.response_engine import response_engine, AIDEN_SYSTEM_PROMPT
@@ -82,10 +91,10 @@ class MessageScraper:
                 prompt=prompt,
                 system_prompt=system_prompt
             )
-            return content if content else f"That's a valid technical concern. As a {persona['role']}, I'd like to provide a detailed explanation of how our infrastructure handles that. Would you like a trial to test our compatibility directly? 🤝"
+            return content if content else random.choice(AI_REPLY_FALLBACKS)
         except Exception as e:
             logger.error(f"Error generating AI reply: {e}")
-            return "I'm reviewing the technical specifications for that request. Most device compatibility issues are resolved through our custom panels. Shall we set up a quick test for you? 📺"
+            return random.choice(AI_REPLY_FALLBACKS)
 
     def filter_message_noise(self, message) -> bool:
         """

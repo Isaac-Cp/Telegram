@@ -9,24 +9,24 @@ from slie.core.config import get_settings
 
 settings = get_settings()
 
-# Production-ready engine configuration
-if settings.database_url.startswith("sqlite"):
-    from sqlalchemy.pool import NullPool
-    engine = create_async_engine(
-        settings.sqlalchemy_database_url,
-        echo=False,
-        poolclass=NullPool
-    )
-else:
-    engine = create_async_engine(
-        settings.sqlalchemy_database_url,
-        echo=False,
-        pool_size=20,
-        max_overflow=100,
-        pool_timeout=120,
-        pool_recycle=1800,
-        pool_pre_ping=True
-    )
+# Production-ready engine configuration (PostgreSQL/Neon)
+async_engine_args = {
+    "echo": False,
+    "pool_size": 20,
+    "max_overflow": 100,
+    "pool_timeout": 120,
+    "pool_recycle": 1800,
+    "pool_pre_ping": True,
+}
+
+if "postgresql" in settings.sqlalchemy_database_url:
+    import ssl
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    async_engine_args["connect_args"] = {"ssl": ssl_context}
+
+engine = create_async_engine(settings.sqlalchemy_database_url, **async_engine_args)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 def utcnow() -> datetime:

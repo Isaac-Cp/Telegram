@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from sqlalchemy import func
 
 from app.db.base import utcnow
-from app.db.session import SessionLocal
+from app.db.session import AsyncSessionLocal, SessionLocal
 from app.models.activity_event import ActivityEvent
 from app.models.consent import Consent
 from app.models.contact import Contact
@@ -33,6 +33,7 @@ from app.services.reddit_discovery import reddit_lead_discovery
 from app.services.power_upgrades import power_upgrades_service
 from app.services.group_discovery.discovery_engine import discovery_engine
 from app.services.ltv_engine import ltv_engine
+from app.services.database_cleanup import DatabaseCleanupService
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +90,17 @@ async def slie_reddit_discovery():
     """Scan Reddit for IPTV complaints."""
     logger.info("Running SLIE Reddit discovery task...")
     await reddit_lead_discovery.discover_reddit_leads()
+
+async def cleanup_database():
+    """Run periodic database retention cleanup."""
+    logger.info("Running periodic database cleanup task...")
+    cleanup_service = DatabaseCleanupService()
+    async with AsyncSessionLocal() as session:
+        try:
+            stats = await cleanup_service.run_full_cleanup(session)
+            logger.info("Database cleanup stats: %s", stats)
+        except Exception as e:
+            logger.error("Database cleanup failed: %s", e)
 
 
 def _has_active_consent(db, contact_id: str, scope: ConsentScope) -> bool:

@@ -35,6 +35,9 @@ class AccountHealth(BaseModel):
     dms_used: int
     replies_used: int
     joins_used: int
+    dms_left: int = 0
+    replies_left: int = 0
+    joins_left: int = 0
 
 class DashboardSummary(BaseModel):
     contacts_total: int
@@ -47,7 +50,9 @@ class DashboardSummary(BaseModel):
     
     # SLIE Metrics
     groups_joined: int
+    messages_analyzed: int
     leads_detected_total: int
+    conversions: int
     leads_detected_today: int
     public_replies_sent: int
     dms_sent: int

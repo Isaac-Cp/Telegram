@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models.group import Group
 from app.models.lead import Lead
+from app.models.message import Message
 from app.services.telegram_client import telegram_client_manager
 from app.services.lead_scoring import lead_scoring_engine
 

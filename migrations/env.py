@@ -45,9 +45,15 @@ def do_run_migrations(connection):
 
 
 async def run_migrations_online() -> None:
+    # Get the database URL and convert from psycopg to asyncpg format with SSL
+    db_url = config.get_main_option("sqlalchemy.url")
+    db_url = db_url.replace("postgresql+psycopg://", "postgresql+asyncpg://")
+    db_url = db_url.replace("?sslmode=require", "?ssl=true")
+    
     connectable = create_async_engine(
-        config.get_main_option("sqlalchemy.url"),
+        db_url,
         poolclass=pool.NullPool,
+        connect_args={"ssl": True} if "ssl=" in db_url else {},
     )
 
     async with connectable.connect() as connection:
