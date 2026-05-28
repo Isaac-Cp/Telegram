@@ -40,6 +40,10 @@ class DashboardSettingsPayload(BaseModel):
     search_tags: list[str] = Field(default_factory=list)
     brand_tags: list[str] = Field(default_factory=list)
     watch_terms: list[str] = Field(default_factory=list)
+    lead_score_threshold: int = 70
+    daily_dm_limit: int = 50
+    auto_join_groups: bool = False
+    telegram_outreach_enabled: bool = False
     notes: str = ""
 
 
@@ -49,6 +53,10 @@ def _default_settings() -> dict[str, Any]:
         "search_tags": ["buffering", "refund", "cheap iptv", "best provider"],
         "brand_tags": ["Streamexpert", "sales agent", "support crm"],
         "watch_terms": ["downtime", "ban", "competitor", "migration"],
+        "lead_score_threshold": 70,
+        "daily_dm_limit": 50,
+        "auto_join_groups": False,
+        "telegram_outreach_enabled": False,
         "notes": "Use this panel to keep dashboard targeting terms organized.",
     }
 
@@ -83,6 +91,10 @@ def _load_settings() -> dict[str, Any]:
         "search_tags": _normalize_tags(data.get("search_tags", base["search_tags"])),
         "brand_tags": _normalize_tags(data.get("brand_tags", base["brand_tags"])),
         "watch_terms": _normalize_tags(data.get("watch_terms", base["watch_terms"])),
+        "lead_score_threshold": int(data.get("lead_score_threshold", base["lead_score_threshold"]) or 0),
+        "daily_dm_limit": int(data.get("daily_dm_limit", base["daily_dm_limit"]) or 0),
+        "auto_join_groups": bool(data.get("auto_join_groups", base["auto_join_groups"])),
+        "telegram_outreach_enabled": bool(data.get("telegram_outreach_enabled", base["telegram_outreach_enabled"])),
         "notes": str(data.get("notes", base["notes"])).strip(),
     }
 
@@ -94,6 +106,10 @@ def _save_settings(payload: DashboardSettingsPayload) -> dict[str, Any]:
         "search_tags": _normalize_tags(payload.search_tags),
         "brand_tags": _normalize_tags(payload.brand_tags),
         "watch_terms": _normalize_tags(payload.watch_terms),
+        "lead_score_threshold": max(0, min(100, int(payload.lead_score_threshold))),
+        "daily_dm_limit": max(0, int(payload.daily_dm_limit)),
+        "auto_join_groups": bool(payload.auto_join_groups),
+        "telegram_outreach_enabled": bool(payload.telegram_outreach_enabled),
         "notes": payload.notes.strip(),
     }
     SETTINGS_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -396,6 +412,138 @@ def _build_dashboard_html(active_page: str) -> str:
         .tag-pill button:hover {
             color: white;
         }
+        .runtime-flow {
+            position: relative;
+            display: grid;
+            gap: 0.85rem;
+        }
+        .runtime-flow::before {
+            content: "";
+            position: absolute;
+            left: 1.35rem;
+            top: 2.2rem;
+            bottom: 2.2rem;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(96, 165, 250, 0.7), rgba(45, 212, 191, 0.4), rgba(251, 191, 36, 0.38));
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.32);
+        }
+        .runtime-node {
+            position: relative;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.9rem;
+            align-items: center;
+            border: 1px solid rgba(96, 165, 250, 0.16);
+            background:
+                radial-gradient(circle at 12% 0%, rgba(96, 165, 250, 0.18), transparent 34%),
+                linear-gradient(135deg, rgba(15, 35, 72, 0.88), rgba(5, 13, 30, 0.94));
+            border-radius: 1.35rem;
+            padding: 0.95rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 28px rgba(2, 6, 23, 0.22);
+        }
+        .runtime-node__icon {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            height: 2.7rem;
+            width: 2.7rem;
+            place-items: center;
+            border-radius: 1rem;
+            background: rgba(96, 165, 250, 0.13);
+            border: 1px solid rgba(147, 197, 253, 0.2);
+            color: #bfdbfe;
+        }
+        .runtime-node__status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-radius: 999px;
+            padding: 0.35rem 0.65rem;
+            background: rgba(15, 23, 42, 0.72);
+            color: #cbd5e1;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+        .runtime-node__status::before {
+            content: "";
+            height: 0.45rem;
+            width: 0.45rem;
+            border-radius: 999px;
+            background: #60a5fa;
+            box-shadow: 0 0 12px rgba(96, 165, 250, 0.75);
+        }
+        .runtime-node.is-active .runtime-node__status,
+        .runtime-node.is-healthy .runtime-node__status {
+            color: #86efac;
+        }
+        .runtime-node.is-active .runtime-node__status::before,
+        .runtime-node.is-healthy .runtime-node__status::before {
+            background: #34d399;
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.75);
+        }
+        .runtime-node.is-warning .runtime-node__status {
+            color: #fde68a;
+        }
+        .runtime-node.is-warning .runtime-node__status::before {
+            background: #fbbf24;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.75);
+        }
+        .runtime-node.is-blocked .runtime-node__status,
+        .runtime-node.is-offline .runtime-node__status {
+            color: #fda4af;
+        }
+        .runtime-node.is-blocked .runtime-node__status::before,
+        .runtime-node.is-offline .runtime-node__status::before {
+            background: #fb7185;
+            box-shadow: 0 0 12px rgba(251, 113, 133, 0.75);
+        }
+        .runtime-capacity {
+            height: 0.45rem;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.78);
+        }
+        .runtime-capacity span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #60a5fa, #22d3ee, #34d399);
+            box-shadow: 0 0 16px rgba(34, 211, 238, 0.35);
+        }
+        .settings-control-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        }
+        .settings-field {
+            border: 1px solid rgba(96, 165, 250, 0.15);
+            background: rgba(15, 35, 72, 0.62);
+            border-radius: 1.35rem;
+            padding: 1rem;
+        }
+        .settings-field input[type="number"] {
+            width: 100%;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(2, 6, 23, 0.46);
+            border-radius: 1rem;
+            color: #fff;
+            margin-top: 0.65rem;
+            outline: none;
+            padding: 0.75rem 0.85rem;
+        }
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .settings-toggle input {
+            accent-color: #38bdf8;
+            height: 1.15rem;
+            width: 1.15rem;
+        }
         .stat-flash {
             text-shadow: 0 0 24px rgba(96, 165, 250, 0.35);
         }
@@ -640,19 +788,58 @@ def _build_dashboard_html(active_page: str) -> str:
 
                 <article class="space-y-4">
                     <div class="shell-card rounded-3xl p-5 sm:p-6">
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between gap-4">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Execution safety</p>
-                                <h3 class="mt-1 text-lg font-bold text-white">Account health</h3>
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Runtime map</p>
+                                <h3 class="mt-1 text-lg font-bold text-white">Backend connectivity</h3>
                             </div>
-                            <span class="rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-semibold text-emerald-300">Protected</span>
+                            <span id="runtime-overall-status" class="rounded-full bg-blue-500/12 px-3 py-1 text-xs font-semibold text-blue-200">Syncing</span>
                         </div>
-                        <div id="account-health" class="mt-5 space-y-4"></div>
-                    </div>
-                    <div class="metric-card rounded-[26px] p-5">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Operations note</p>
-                        <h3 class="mt-3 text-lg font-bold text-white">Keep this page for fast scanning</h3>
-                        <p class="mt-3 text-sm leading-6 text-slate-400">Breaking the dashboard into dedicated pages gives you more room for operational detail without crowding the overview.</p>
+                        <div class="mt-5 runtime-flow">
+                            <div id="runtime-scheduler-node" class="runtime-node">
+                                <div class="runtime-node__icon">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="text-sm font-semibold text-white">Scheduler</p>
+                                        <span id="runtime-scheduler-status" class="runtime-node__status">Checking</span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-500">Outbound automation readiness</p>
+                                </div>
+                            </div>
+                            <div id="runtime-telegram-node" class="runtime-node">
+                                <div class="runtime-node__icon">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10l18-7-7 18-3-7-8-4z" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="text-sm font-semibold text-white">Telegram</p>
+                                        <span id="runtime-telegram-status" class="runtime-node__status">Checking</span>
+                                    </div>
+                                    <p id="runtime-account-count" class="mt-1 text-xs text-slate-500">0 accounts connected</p>
+                                </div>
+                            </div>
+                            <div id="runtime-capacity-node" class="runtime-node">
+                                <div class="runtime-node__icon">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19V5m5 14V9m5 10V3m5 16v-7" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="text-sm font-semibold text-white">Daily capacity</p>
+                                        <span id="runtime-capacity-status" class="runtime-node__status">0%</span>
+                                    </div>
+                                    <div class="mt-3 runtime-capacity"><span id="runtime-capacity-bar" style="width:0%"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="account-health" class="mt-5 grid gap-3"></div>
                     </div>
                 </article>
             </section>
@@ -909,6 +1096,40 @@ def _build_dashboard_html(active_page: str) -> str:
                             </div>
 
                             <div class="rounded-3xl border border-white/10 bg-slate-900/70 p-5">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-white">Operational controls</p>
+                                        <p class="mt-1 text-xs text-slate-500">Saved to the dashboard settings store for your live code to read.</p>
+                                    </div>
+                                    <span class="rounded-full bg-blue-500/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-200">Live config</span>
+                                </div>
+                                <div class="settings-control-grid mt-5">
+                                    <label class="settings-field">
+                                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Lead score threshold</span>
+                                        <input id="lead_score_threshold" type="number" min="0" max="100" step="1">
+                                    </label>
+                                    <label class="settings-field">
+                                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Daily DM limit</span>
+                                        <input id="daily_dm_limit" type="number" min="0" step="1">
+                                    </label>
+                                    <label class="settings-field settings-toggle">
+                                        <span>
+                                            <span class="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Auto join groups</span>
+                                            <span class="mt-1 block text-xs text-slate-500">Allow discovery automation to join matched groups.</span>
+                                        </span>
+                                        <input id="auto_join_groups" type="checkbox">
+                                    </label>
+                                    <label class="settings-field settings-toggle">
+                                        <span>
+                                            <span class="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Telegram outreach</span>
+                                            <span class="mt-1 block text-xs text-slate-500">Enable outbound Telegram messaging workflows.</span>
+                                        </span>
+                                        <input id="telegram_outreach_enabled" type="checkbox">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="rounded-3xl border border-white/10 bg-slate-900/70 p-5">
                                 <label class="block">
                                     <span class="mb-2 block text-sm font-medium text-white">Notes</span>
                                     <textarea id="settings-notes" class="min-h-[160px] w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none focus:border-blue-400"></textarea>
@@ -1038,8 +1259,42 @@ def _build_dashboard_html(active_page: str) -> str:
         function renderHealth(items) {
             const host = document.getElementById('account-health');
             if (!host) return;
+            const schedulerNode = document.getElementById('runtime-scheduler-node');
+            const telegramNode = document.getElementById('runtime-telegram-node');
+            const capacityNode = document.getElementById('runtime-capacity-node');
+            const schedulerStatus = document.getElementById('runtime-scheduler-status');
+            const telegramStatus = document.getElementById('runtime-telegram-status');
+            const capacityStatus = document.getElementById('runtime-capacity-status');
+            const capacityBar = document.getElementById('runtime-capacity-bar');
+            const accountCount = document.getElementById('runtime-account-count');
+            const overall = document.getElementById('runtime-overall-status');
+            const activeAccounts = items.filter((item) => item.status === 'active').length;
+            const totalReplyRoom = items.reduce((sum, item) => sum + Number(item.replies_left || 0), 0);
+            const totalDmRoom = items.reduce((sum, item) => sum + Number(item.dms_left || 0), 0);
+            const capacity = Math.max(0, Math.min(100, ((totalReplyRoom / Math.max(items.length * 5, 1)) * 50) + ((totalDmRoom / Math.max(items.length * 10, 1)) * 50)));
+            const setNodeState = (node, state) => {
+                if (!node) return;
+                node.classList.remove('is-active', 'is-healthy', 'is-warning', 'is-blocked', 'is-offline');
+                node.classList.add(state);
+            };
+
+            if (schedulerStatus) schedulerStatus.textContent = items.length ? 'Ready' : 'Waiting';
+            if (telegramStatus) telegramStatus.textContent = activeAccounts ? `${activeAccounts} active` : 'No accounts';
+            if (capacityStatus) capacityStatus.textContent = `${Math.round(capacity)}%`;
+            if (capacityBar) capacityBar.style.width = `${capacity}%`;
+            if (accountCount) accountCount.textContent = `${items.length} account${items.length === 1 ? '' : 's'} connected`;
+            if (overall) {
+                overall.textContent = activeAccounts ? 'Operational' : 'Needs accounts';
+                overall.className = activeAccounts
+                    ? 'rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-semibold text-emerald-300'
+                    : 'rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-200';
+            }
+            setNodeState(schedulerNode, items.length ? 'is-active' : 'is-warning');
+            setNodeState(telegramNode, activeAccounts ? 'is-healthy' : 'is-warning');
+            setNodeState(capacityNode, capacity > 60 ? 'is-healthy' : capacity > 0 ? 'is-warning' : 'is-blocked');
+
             if (!items.length) {
-                host.innerHTML = '<div class="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-500">No Telegram account records available yet.</div>';
+                host.innerHTML = '<div class="rounded-2xl border border-amber-400/20 bg-amber-500/8 p-4 text-sm text-amber-100">Connect Telegram accounts to activate live runtime capacity.</div>';
                 return;
             }
 
@@ -1055,7 +1310,7 @@ def _build_dashboard_html(active_page: str) -> str:
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <p class="text-sm font-semibold text-white">${item.phone || 'Unknown account'}</p>
-                                <p class="mt-1 text-xs text-slate-500">Operational limits and daily room</p>
+                                <p class="mt-1 text-xs text-slate-500">Replies ${item.replies_left ?? 0}/5 · DMs ${item.dms_left ?? 0}/10</p>
                             </div>
                             <span class="${statusClass} rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">${item.status || 'unknown'}</span>
                         </div>
@@ -1389,6 +1644,14 @@ def _build_dashboard_html(active_page: str) -> str:
             });
             const notes = document.getElementById('settings-notes');
             if (notes) notes.value = settings.notes || '';
+            const leadThreshold = document.getElementById('lead_score_threshold');
+            const dailyLimit = document.getElementById('daily_dm_limit');
+            const autoJoin = document.getElementById('auto_join_groups');
+            const outreachEnabled = document.getElementById('telegram_outreach_enabled');
+            if (leadThreshold) leadThreshold.value = settings.lead_score_threshold ?? 70;
+            if (dailyLimit) dailyLimit.value = settings.daily_dm_limit ?? 50;
+            if (autoJoin) autoJoin.checked = Boolean(settings.auto_join_groups);
+            if (outreachEnabled) outreachEnabled.checked = Boolean(settings.telegram_outreach_enabled);
 
             const targetCount = document.getElementById('settings-target-count');
             const searchCount = document.getElementById('settings-search-count');
@@ -1404,6 +1667,9 @@ def _build_dashboard_html(active_page: str) -> str:
                     <div><span class="text-slate-500">Search tags:</span> ${(settings.search_tags || []).length}</div>
                     <div><span class="text-slate-500">Brand tags:</span> ${(settings.brand_tags || []).length}</div>
                     <div><span class="text-slate-500">Watch terms:</span> ${(settings.watch_terms || []).length}</div>
+                    <div><span class="text-slate-500">Lead threshold:</span> ${settings.lead_score_threshold ?? 70}</div>
+                    <div><span class="text-slate-500">Daily DM limit:</span> ${settings.daily_dm_limit ?? 50}</div>
+                    <div><span class="text-slate-500">Automation:</span> ${settings.telegram_outreach_enabled ? 'Outreach enabled' : 'Outreach disabled'}</div>
                 `;
             }
         }
@@ -1414,6 +1680,10 @@ def _build_dashboard_html(active_page: str) -> str:
                 search_tags: dashboardSettings?.search_tags || [],
                 brand_tags: dashboardSettings?.brand_tags || [],
                 watch_terms: dashboardSettings?.watch_terms || [],
+                lead_score_threshold: Number(document.getElementById('lead_score_threshold')?.value || 0),
+                daily_dm_limit: Number(document.getElementById('daily_dm_limit')?.value || 0),
+                auto_join_groups: Boolean(document.getElementById('auto_join_groups')?.checked),
+                telegram_outreach_enabled: Boolean(document.getElementById('telegram_outreach_enabled')?.checked),
                 notes: document.getElementById('settings-notes')?.value || ''
             };
         }
