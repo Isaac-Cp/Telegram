@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SLIE live dashboard for outreach, leads, groups, activity, targeting, and runtime settings.">
+    <title>SLIE Dashboard</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/dashboard/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to dashboard</a>
+    <div class="liquid-bg" aria-hidden="true"></div>
+
+    <div class="app-shell">
+        <aside class="sidebar" aria-label="Dashboard navigation">
+            <a class="brand" href="/api/v1/dashboard/overview" aria-label="SLIE dashboard overview">
+                <span class="brand-mark">S</span>
+                <span>
+                    <strong>SLIE</strong>
+                    <small>Revenue Command</small>
+                </span>
+            </a>
+
+            <nav class="side-nav">
+                <a data-nav="overview" href="/api/v1/dashboard/overview"><span>O</span>Overview</a>
+                <a data-nav="activity" href="/api/v1/dashboard/activity"><span>A</span>Activity</a>
+                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline"><span>P</span>Pipeline</a>
+                <a data-nav="watch" href="/api/v1/dashboard/watch"><span>W</span>Watch</a>
+                <a data-nav="targeting" href="/api/v1/dashboard/targeting"><span>T</span>Targeting</a>
+                <a data-nav="settings" href="/api/v1/dashboard/settings"><span>S</span>Settings</a>
+            </nav>
+
+            <div class="backend-pill">
+                <span></span>
+                Live backend link
+            </div>
+        </aside>
+
+        <header class="mobile-nav" aria-label="Mobile dashboard navigation">
+            <a class="brand brand--mobile" href="/api/v1/dashboard/overview">
+                <span class="brand-mark">S</span>
+                <span>
+                    <strong>SLIE</strong>
+                    <small id="mobile-page-label">Overview</small>
+                </span>
+            </a>
+            <nav class="mobile-icon-nav" aria-label="Primary pages">
+                <a data-nav="overview" href="/api/v1/dashboard/overview" aria-label="Overview" title="Overview">O</a>
+                <a data-nav="activity" href="/api/v1/dashboard/activity" aria-label="Activity" title="Activity">A</a>
+                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline" aria-label="Pipeline" title="Pipeline">P</a>
+                <a data-nav="watch" href="/api/v1/dashboard/watch" aria-label="Watch" title="Watch">W</a>
+                <a data-nav="settings" href="/api/v1/dashboard/settings" aria-label="Settings" title="Settings">S</a>
+            </nav>
+        </header>
+
+        <main id="main-content" class="main-content">
+            <section class="hero card">
+                <div>
+                    <p class="eyebrow" id="page-kicker">Dashboard</p>
+                    <h1 id="page-title">Dashboard overview</h1>
+                </div>
+                <div class="hero-metrics" aria-label="Live overview metrics">
+                    <article><span>DMs</span><strong data-metric="dms">0</strong></article>
+                    <article><span>Replies</span><strong data-metric="replies">0</strong></article>
+                    <article><span>Conversions</span><strong data-metric="conversions">0</strong></article>
+                </div>
+            </section>
+
+            <section class="page page-overview" data-page="overview">
+                <section class="kpi-grid" id="kpiGrid" aria-label="Live KPI cards">
+                    <article class="kpi-card kpi-card--blue">
+                        <span>Total DMs</span>
+                        <strong data-kpi="totalDms">0</strong>
+                        <small data-kpi-note="totalDms">Live outreach volume</small>
+                    </article>
+                    <article class="kpi-card kpi-card--cyan">
+                        <span>Lead responses</span>
+                        <strong data-kpi="responses">0</strong>
+                        <small data-kpi-note="responses">Replies and inbound signals</small>
+                    </article>
+                    <article class="kpi-card kpi-card--gold">
+                        <span>Success rate</span>
+                        <strong data-kpi="successRate">0.0%</strong>
+                        <small data-kpi-note="successRate">Conversions from detected leads</small>
+                    </article>
+                    <article class="kpi-card kpi-card--violet">
+                        <span>Active leads</span>
+                        <strong data-kpi="activeLeads">0</strong>
+                        <small data-kpi-note="activeLeads">Current lead pipeline</small>
+                    </article>
+                    <article class="kpi-card kpi-card--green">
+                        <span>Messages analyzed</span>
+                        <strong data-kpi="messages">0</strong>
+                        <small data-kpi-note="messages">Total scanned messages</small>
+                    </article>
+                    <article class="kpi-card kpi-card--ice">
+                        <span>Groups joined</span>
+                        <strong data-kpi="groups">0</strong>
+                        <small data-kpi-note="groups">Live joined groups</small>
+                    </article>
+                </section>
+
+                <div class="dashboard-grid dashboard-grid--two">
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Outreach performance</p>
+                                <h2>DMs, replies, conversions</h2>
+                            </div>
+                            <span class="status-pill">Live</span>
+                        </div>
+                        <div class="chart-wrap"><canvas id="outreachChart"></canvas></div>
+                    </article>
+
+                    <article class="card chart-card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Group portfolio</p>
+                                <h2>Joined and lead quality</h2>
+                            </div>
+                            <span class="status-pill">Doughnut</span>
+                        </div>
+                        <div class="chart-wrap chart-wrap--donut"><canvas id="groupsChart"></canvas></div>
+                        <div class="legend-grid" id="groupsLegend"></div>
+                    </article>
+                </div>
+
+                <div class="dashboard-grid dashboard-grid--two">
+                    <article class="card chart-card chart-card--compact">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Success rate</p>
+                                <h2>Leads to wins</h2>
+                            </div>
+                            <span class="status-pill">Pie</span>
+                        </div>
+                        <div class="chart-wrap chart-wrap--donut"><canvas id="successChart"></canvas></div>
+                        <div class="legend-grid" id="successLegend"></div>
+                    </article>
+
+                    <article class="card chart-card chart-card--compact">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Lead quality</p>
+                                <h2>High-value and reseller split</h2>
+                            </div>
+                            <span class="status-pill">Live</span>
+                        </div>
+                        <div class="chart-wrap"><canvas id="leadQualityChart"></canvas></div>
+                    </article>
+                </div>
+
+                <article class="card">
+                    <div class="card-head">
+                        <div>
+                            <p class="eyebrow">AI persona flow</p>
+                            <h2>Persona to lead outcome</h2>
+                        </div>
+                        <span class="status-pill">Sankey</span>
+                    </div>
+                    <div class="sankey" id="personaSankey" aria-label="AI persona lead flow"></div>
+                </article>
+            </section>
+
+            <section class="page page-activity" data-page="activity" hidden>
+                <div class="dashboard-grid dashboard-grid--two">
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Runtime</p>
+                                <h2>System status</h2>
+                            </div>
+                            <span class="status-pill" id="runtimeBadge">Checking</span>
+                        </div>
+                        <div class="status-map" id="runtimeMap"></div>
+                    </article>
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Activity</p>
+                                <h2>Latest events</h2>
+                            </div>
+                            <span class="status-pill">Live</span>
+                        </div>
+                        <div class="timeline" id="activityTimeline"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="page page-pipeline" data-page="pipeline" hidden>
+                <div class="dashboard-grid dashboard-grid--two">
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Leads</p>
+                                <h2>Priority queue</h2>
+                            </div>
+                            <span class="status-pill" id="leadCount">0 leads</span>
+                        </div>
+                        <div class="table-list" id="leadList"></div>
+                    </article>
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Groups</p>
+                                <h2>Highest yield channels</h2>
+                            </div>
+                            <span class="status-pill" id="groupCount">0 groups</span>
+                        </div>
+                        <div class="table-list" id="groupList"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="page page-watch" data-page="watch" hidden>
+                <div class="dashboard-grid dashboard-grid--two">
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Market watch</p>
+                                <h2>Competitor signals</h2>
+                            </div>
+                            <span class="status-pill">Live intel</span>
+                        </div>
+                        <div class="table-list" id="competitorList"></div>
+                    </article>
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Account health</p>
+                                <h2>Telegram capacity</h2>
+                            </div>
+                            <span class="status-pill" id="accountCount">0 accounts</span>
+                        </div>
+                        <div class="table-list" id="accountList"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="page page-targeting" data-page="targeting" hidden>
+                <div class="dashboard-grid dashboard-grid--two">
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Targeting</p>
+                                <h2>Search tags</h2>
+                            </div>
+                            <span class="status-pill">Editable</span>
+                        </div>
+                        <div class="tag-cloud" id="searchTags"></div>
+                    </article>
+                    <article class="card">
+                        <div class="card-head">
+                            <div>
+                                <p class="eyebrow">Watch terms</p>
+                                <h2>Lead triggers</h2>
+                            </div>
+                            <span class="status-pill">Live</span>
+                        </div>
+                        <div class="tag-cloud" id="watchTerms"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="page page-settings" data-page="settings" hidden>
+                <article class="card settings-card">
+                    <div class="card-head">
+                        <div>
+                            <p class="eyebrow">Settings</p>
+                            <h2>Dashboard controls</h2>
+                        </div>
+                        <span class="status-pill">Protected</span>
+                    </div>
+                    <form id="loginForm" class="settings-login">
+                        <label>
+                            Password
+                            <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Enter settings password">
+                        </label>
+                        <button type="submit">Unlock settings</button>
+                    </form>
+                    <form id="settingsForm" class="settings-form" hidden>
+                        <label>Search tags<textarea id="searchInput" rows="3"></textarea></label>
+                        <label>Watch terms<textarea id="watchInput" rows="3"></textarea></label>
+                        <label>Daily DM limit<input id="dmLimitInput" type="number" min="0"></label>
+                        <label>Lead score threshold<input id="thresholdInput" type="number" min="0" max="100"></label>
+                        <label class="switch-row"><input id="autoJoinInput" type="checkbox"> Auto join groups</label>
+                        <label class="switch-row"><input id="telegramInput" type="checkbox"> Telegram outreach</label>
+                        <label>Notes<textarea id="notesInput" rows="4"></textarea></label>
+                        <button type="submit">Save settings</button>
+                    </form>
+                    <p class="form-message" id="settingsMessage" aria-live="polite"></p>
+                </article>
+            </section>
+
+            <section class="page page-styleguide" data-page="styleguide" hidden>
+                <article class="card">
+                    <div class="card-head">
+                        <div>
+                            <p class="eyebrow">Styleguide</p>
+                            <h2>Interface preview</h2>
+                        </div>
+                    </div>
+                    <div class="tag-cloud">
+                        <span>Liquid glass</span>
+                        <span>Royal blue</span>
+                        <span>Live data</span>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const ACTIVE_PAGE = "__ACTIVE_PAGE__";
+        const API = "/api/v1/dashboard";
+        const pages = {
+            overview: ["Dashboard overview", "Overview"],
+            activity: ["Operations activity", "Activity"],
+            pipeline: ["Pipeline analytics", "Pipeline"],
+            watch: ["Watch center", "Watch"],
+            targeting: ["Targeting control", "Targeting"],
+            settings: ["Dashboard settings", "Settings"],
+            styleguide: ["Styleguide", "Styleguide"],
+        };
+        const state = {
+            summary: {},
+            stats: {},
+            leads: [],
+            groups: [],
+            conversions: [],
+            settings: {},
+            charts: {},
+            token: localStorage.getItem("slie_dashboard_token") || "",
+        };
+
+        function safeNumber(value) {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        async function fetchJson(url, fallback, options = {}) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok) return fallback;
+                return await res.json();
+            } catch (error) {
+                console.warn("Dashboard request failed", url, error);
+                return fallback;
+            }
+        }
+
+        function setActivePage() {
+            const page = pages[ACTIVE_PAGE] ? ACTIVE_PAGE : "overview";
+            document.querySelectorAll("[data-page]").forEach((section) => {
+                section.hidden = section.dataset.page !== page;
+            });
+            document.querySelectorAll("[data-nav]").forEach((link) => {
+                link.classList.toggle("is-active", link.dataset.nav === page);
+            });
+            document.title = `${pages[page][0]} | SLIE`;
+            document.getElementById("page-title").textContent = pages[page][0];
+            document.getElementById("page-kicker").textContent = pages[page][1];
+            document.getElementById("mobile-page-label").textContent = pages[page][1];
+        }
+
+        function setMetric(name, value) {
+            const el = document.querySelector(`[data-metric="${name}"]`);
+            if (el) el.textContent = value;
+        }
+
+        function renderHero() {
+            const outbound = safeNumber(state.summary.outbound_messages_today ?? state.summary.dms_sent ?? state.stats.dms_sent);
+            const replies = safeNumber(state.summary.public_replies_sent ?? state.summary.inbound_messages_today);
+            setMetric("dms", outbound);
+            setMetric("replies", replies);
+            setMetric("conversions", safeNumber(state.summary.conversions ?? state.stats.conversions));
+        }
+
+        function formatRate(value) {
+            return `${safeNumber(value).toFixed(1)}%`;
+        }
+
+        function setKpi(name, value, note) {
+            const valueEl = document.querySelector(`[data-kpi="${name}"]`);
+            const noteEl = document.querySelector(`[data-kpi-note="${name}"]`);
+            if (valueEl) valueEl.textContent = value;
+            if (noteEl && note) noteEl.textContent = note;
+        }
+
+        function renderKpis() {
+            const totalDms = safeNumber(state.summary.dms_sent ?? state.stats.dms_sent);
+            const responses = safeNumber(state.summary.public_replies_sent) + safeNumber(state.summary.inbound_messages_today);
+            const leads = safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected ?? state.leads.length);
+            const conversions = safeNumber(state.summary.conversions ?? state.stats.conversions ?? state.conversions.length);
+            const conversionRate = safeNumber(state.summary.conversion_rate ?? state.stats.conversion_rate);
+            setKpi("totalDms", totalDms.toLocaleString(), `${safeNumber(state.summary.outbound_messages_today)} sent today`);
+            setKpi("responses", responses.toLocaleString(), `${formatRate(state.summary.reply_rate)} reply rate`);
+            setKpi("successRate", formatRate(conversionRate), `${conversions.toLocaleString()} conversions`);
+            setKpi("activeLeads", leads.toLocaleString(), `${safeNumber(state.summary.leads_detected_today)} added today`);
+            setKpi("messages", safeNumber(state.summary.messages_analyzed ?? state.stats.messages_analyzed).toLocaleString(), "Analyzed by the engine");
+            setKpi("groups", safeNumber(state.summary.groups_joined ?? state.stats.total_groups_joined ?? state.groups.length).toLocaleString(), "Joined group count");
+        }
+
+        function chart(id, config) {
+            const canvas = document.getElementById(id);
+            if (!canvas || !window.Chart) return;
+            if (state.charts[id]) state.charts[id].destroy();
+            state.charts[id] = new Chart(canvas, config);
+        }
+
+        function renderOutreachChart() {
+            const trend = Array.isArray(state.summary.daily_trend) && state.summary.daily_trend.length
+                ? state.summary.daily_trend
+                : [];
+            const labels = trend.length ? trend.map((item) => item.date || item.label) : ["Live"];
+            const leadCounts = trend.length ? trend.map((item) => safeNumber(item.count ?? item.leads)) : [safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected)];
+            const dms = trend.length
+                ? trend.map((item, index) => safeNumber(item.dms_sent ?? item.outbound_messages ?? Math.round(safeNumber(state.summary.dms_sent ?? state.stats.dms_sent) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
+                : [safeNumber(state.summary.dms_sent ?? state.stats.dms_sent)];
+            const replies = trend.length
+                ? trend.map((item, index) => safeNumber(item.replies ?? item.public_replies ?? Math.round(safeNumber(state.summary.public_replies_sent) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
+                : [safeNumber(state.summary.public_replies_sent ?? state.summary.inbound_messages_today)];
+            const conversions = trend.length
+                ? trend.map((item, index) => safeNumber(item.conversions ?? Math.round(safeNumber(state.summary.conversions) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
+                : [safeNumber(state.summary.conversions ?? state.stats.conversions)];
+            chart("outreachChart", {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [
+                        { label: "Leads", data: leadCounts, borderColor: "#8fb6ff", backgroundColor: "rgba(143,182,255,.12)", tension: .42, fill: true },
+                        { label: "DMs sent", data: dms, borderColor: "#67b7ff", backgroundColor: "rgba(103,183,255,.14)", tension: .42, fill: true },
+                        { label: "Replies", data: replies, borderColor: "#30e0b2", backgroundColor: "rgba(48,224,178,.12)", tension: .42, fill: true },
+                        { label: "Conversions", data: conversions, borderColor: "#f8c15c", backgroundColor: "rgba(248,193,92,.12)", tension: .42, fill: true },
+                    ],
+                },
+                options: chartOptions("Timeline", "Volume"),
+            });
+        }
+
+        function renderGroupsChart() {
+            const totalGroups = safeNumber(state.stats.total_groups_joined ?? state.summary.groups_joined ?? state.groups.length);
+            const topGroups = Array.isArray(state.summary.top_groups) ? state.summary.top_groups : [];
+            const high = topGroups.filter((group) => safeNumber(group.leads_generated) > 0).length || safeNumber(state.summary.high_value_leads);
+            const low = Math.max(0, totalGroups - high);
+            const dormant = topGroups.filter((group) => safeNumber(group.messages_scanned) === 0).length || state.groups.filter((group) => safeNumber(group.messages ?? group.message_count) === 0).length;
+            const active = Math.max(0, totalGroups - dormant);
+            const labels = ["Active joined", "High-lead", "Low-lead", "Dormant"];
+            const values = [active, high, low, dormant];
+            chart("groupsChart", {
+                type: "doughnut",
+                data: {
+                    labels,
+                    datasets: [{ data: values.map((v) => Math.max(v, 0)), backgroundColor: ["#67b7ff", "#30e0b2", "#f8c15c", "#8fb6ff"], borderWidth: 0 }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: "70%", plugins: { legend: { display: false } } },
+            });
+            document.getElementById("groupsLegend").innerHTML = labels.map((label, index) => `<span><i style="background:${["#67b7ff", "#30e0b2", "#f8c15c", "#8fb6ff"][index]}"></i>${label}: ${values[index]}</span>`).join("");
+        }
+
+        function renderSuccessChart() {
+            const leads = safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected ?? state.leads.length);
+            const conversions = safeNumber(state.summary.conversions ?? state.stats.conversions ?? state.conversions.length);
+            const responses = safeNumber(state.summary.public_replies_sent) + safeNumber(state.summary.inbound_messages_today);
+            const open = Math.max(0, leads - conversions - responses);
+            const labels = ["Converted", "Responded", "Open"];
+            const values = [conversions, responses, open];
+            chart("successChart", {
+                type: "pie",
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: ["#f8c15c", "#30e0b2", "#67b7ff"], borderWidth: 0 }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+            });
+            document.getElementById("successLegend").innerHTML = labels.map((label, index) => `<span><i style="background:${["#f8c15c", "#30e0b2", "#67b7ff"][index]}"></i>${label}: ${values[index]}</span>`).join("");
+        }
+
+        function renderLeadQualityChart() {
+            const highValue = safeNumber(state.summary.high_value_leads ?? state.stats.high_value_leads);
+            const resellers = safeNumber(state.summary.reseller_prospects ?? state.stats.reseller_prospects);
+            const highProb = safeNumber(state.stats.high_prob_leads);
+            const leads = safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected ?? state.leads.length);
+            chart("leadQualityChart", {
+                type: "bar",
+                data: {
+                    labels: ["All leads", "High-value", "Reseller", "High-probability"],
+                    datasets: [{ label: "Lead count", data: [leads, highValue, resellers, highProb], backgroundColor: ["#67b7ff", "#30e0b2", "#f8c15c", "#8fb6ff"], borderRadius: 16 }],
+                },
+                options: chartOptions("Lead segment", "Count"),
+            });
+        }
+
+        function chartOptions(xTitle, yTitle) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: { legend: { labels: { color: "#c9dcff", usePointStyle: true, boxWidth: 8 } } },
+                scales: {
+                    x: { title: { display: true, text: xTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
+                    y: { beginAtZero: true, title: { display: true, text: yTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
+                },
+            };
+        }
+
+        function renderSankey() {
+            const personas = Array.isArray(state.summary.persona_performance) && state.summary.persona_performance.length
+                ? state.summary.persona_performance
+                : [{ persona: "AI Persona", leads: safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected), conversions: safeNumber(state.summary.conversions), reply_rate: safeNumber(state.summary.reply_rate) }];
+            const maxLeads = Math.max(1, ...personas.map((item) => safeNumber(item.leads)));
+            const html = personas.map((item, index) => {
+                const leads = safeNumber(item.leads);
+                const conversions = safeNumber(item.conversions);
+                const width = Math.max(16, Math.round((leads / maxLeads) * 100));
+                const conversionWidth = Math.max(10, Math.round((conversions / Math.max(1, leads)) * width));
+                return `
+                    <div class="sankey-row">
+                        <div class="sankey-node">${item.persona || item.name || `Persona ${index + 1}`}</div>
+                        <div class="sankey-flow"><span style="width:${width}%"></span></div>
+                        <div class="sankey-node">${leads} leads</div>
+                        <div class="sankey-flow sankey-flow--gold"><span style="width:${conversionWidth}%"></span></div>
+                        <div class="sankey-node">${conversions} won</div>
+                    </div>
+                `;
+            }).join("");
+            document.getElementById("personaSankey").innerHTML = html;
+        }
+
+        function renderRuntime() {
+            const blockers = safeNumber(state.summary.open_tickets) + safeNumber(state.summary.follow_ups_due);
+            const items = [
+                ["Scheduler", state.settings.telegram_outreach_enabled ? "Ready" : "Paused"],
+                ["Telegram", state.settings.telegram_outreach_enabled ? "Enabled" : "Disabled"],
+                ["Accounts", safeNumber(state.summary.contacts_total)],
+                ["Blockers", blockers],
+            ];
+            document.getElementById("runtimeBadge").textContent = blockers ? "Needs attention" : "Clear";
+            document.getElementById("runtimeMap").innerHTML = items.map(([label, value]) => `<article><span>${label}</span><strong>${value}</strong></article>`).join("");
+        }
+
+        function renderTimeline() {
+            const log = Array.isArray(state.stats.activity_log) && state.stats.activity_log.length ? state.stats.activity_log : [];
+            document.getElementById("activityTimeline").innerHTML = log.length
+                ? log.slice(0, 8).map((item) => `<article><span></span><div><strong>${item.title || item.type || "Activity"}</strong><small>${item.timestamp || item.created_at || "Live"}</small></div></article>`).join("")
+                : `<article><span></span><div><strong>No recent events</strong><small>Waiting for live activity</small></div></article>`;
+        }
+
+        function renderList(id, rows, empty, mapRow) {
+            document.getElementById(id).innerHTML = rows.length ? rows.slice(0, 8).map(mapRow).join("") : `<div class="empty-state">${empty}</div>`;
+        }
+
+        function renderPipeline() {
+            document.getElementById("leadCount").textContent = `${state.leads.length} leads`;
+            document.getElementById("groupCount").textContent = `${state.groups.length} groups`;
+            renderList("leadList", state.leads, "No leads yet", (lead) => `<article><strong>${lead.username || lead.name || "Unknown lead"}</strong><span>${safeNumber(lead.score)} score</span></article>`);
+            const groups = state.summary.top_groups?.length ? state.summary.top_groups : state.groups;
+            renderList("groupList", groups, "No groups yet", (group) => `<article><strong>${group.group_name || group.name || group.title || "Unnamed group"}</strong><span>${safeNumber(group.leads_generated ?? group.leads)} leads - ${safeNumber(group.messages_scanned ?? group.messages ?? group.message_count)} messages</span></article>`);
+        }
+
+        function renderWatch() {
+            const competitors = Array.isArray(state.stats.competitor_stats) ? state.stats.competitor_stats : [];
+            const accounts = Array.isArray(state.stats.account_health) ? state.stats.account_health : [];
+            document.getElementById("accountCount").textContent = `${accounts.length} accounts`;
+            renderList("competitorList", competitors, "No competitor signals yet", (row) => `<article><strong>${row.name || row.competitor || "Competitor"}</strong><span>${safeNumber(row.mentions)} mentions</span></article>`);
+            renderList("accountList", accounts, "No account data yet", (row) => `<article><strong>${row.account || row.phone || "Account"}</strong><span>${row.status || "Unknown"}</span></article>`);
+        }
+
+        function renderTargeting() {
+            const tags = state.settings.search_tags || [];
+            const terms = state.settings.watch_terms || [];
+            document.getElementById("searchTags").innerHTML = tags.map((tag) => `<span>${tag}</span>`).join("") || `<span>No search tags</span>`;
+            document.getElementById("watchTerms").innerHTML = terms.map((tag) => `<span>${tag}</span>`).join("") || `<span>No watch terms</span>`;
+        }
+
+        function hydrateSettingsForm() {
+            document.getElementById("searchInput").value = (state.settings.search_tags || []).join(", ");
+            document.getElementById("watchInput").value = (state.settings.watch_terms || []).join(", ");
+            document.getElementById("dmLimitInput").value = state.settings.daily_dm_limit || 0;
+            document.getElementById("thresholdInput").value = state.settings.lead_score_threshold || 0;
+            document.getElementById("autoJoinInput").checked = Boolean(state.settings.auto_join_groups);
+            document.getElementById("telegramInput").checked = Boolean(state.settings.telegram_outreach_enabled);
+            document.getElementById("notesInput").value = state.settings.notes || "";
+        }
+
+        async function unlockSettings(event) {
+            event.preventDefault();
+            const password = document.getElementById("passwordInput").value;
+            const message = document.getElementById("settingsMessage");
+            const res = await fetchJson(`${API}/auth/login`, null, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password }),
+            });
+            if (!res?.token) {
+                message.textContent = "Invalid password.";
+                return;
+            }
+            state.token = res.token;
+            localStorage.setItem("slie_dashboard_token", res.token);
+            document.getElementById("loginForm").hidden = true;
+            document.getElementById("settingsForm").hidden = false;
+            message.textContent = "Settings unlocked.";
+            hydrateSettingsForm();
+        }
+
+        async function saveSettings(event) {
+            event.preventDefault();
+            const message = document.getElementById("settingsMessage");
+            const payload = {
+                target_tags: state.settings.target_tags || [],
+                brand_tags: state.settings.brand_tags || [],
+                search_tags: document.getElementById("searchInput").value.split(",").map((v) => v.trim()).filter(Boolean),
+                watch_terms: document.getElementById("watchInput").value.split(",").map((v) => v.trim()).filter(Boolean),
+                daily_dm_limit: safeNumber(document.getElementById("dmLimitInput").value),
+                lead_score_threshold: safeNumber(document.getElementById("thresholdInput").value),
+                auto_join_groups: document.getElementById("autoJoinInput").checked,
+                telegram_outreach_enabled: document.getElementById("telegramInput").checked,
+                notes: document.getElementById("notesInput").value,
+            };
+            const saved = await fetchJson(`${API}/settings-config`, null, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${state.token}` },
+                body: JSON.stringify(payload),
+            });
+            if (!saved) {
+                message.textContent = "Could not save settings.";
+                return;
+            }
+            state.settings = saved;
+            message.textContent = "Settings saved.";
+            renderTargeting();
+        }
+
+        async function loadData() {
+            const [summary, stats, settings] = await Promise.all([
+                fetchJson(`${API}/summary`, {}),
+                fetchJson(`${API}/stats`, {}),
+                fetchJson(`${API}/settings-config`, {}),
+            ]);
+            state.summary = summary || {};
+            state.stats = stats || {};
+            state.settings = settings || {};
+            renderHero();
+            renderKpis();
+            renderRuntime();
+            renderTargeting();
+            hydrateSettingsForm();
+
+            const [leads, groups, conversions] = await Promise.all([
+                fetchJson(`${API}/leads`, []),
+                fetchJson(`${API}/groups`, []),
+                fetchJson(`${API}/conversions`, []),
+            ]);
+            state.leads = Array.isArray(leads) ? leads : [];
+            state.groups = Array.isArray(groups) ? groups : [];
+            state.conversions = Array.isArray(conversions) ? conversions : [];
+        }
+
+        function renderAll() {
+            renderHero();
+            renderKpis();
+            renderOutreachChart();
+            renderGroupsChart();
+            renderSuccessChart();
+            renderLeadQualityChart();
+            renderSankey();
+            renderRuntime();
+            renderTimeline();
+            renderPipeline();
+            renderWatch();
+            renderTargeting();
+            hydrateSettingsForm();
+        }
+
+        async function init() {
+            setActivePage();
+            document.getElementById("loginForm").addEventListener("submit", unlockSettings);
+            document.getElementById("settingsForm").addEventListener("submit", saveSettings);
+            await loadData();
+            renderAll();
+            window.setInterval(async () => {
+                await loadData();
+                renderAll();
+            }, 15000);
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            init().catch((error) => {
+                console.error("Dashboard init failed", error);
+                document.body.classList.add("dashboard-error");
+            });
+        });
+    </script>
+</body>
+</html>
