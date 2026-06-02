@@ -153,10 +153,13 @@ telegram_client_manager = TelegramClientManager()
 
 # Exportable functions as per requirements
 async def connect_client():
-    return await telegram_client_manager.connect_client()
+    return await telegram_client_manager.get_client()
 
 async def disconnect_client():
-    await telegram_client_manager.disconnect_client()
+    for phone, client in telegram_client_manager._clients.items():
+        if client.is_connected():
+            await client.disconnect()
 
 async def get_current_user():
-    return await telegram_client_manager.get_current_user()
+    client = await telegram_client_manager.get_client()
+    return await client.get_me()

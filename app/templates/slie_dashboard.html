@@ -74,37 +74,37 @@
 
             <section class="page page-overview" data-page="overview">
                 <section class="kpi-grid" id="kpiGrid" aria-label="Live KPI cards">
-                    <article class="kpi-card kpi-card--blue">
+                    <article class="kpi-card kpi-card--blue 3d-hover">
                         <b>DM</b>
                         <span>Total DMs</span>
                         <strong data-kpi="totalDms">0</strong>
                         <small data-kpi-note="totalDms">Live outreach volume</small>
                     </article>
-                    <article class="kpi-card kpi-card--cyan">
+                    <article class="kpi-card kpi-card--cyan 3d-hover">
                         <b>LR</b>
                         <span>Lead responses</span>
                         <strong data-kpi="responses">0</strong>
                         <small data-kpi-note="responses">Replies and inbound signals</small>
                     </article>
-                    <article class="kpi-card kpi-card--gold">
+                    <article class="kpi-card kpi-card--gold 3d-hover">
                         <b>SR</b>
                         <span>Success rate</span>
                         <strong data-kpi="successRate">0.0%</strong>
                         <small data-kpi-note="successRate">Conversions from detected leads</small>
                     </article>
-                    <article class="kpi-card kpi-card--violet">
+                    <article class="kpi-card kpi-card--violet 3d-hover">
                         <b>AL</b>
                         <span>Active leads</span>
                         <strong data-kpi="activeLeads">0</strong>
                         <small data-kpi-note="activeLeads">Current lead pipeline</small>
                     </article>
-                    <article class="kpi-card kpi-card--green">
+                    <article class="kpi-card kpi-card--green 3d-hover">
                         <b>MA</b>
                         <span>Messages analyzed</span>
                         <strong data-kpi="messages">0</strong>
                         <small data-kpi-note="messages">Total scanned messages</small>
                     </article>
-                    <article class="kpi-card kpi-card--ice">
+                    <article class="kpi-card kpi-card--ice 3d-hover">
                         <b>GP</b>
                         <span>Groups joined</span>
                         <strong data-kpi="groups">0</strong>
@@ -738,9 +738,18 @@
         }
 
         function renderPipeline() {
-            document.getElementById("leadCount").textContent = `${state.leads.length} leads`;
-            document.getElementById("groupCount").textContent = `${state.groups.length} groups`;
-            renderList("leadList", state.leads, "No leads yet", (lead) => `<article><strong>${lead.username || lead.name || "Unknown lead"}</strong><span>${safeNumber(lead.score)} score</span></article>`);
+            const leads = state.leads.slice(0, 5);
+            document.getElementById('leadList').innerHTML = leads.length ? leads.map((lead, index) => `
+                <article class="cursor-pointer 3d-hover" onclick="openLeadModal('${lead.username}')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-highlight/10 flex items-center justify-center text-highlight font-bold shadow-clay-button">${lead.username ? lead.username[0].toUpperCase() : '?'}</div>
+                        <div>
+                            <strong>${lead.username || 'Anonymous'}</strong>
+                            <small class="text-[10px] text-slate-500 uppercase tracking-widest">${lead.status || 'NEW'}</small>
+                        </div>
+                    </div>
+                    <span>${safeNumber(lead.score || lead.lead_score)} score</span>
+                </article>`).join('') : `<div class="empty-state">No leads yet</div>`;
             const groups = state.summary.top_groups?.length ? state.summary.top_groups : state.groups;
             renderList("groupList", groups, "No groups yet", (group) => `<article><strong>${group.group_name || group.name || group.title || "Unnamed group"}</strong><span>${safeNumber(group.leads_generated ?? group.leads)} leads - ${safeNumber(group.messages_scanned ?? group.messages ?? group.message_count)} messages</span></article>`);
         }
@@ -885,6 +894,37 @@
                 console.error("Dashboard init failed", error);
                 document.body.classList.add("dashboard-error");
             });
+
+            // 3D Perspective Mouse Effect
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.pageX;
+                mouseY = e.pageY;
+            });
+
+            function update3DEffects() {
+                targetX += (mouseX - targetX) * 0.1;
+                targetY += (mouseY - targetY) * 0.1;
+
+                const x = (window.innerWidth / 2 - targetX) / 80;
+                const y = (window.innerHeight / 2 - targetY) / 80;
+
+                document.querySelectorAll('.3d-hover').forEach(el => {
+                    if (el.matches(':hover')) {
+                        el.style.transform = `perspective(1000px) rotateY(${x}deg) rotateX(${-y}deg) translateZ(30px)`;
+                    } else {
+                        el.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg) translateZ(0px)';
+                    }
+                });
+
+                requestAnimationFrame(update3DEffects);
+            }
+
+            requestAnimationFrame(update3DEffects);
         });
     </script>
 </body>

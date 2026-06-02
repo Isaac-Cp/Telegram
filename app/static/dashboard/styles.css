@@ -13,10 +13,135 @@
     --cyan: #35d8bd;
     --gold: #d6ad62;
     --danger: #ff7d9a;
-    --shadow: 0 28px 70px rgba(0, 0, 0, 0.36);
+    --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+    --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.05), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
     --radius-xl: 34px;
     --radius-lg: 24px;
     --sidebar-width: 280px;
+    --accent: #64ffda;
+    --highlight: #3b82f6;
+    --clay-base: #112240;
+}
+
+/* 3D and Motion Effects */
+.perspective-container {
+    perspective: 2000px;
+    transform-style: preserve-3d;
+}
+
+.perspective-element {
+    transform-style: preserve-3d;
+}
+
+.3d-hover {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
+}
+
+/* Ambient Occlusion & Advanced Shadows */
+.ambient-occlusion {
+    box-shadow: 
+        0 10px 30px -10px rgba(0,0,0,0.7),
+        var(--shadow-inner);
+}
+
+/* UI Components - Refined Blend */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(32px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-xl);
+}
+
+.clay-card {
+    background: var(--clay-base);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 
+        12px 12px 24px 0 rgba(0, 0, 0, 0.4), 
+        -8px -8px 24px 0 rgba(255, 255, 255, 0.02),
+        inset 4px 4px 8px 0 rgba(255, 255, 255, 0.03),
+        inset -4px -4px 8px 0 rgba(0, 0, 0, 0.3);
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+}
+
+.clay-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+    pointer-events: none;
+}
+
+.clay-card:hover {
+    transform: perspective(1000px) translateZ(25px);
+    box-shadow: 
+        20px 20px 40px 0 rgba(0, 0, 0, 0.5), 
+        -10px -10px 30px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Interactive Components */
+.clay-interactive {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background: #112240;
+    box-shadow: 
+        6px 6px 12px 0 rgba(0, 0, 0, 0.4), 
+        -4px -4px 12px 0 rgba(255, 255, 255, 0.02),
+        inset 2px 2px 4px 0 rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.clay-interactive:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        10px 10px 20px 0 rgba(0, 0, 0, 0.5), 
+        -6px -6px 20px 0 rgba(255, 255, 255, 0.03);
+}
+
+.clay-interactive:active {
+    transform: translateY(0) scale(0.96);
+    box-shadow: 
+        inset 4px 4px 8px 0 rgba(0, 0, 0, 0.5), 
+        inset -2px -2px 6px 0 rgba(255, 255, 255, 0.02);
+}
+
+/* Skeleton Loaders */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 12px;
+}
+
+/* Modal and Overlays */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(1, 4, 13, 0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 * {
@@ -297,6 +422,13 @@ textarea {
         rgba(8, 29, 76, 0.62);
     box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(24px) saturate(145%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+    transform-style: preserve-3d;
+}
+
+.card:hover {
+    transform: perspective(1000px) translateZ(10px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
 }
 
 .card::before {
@@ -850,6 +982,13 @@ button {
 @media (max-width: 620px) {
     .app-shell {
         padding-inline: 14px;
+        padding-top: 100px;
+    }
+
+    .mobile-nav {
+        inset: 12px 12px auto;
+        padding: 10px;
+        border-radius: 22px;
     }
 
     .brand--mobile small {

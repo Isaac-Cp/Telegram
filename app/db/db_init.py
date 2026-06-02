@@ -67,9 +67,11 @@ async def verify_database_connection():
                 missing_tables = [table for table in REQUIRED_TABLES if table not in existing_tables]
                 
                 if missing_tables:
-                    logger.warning(f"SLIE DB Initialization: Missing required tables: {', '.join(missing_tables)}. Ensure migrations have run.")
-                else:
-                    logger.info("SLIE DB Initialization: All required tables verified.")
+                    raise RuntimeError(
+                        "SLIE DB Initialization: Missing required tables: "
+                        f"{', '.join(missing_tables)}. Ensure migrations have run."
+                    )
+                logger.info("SLIE DB Initialization: All required tables verified.")
                 
                 await engine.dispose()
                 return True
@@ -80,8 +82,8 @@ async def verify_database_connection():
                 logger.info(f"Retrying connection in {retry_delay} seconds...")
                 await asyncio.sleep(retry_delay)
             else:
-                logger.warning("SLIE DB Initialization: Could not connect to database. Running in limited mode (read-only/cached).")
-                return False  # Return False instead of raising to allow graceful degradation
+                logger.critical("SLIE DB Initialization: All retries exhausted and database is unavailable.")
+                raise RuntimeError("SLIE DB Initialization failed after retries")
 
 if __name__ == "__main__":
     # For manual testing

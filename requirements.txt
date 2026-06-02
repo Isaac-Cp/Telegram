@@ -15,4 +15,5 @@ groq>=0.11.0
 google-generativeai>=0.8.3
 PySocks>=1.7.1
 emoji>=2.14.0
+slowapi>=0.1.9
 sentry-sdk[fastapi]>=2.0.0

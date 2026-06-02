@@ -27,7 +27,7 @@ def normalize_database_url(value: str) -> str:
 
     parsed = urlparse(value)
     query_params = parse_qs(parsed.query)
-    for param in ("sslmode", "ssl", "sslcert", "sslkey", "sslrootcert"):
+    for param in ("sslmode", "ssl", "sslcert", "sslkey", "sslrootcert", "channel_binding"):
         query_params.pop(param, None)
 
     query = urlencode(query_params, doseq=True) if query_params else ""
@@ -101,6 +101,14 @@ class Settings(BaseSettings):
     business_hours_start: int = Field(0, alias="BUSINESS_HOURS_START")
     business_hours_end: int = Field(23, alias="BUSINESS_HOURS_END")
     background_workers_enabled: bool = Field(True, alias="BACKGROUND_WORKERS_ENABLED")
+    dashboard_admin_password: str = Field("changeme", alias="DASHBOARD_ADMIN_PASSWORD")
+    trusted_origins: str | list[str] = Field("https://yourdomain.com", alias="TRUSTED_ORIGINS")
+
+    @property
+    def trusted_origins_list(self) -> list[str]:
+        if isinstance(self.trusted_origins, str):
+            return [origin.strip() for origin in self.trusted_origins.split(",") if origin.strip()]
+        return self.trusted_origins
 
     # Database cleanup retention settings
     cleanup_enabled: bool = Field(True, alias="CLEANUP_ENABLED")
@@ -120,6 +128,9 @@ class Settings(BaseSettings):
     smtp_password: str = Field("", alias="SMTP_PASSWORD")
     emails_enabled: bool = Field(False, alias="EMAILS_ENABLED")
     admin_email: str = Field("", alias="ADMIN_EMAIL")
+
+    # Rate Limiting
+    rate_limit_requests_per_minute: int = Field(60, alias="RATE_LIMIT_REQUESTS_PER_MINUTE")
 
 
 @lru_cache

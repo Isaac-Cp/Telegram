@@ -233,10 +233,16 @@ def get_groups_elite(db: Session):
     ]
 
 
-def get_conversations_elite(db: Session):
+def get_conversations_elite(db: Session, username: str | None = None):
     from app.models.lead_conversation import LeadConversation
+    from app.models.user import User
 
-    conversations = db.query(LeadConversation).order_by(desc(LeadConversation.timestamp)).limit(50).all()
+    query = db.query(LeadConversation).join(Lead).join(User)
+    
+    if username:
+        query = query.filter(User.username == username)
+        
+    conversations = query.order_by(desc(LeadConversation.timestamp)).limit(50).all()
     return [
         {
             "lead_id": conversation.lead_id,

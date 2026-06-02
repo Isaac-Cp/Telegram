@@ -1,0 +1,133 @@
+/**
+ * SLIE Premium Intelligence - Core Theme Styles
+ * This file contains the foundational CSS components, animations, 
+ * and custom utility classes that define the application's visual language.
+ */
+
+@layer base {
+    body {
+        @apply bg-obsidian text-slate-300 antialiased selection:bg-highlight/30 selection:text-white font-sans overflow-x-hidden;
+    }
+    h1, h2, h3, h4 {
+        @apply font-serif;
+    }
+}
+
+/* Ambient Occlusion & Advanced Shadows */
+.ambient-occlusion {
+    box-shadow: 
+        0 10px 30px -10px rgba(0,0,0,0.7),
+        inset 0 1px 1px rgba(255,255,255,0.05),
+        inset 0 -1px 1px rgba(0,0,0,0.3);
+}
+
+.layered-shadow {
+    box-shadow: 
+        0 1px 1px rgba(0,0,0,0.11), 
+        0 2px 2px rgba(0,0,0,0.11), 
+        0 4px 4px rgba(0,0,0,0.11), 
+        0 8px 8px rgba(0,0,0,0.11), 
+        0 16px 16px rgba(0,0,0,0.11);
+}
+
+/* UI Components - Refined Blend */
+.glass-panel {
+    @apply bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-2xl transition-all duration-500 rounded-[2.5rem];
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.clay-card {
+    @apply bg-clay-base rounded-[2.5rem] border border-white/5 transition-all duration-500 overflow-hidden relative;
+    box-shadow: 
+        12px 12px 24px 0 rgba(0, 0, 0, 0.4), 
+        -8px -8px 24px 0 rgba(255, 255, 255, 0.02),
+        inset 4px 4px 8px 0 rgba(255, 255, 255, 0.03),
+        inset -4px -4px 8px 0 rgba(0, 0, 0, 0.3);
+    transform-style: preserve-3d;
+}
+
+.clay-card::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none rounded-[2.5rem];
+}
+
+/* Advanced 3D Interactive Blend */
+.clay-interactive {
+    @apply transition-all duration-300 rounded-2xl;
+    background: #112240;
+    box-shadow: 
+        6px 6px 12px 0 rgba(0, 0, 0, 0.4), 
+        -4px -4px 12px 0 rgba(255, 255, 255, 0.02),
+        inset 2px 2px 4px 0 rgba(255, 255, 255, 0.05);
+}
+
+.clay-interactive:hover {
+    @apply -translate-y-1;
+    box-shadow: 
+        10px 10px 20px 0 rgba(0, 0, 0, 0.5), 
+        -6px -6px 20px 0 rgba(255, 255, 255, 0.03);
+}
+
+.clay-interactive:active {
+    @apply translate-y-0 scale-95;
+    box-shadow: 
+        inset 4px 4px 8px 0 rgba(0, 0, 0, 0.5), 
+        inset -2px -2px 6px 0 rgba(255, 255, 255, 0.02);
+}
+
+.clay-input {
+    @apply bg-obsidian/50 shadow-clay-inset border border-white/5 focus:border-highlight/30 focus:outline-none transition-all duration-300 rounded-2xl px-5 py-3;
+}
+
+/* 3D & Interaction */
+.perspective-container {
+    perspective: 2000px;
+    transform-style: preserve-3d;
+}
+
+.perspective-element {
+    transform-style: preserve-3d;
+}
+
+.3d-hover {
+    @apply transition-all duration-500 ease-out;
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
+}
+
+.clay-card:hover {
+    transform: perspective(1000px) translateZ(25px);
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Background Effects */
+.premium-gradient {
+    background: 
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(100, 255, 218, 0.1) 0%, transparent 50%),
+        #01040d;
+}
+
+.floating-orb {
+    @apply absolute rounded-full blur-[100px] opacity-20 mix-blend-screen animate-pulse-slow;
+}
+
+/* Utility */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/5 rounded-full hover:bg-white/10 transition-colors;
+}
+
+.section-hidden {
+    display: none !important;
+}

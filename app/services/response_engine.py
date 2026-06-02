@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timedelta, time as dt_time
 from typing import List
 
-from sqlalchemy import select, and_, func, case
+from sqlalchemy import select, and_, func, case, desc
 from sqlalchemy.orm import Session
 from telethon import functions, types
 
