@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="SLIE live dashboard for outreach, leads, groups, activity, targeting, and runtime settings.">
+    <meta name="theme-color" content="#061331">
+    <meta property="og:title" content="SLIE Revenue Command Dashboard">
+    <meta property="og:description" content="Live outreach, lead, group, persona, and system settings dashboard.">
+    <meta property="og:type" content="website">
     <title>SLIE Dashboard</title>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/dashboard/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
@@ -26,12 +28,12 @@
             </a>
 
             <nav class="side-nav">
-                <a data-nav="overview" href="/api/v1/dashboard/overview"><span>O</span>Overview</a>
-                <a data-nav="activity" href="/api/v1/dashboard/activity"><span>A</span>Activity</a>
-                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline"><span>P</span>Pipeline</a>
-                <a data-nav="watch" href="/api/v1/dashboard/watch"><span>W</span>Watch</a>
-                <a data-nav="targeting" href="/api/v1/dashboard/targeting"><span>T</span>Targeting</a>
-                <a data-nav="settings" href="/api/v1/dashboard/settings"><span>S</span>Settings</a>
+                <a data-nav="overview" href="/api/v1/dashboard/overview"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg></span>Overview</a>
+                <a data-nav="activity" href="/api/v1/dashboard/activity"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 13h4l2-7 4 14 2-7h4"/></svg></span>Activity</a>
+                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 19V8m7 11V4m7 15v-7"/></svg></span>Pipeline</a>
+                <a data-nav="watch" href="/api/v1/dashboard/watch"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></span>Watch</a>
+                <a data-nav="targeting" href="/api/v1/dashboard/targeting"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></span>Targeting</a>
+                <a data-nav="settings" href="/api/v1/dashboard/settings"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Zm8-3.5 2-1.5-2-3.5-2.4 1a7.4 7.4 0 0 0-1.6-.9L15.7 4h-4l-.4 2.6c-.6.2-1.1.5-1.6.9L7.3 6.5l-2 3.5L7 12l-1.7 2 2 3.5 2.4-1c.5.4 1 .7 1.6.9l.4 2.6h4l.4-2.6c.6-.2 1.1-.5 1.6-.9l2.4 1 2-3.5Z"/></svg></span>Settings</a>
             </nav>
 
             <div class="backend-pill">
@@ -49,11 +51,11 @@
                 </span>
             </a>
             <nav class="mobile-icon-nav" aria-label="Primary pages">
-                <a data-nav="overview" href="/api/v1/dashboard/overview" aria-label="Overview" title="Overview">O</a>
-                <a data-nav="activity" href="/api/v1/dashboard/activity" aria-label="Activity" title="Activity">A</a>
-                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline" aria-label="Pipeline" title="Pipeline">P</a>
-                <a data-nav="watch" href="/api/v1/dashboard/watch" aria-label="Watch" title="Watch">W</a>
-                <a data-nav="settings" href="/api/v1/dashboard/settings" aria-label="Settings" title="Settings">S</a>
+                <a data-nav="overview" href="/api/v1/dashboard/overview" aria-label="Overview" title="Overview"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg></a>
+                <a data-nav="activity" href="/api/v1/dashboard/activity" aria-label="Activity" title="Activity"><svg viewBox="0 0 24 24"><path d="M4 13h4l2-7 4 14 2-7h4"/></svg></a>
+                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline" aria-label="Pipeline" title="Pipeline"><svg viewBox="0 0 24 24"><path d="M5 19V8m7 11V4m7 15v-7"/></svg></a>
+                <a data-nav="watch" href="/api/v1/dashboard/watch" aria-label="Watch" title="Watch"><svg viewBox="0 0 24 24"><path d="M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></a>
+                <a data-nav="settings" href="/api/v1/dashboard/settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Zm8-3.5 2-1.5-2-3.5-2.4 1a7.4 7.4 0 0 0-1.6-.9L15.7 4h-4l-.4 2.6c-.6.2-1.1.5-1.6.9L7.3 6.5l-2 3.5L7 12l-1.7 2 2 3.5 2.4-1c.5.4 1 .7 1.6.9l.4 2.6h4l.4-2.6c.6-.2 1.1-.5 1.6-.9l2.4 1 2-3.5Z"/></svg></a>
             </nav>
         </header>
 
@@ -73,31 +75,37 @@
             <section class="page page-overview" data-page="overview">
                 <section class="kpi-grid" id="kpiGrid" aria-label="Live KPI cards">
                     <article class="kpi-card kpi-card--blue">
+                        <b>DM</b>
                         <span>Total DMs</span>
                         <strong data-kpi="totalDms">0</strong>
                         <small data-kpi-note="totalDms">Live outreach volume</small>
                     </article>
                     <article class="kpi-card kpi-card--cyan">
+                        <b>LR</b>
                         <span>Lead responses</span>
                         <strong data-kpi="responses">0</strong>
                         <small data-kpi-note="responses">Replies and inbound signals</small>
                     </article>
                     <article class="kpi-card kpi-card--gold">
+                        <b>SR</b>
                         <span>Success rate</span>
                         <strong data-kpi="successRate">0.0%</strong>
                         <small data-kpi-note="successRate">Conversions from detected leads</small>
                     </article>
                     <article class="kpi-card kpi-card--violet">
+                        <b>AL</b>
                         <span>Active leads</span>
                         <strong data-kpi="activeLeads">0</strong>
                         <small data-kpi-note="activeLeads">Current lead pipeline</small>
                     </article>
                     <article class="kpi-card kpi-card--green">
+                        <b>MA</b>
                         <span>Messages analyzed</span>
                         <strong data-kpi="messages">0</strong>
                         <small data-kpi-note="messages">Total scanned messages</small>
                     </article>
                     <article class="kpi-card kpi-card--ice">
+                        <b>GP</b>
                         <span>Groups joined</span>
                         <strong data-kpi="groups">0</strong>
                         <small data-kpi-note="groups">Live joined groups</small>
@@ -109,9 +117,9 @@
                         <div class="card-head">
                             <div>
                                 <p class="eyebrow">Outreach performance</p>
-                                <h2>DMs, replies, conversions</h2>
+                                <h2>Outreach journey graph</h2>
                             </div>
-                            <span class="status-pill">Live</span>
+                            <span class="status-pill">Multi-line</span>
                         </div>
                         <div class="chart-wrap"><canvas id="outreachChart"></canvas></div>
                     </article>
@@ -158,11 +166,11 @@
                     <div class="card-head">
                         <div>
                             <p class="eyebrow">AI persona flow</p>
-                            <h2>Persona to lead outcome</h2>
+                            <h2>AI persona lead flow</h2>
                         </div>
                         <span class="status-pill">Sankey</span>
                     </div>
-                    <div class="sankey" id="personaSankey" aria-label="AI persona lead flow"></div>
+                    <div class="sankey sankey-svg-wrap" id="personaSankey" aria-label="AI persona lead flow"></div>
                 </article>
             </section>
 
@@ -283,7 +291,9 @@
                         <button type="submit">Unlock settings</button>
                     </form>
                     <form id="settingsForm" class="settings-form" hidden>
+                        <label>Target tags<textarea id="targetInput" rows="3"></textarea></label>
                         <label>Search tags<textarea id="searchInput" rows="3"></textarea></label>
+                        <label>Brand tags<textarea id="brandInput" rows="3"></textarea></label>
                         <label>Watch terms<textarea id="watchInput" rows="3"></textarea></label>
                         <label>Daily DM limit<input id="dmLimitInput" type="number" min="0"></label>
                         <label>Lead score threshold<input id="thresholdInput" type="number" min="0" max="100"></label>
@@ -336,6 +346,13 @@
             charts: {},
             token: localStorage.getItem("slie_dashboard_token") || "",
         };
+
+        const csrfSafeText = (value) => String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
 
         function safeNumber(value) {
             const n = Number(value);
@@ -407,49 +424,187 @@
 
         function chart(id, config) {
             const canvas = document.getElementById(id);
-            if (!canvas || !window.Chart) return;
+            if (!canvas) return;
+            if (!window.Chart) {
+                renderCanvasFallback(canvas, config);
+                return;
+            }
             if (state.charts[id]) state.charts[id].destroy();
             state.charts[id] = new Chart(canvas, config);
+        }
+
+        function fitCanvas(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const ratio = window.devicePixelRatio || 1;
+            canvas.width = Math.max(320, rect.width) * ratio;
+            canvas.height = Math.max(260, rect.height) * ratio;
+            const ctx = canvas.getContext("2d");
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            return { ctx, width: canvas.width / ratio, height: canvas.height / ratio };
+        }
+
+        function renderCanvasFallback(canvas, config) {
+            const { ctx, width, height } = fitCanvas(canvas);
+            ctx.clearRect(0, 0, width, height);
+            ctx.font = "12px Manrope";
+            ctx.fillStyle = "#bfd4f7";
+            const type = config.type;
+            if (type === "line") return drawFallbackLine(ctx, width, height, config);
+            if (type === "bar") return drawFallbackBar(ctx, width, height, config);
+            if (type === "doughnut" || type === "pie") return drawFallbackDonut(ctx, width, height, config, type === "doughnut");
+        }
+
+        function drawGrid(ctx, left, top, right, bottom) {
+            ctx.strokeStyle = "rgba(156,195,255,.14)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = top + ((bottom - top) / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(left, y);
+                ctx.lineTo(right, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawFallbackLine(ctx, width, height, config) {
+            const left = 54;
+            const right = width - 24;
+            const top = 34;
+            const bottom = height - 52;
+            const datasets = config.data.datasets || [];
+            const labels = config.data.labels || [];
+            const max = Math.max(1, ...datasets.flatMap((dataset) => dataset.data || []).map(safeNumber));
+            drawGrid(ctx, left, top, right, bottom);
+            labels.forEach((label, index) => {
+                const x = left + ((right - left) / Math.max(1, labels.length - 1)) * index;
+                ctx.fillStyle = "#9fb7d8";
+                ctx.fillText(String(label), x - 14, height - 22);
+            });
+            datasets.forEach((dataset) => {
+                const data = dataset.data || [];
+                ctx.strokeStyle = dataset.borderColor || "#78b9ff";
+                ctx.fillStyle = dataset.borderColor || "#78b9ff";
+                ctx.lineWidth = dataset.borderDash ? 2 : 3;
+                ctx.setLineDash(dataset.borderDash || []);
+                ctx.beginPath();
+                data.forEach((value, index) => {
+                    const x = left + ((right - left) / Math.max(1, data.length - 1)) * index;
+                    const y = bottom - (safeNumber(value) / max) * (bottom - top);
+                    if (index === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                ctx.setLineDash([]);
+                data.forEach((value, index) => {
+                    const x = left + ((right - left) / Math.max(1, data.length - 1)) * index;
+                    const y = bottom - (safeNumber(value) / max) * (bottom - top);
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        function drawFallbackBar(ctx, width, height, config) {
+            const labels = config.data.labels || [];
+            const dataset = config.data.datasets?.[0] || { data: [] };
+            const data = dataset.data || [];
+            const colors = dataset.backgroundColor || ["#78b9ff"];
+            const left = 42;
+            const top = 28;
+            const bottom = height - 52;
+            const max = Math.max(1, ...data.map(safeNumber));
+            drawGrid(ctx, left, top, width - 18, bottom);
+            data.forEach((value, index) => {
+                const barWidth = Math.max(26, (width - left - 42) / Math.max(1, data.length) - 18);
+                const x = left + index * (barWidth + 18) + 10;
+                const h = (safeNumber(value) / max) * (bottom - top);
+                ctx.fillStyle = Array.isArray(colors) ? colors[index % colors.length] : colors;
+                ctx.beginPath();
+                ctx.roundRect(x, bottom - h, barWidth, h, 12);
+                ctx.fill();
+                ctx.fillStyle = "#bfd4f7";
+                ctx.fillText(String(labels[index] || ""), x - 4, height - 22);
+            });
+        }
+
+        function drawFallbackDonut(ctx, width, height, config, cutout = true) {
+            const dataset = config.data.datasets?.[0] || { data: [] };
+            const data = dataset.data || [];
+            const colors = dataset.backgroundColor || ["#78b9ff", "#35d8bd", "#d6ad62"];
+            const total = Math.max(1, data.reduce((sum, value) => sum + safeNumber(value), 0));
+            const cx = width / 2;
+            const cy = height / 2;
+            const radius = Math.min(width, height) * .34;
+            let start = -Math.PI / 2;
+            data.forEach((value, index) => {
+                const slice = (safeNumber(value) / total) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, start, start + slice);
+                ctx.closePath();
+                ctx.fillStyle = Array.isArray(colors) ? colors[index % colors.length] : colors;
+                ctx.fill();
+                start += slice;
+            });
+            if (cutout) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius * .62, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(3, 12, 31, .9)";
+                ctx.fill();
+            }
         }
 
         function renderOutreachChart() {
             const trend = Array.isArray(state.summary.daily_trend) && state.summary.daily_trend.length
                 ? state.summary.daily_trend
                 : [];
-            const labels = trend.length ? trend.map((item) => item.date || item.label) : ["Live"];
+            const today = new Date();
+            const lastSevenLabels = Array.from({ length: 7 }, (_, index) => {
+                const date = new Date(today);
+                date.setDate(today.getDate() - (6 - index));
+                return date.toISOString().slice(5, 10);
+            });
+            const labels = trend.length ? trend.map((item) => item.date || item.label) : lastSevenLabels;
             const leadCounts = trend.length ? trend.map((item) => safeNumber(item.count ?? item.leads)) : [safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected)];
+            const paddedLeads = trend.length ? leadCounts : [0, 0, 0, 0, 0, 0, leadCounts[0]];
             const dms = trend.length
                 ? trend.map((item, index) => safeNumber(item.dms_sent ?? item.outbound_messages ?? Math.round(safeNumber(state.summary.dms_sent ?? state.stats.dms_sent) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
-                : [safeNumber(state.summary.dms_sent ?? state.stats.dms_sent)];
+                : [0, 0, 0, 0, 0, 0, safeNumber(state.summary.dms_sent ?? state.stats.dms_sent)];
             const replies = trend.length
                 ? trend.map((item, index) => safeNumber(item.replies ?? item.public_replies ?? Math.round(safeNumber(state.summary.public_replies_sent) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
-                : [safeNumber(state.summary.public_replies_sent ?? state.summary.inbound_messages_today)];
+                : [0, 0, 0, 0, 0, 0, safeNumber(state.summary.public_replies_sent ?? state.summary.inbound_messages_today)];
             const conversions = trend.length
                 ? trend.map((item, index) => safeNumber(item.conversions ?? Math.round(safeNumber(state.summary.conversions) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
-                : [safeNumber(state.summary.conversions ?? state.stats.conversions)];
+                : [0, 0, 0, 0, 0, 0, safeNumber(state.summary.conversions ?? state.stats.conversions)];
+            const replyRateLine = replies.map((reply, index) => {
+                const sent = safeNumber(dms[index]);
+                return sent ? Number(((reply / sent) * 100).toFixed(2)) : 0;
+            });
             chart("outreachChart", {
                 type: "line",
                 data: {
                     labels,
                     datasets: [
-                        { label: "Leads", data: leadCounts, borderColor: "#8fb6ff", backgroundColor: "rgba(143,182,255,.12)", tension: .42, fill: true },
-                        { label: "DMs sent", data: dms, borderColor: "#67b7ff", backgroundColor: "rgba(103,183,255,.14)", tension: .42, fill: true },
-                        { label: "Replies", data: replies, borderColor: "#30e0b2", backgroundColor: "rgba(48,224,178,.12)", tension: .42, fill: true },
-                        { label: "Conversions", data: conversions, borderColor: "#f8c15c", backgroundColor: "rgba(248,193,92,.12)", tension: .42, fill: true },
+                        { label: "Leads detected", data: paddedLeads, borderColor: "#b7cfff", backgroundColor: "rgba(183,207,255,.12)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
+                        { label: "DMs sent", data: dms, borderColor: "#67b7ff", backgroundColor: "rgba(103,183,255,.14)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
+                        { label: "Lead responses", data: replies, borderColor: "#30e0b2", backgroundColor: "rgba(48,224,178,.12)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
+                        { label: "Conversions", data: conversions, borderColor: "#d6ad62", backgroundColor: "rgba(214,173,98,.12)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
+                        { label: "Reply rate %", data: replyRateLine, borderColor: "#f1d79a", backgroundColor: "rgba(241,215,154,.08)", borderDash: [6, 6], tension: .36, yAxisID: "rate", pointRadius: 3 },
                     ],
                 },
-                options: chartOptions("Timeline", "Volume"),
+                options: chartOptions("Timeline", "Volume", true),
             });
         }
 
         function renderGroupsChart() {
             const totalGroups = safeNumber(state.stats.total_groups_joined ?? state.summary.groups_joined ?? state.groups.length);
             const topGroups = Array.isArray(state.summary.top_groups) ? state.summary.top_groups : [];
-            const high = topGroups.filter((group) => safeNumber(group.leads_generated) > 0).length || safeNumber(state.summary.high_value_leads);
+            const high = topGroups.filter((group) => safeNumber(group.leads_generated) > 0).length || state.groups.filter((group) => safeNumber(group.leads ?? group.score) > 0).length;
             const low = Math.max(0, totalGroups - high);
             const dormant = topGroups.filter((group) => safeNumber(group.messages_scanned) === 0).length || state.groups.filter((group) => safeNumber(group.messages ?? group.message_count) === 0).length;
             const active = Math.max(0, totalGroups - dormant);
-            const labels = ["Active joined", "High-lead", "Low-lead", "Dormant"];
+            const labels = ["Active joined", "High-lead groups", "Low-lead groups", "Dormant groups"];
             const values = [active, high, low, dormant];
             chart("groupsChart", {
                 type: "doughnut",
@@ -495,16 +650,20 @@
             });
         }
 
-        function chartOptions(xTitle, yTitle) {
+        function chartOptions(xTitle, yTitle, includeRate = false) {
+            const scales = {
+                x: { title: { display: true, text: xTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
+                y: { beginAtZero: true, title: { display: true, text: yTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
+            };
+            if (includeRate) {
+                scales.rate = { beginAtZero: true, position: "right", title: { display: true, text: "Rate %", color: "#c9ad69" }, ticks: { color: "#d9c286" }, grid: { drawOnChartArea: false } };
+            }
             return {
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: "index", intersect: false },
                 plugins: { legend: { labels: { color: "#c9dcff", usePointStyle: true, boxWidth: 8 } } },
-                scales: {
-                    x: { title: { display: true, text: xTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
-                    y: { beginAtZero: true, title: { display: true, text: yTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
-                },
+                scales,
             };
         }
 
@@ -512,23 +671,47 @@
             const personas = Array.isArray(state.summary.persona_performance) && state.summary.persona_performance.length
                 ? state.summary.persona_performance
                 : [{ persona: "AI Persona", leads: safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected), conversions: safeNumber(state.summary.conversions), reply_rate: safeNumber(state.summary.reply_rate) }];
-            const maxLeads = Math.max(1, ...personas.map((item) => safeNumber(item.leads)));
-            const html = personas.map((item, index) => {
+            const totalLeads = personas.reduce((sum, item) => sum + safeNumber(item.leads), 0);
+            const totalConversions = personas.reduce((sum, item) => sum + safeNumber(item.conversions), 0);
+            const totalReplies = safeNumber(state.summary.public_replies_sent) + safeNumber(state.summary.inbound_messages_today);
+            const rows = personas.slice(0, 5);
+            const colors = ["#67b7ff", "#30e0b2", "#d6ad62", "#9ab7ff", "#79dec8"];
+            const personaNodes = rows.map((item, index) => {
+                const y = 92 + index * 78;
                 const leads = safeNumber(item.leads);
-                const conversions = safeNumber(item.conversions);
-                const width = Math.max(16, Math.round((leads / maxLeads) * 100));
-                const conversionWidth = Math.max(10, Math.round((conversions / Math.max(1, leads)) * width));
+                const stroke = Math.max(8, Math.min(42, (leads / Math.max(1, totalLeads)) * 42));
                 return `
-                    <div class="sankey-row">
-                        <div class="sankey-node">${item.persona || item.name || `Persona ${index + 1}`}</div>
-                        <div class="sankey-flow"><span style="width:${width}%"></span></div>
-                        <div class="sankey-node">${leads} leads</div>
-                        <div class="sankey-flow sankey-flow--gold"><span style="width:${conversionWidth}%"></span></div>
-                        <div class="sankey-node">${conversions} won</div>
-                    </div>
+                    <path class="sankey-path" d="M150 245 C250 ${y}, 310 ${y}, 405 ${y}" stroke="${colors[index % colors.length]}" stroke-width="${stroke}" />
+                    <rect x="405" y="${y - 24}" width="190" height="48" rx="16" />
+                    <text x="424" y="${y - 4}">${csrfSafeText(item.name || item.persona || `Persona ${index + 1}`)}</text>
+                    <text x="424" y="${y + 16}" class="sankey-small">${leads} leads - ${formatRate(item.rate)}</text>
+                    <path class="sankey-path" d="M595 ${y} C680 ${y}, 705 245, 790 245" stroke="${colors[index % colors.length]}" stroke-width="${Math.max(6, stroke * .72)}" />
                 `;
             }).join("");
-            document.getElementById("personaSankey").innerHTML = html;
+            const repliedStroke = Math.max(8, Math.min(38, (totalReplies / Math.max(1, totalLeads)) * 38));
+            const wonStroke = Math.max(8, Math.min(38, (totalConversions / Math.max(1, totalLeads)) * 38));
+            document.getElementById("personaSankey").innerHTML = `
+                <svg viewBox="0 0 1040 430" role="img" aria-label="AI persona Sankey diagram">
+                    <defs>
+                        <filter id="sankeyGlow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    </defs>
+                    <rect x="28" y="182" width="122" height="126" rx="26" />
+                    <text x="58" y="238">AI Engine</text>
+                    <text x="58" y="260" class="sankey-small">${totalLeads} leads</text>
+                    ${personaNodes}
+                    <rect x="790" y="184" width="128" height="122" rx="26" />
+                    <text x="818" y="238">Qualified</text>
+                    <text x="818" y="260" class="sankey-small">${totalLeads} leads</text>
+                    <path class="sankey-path" d="M918 232 C960 190, 966 136, 1010 116" stroke="#30e0b2" stroke-width="${repliedStroke}" />
+                    <path class="sankey-path" d="M918 258 C960 294, 966 336, 1010 356" stroke="#d6ad62" stroke-width="${wonStroke}" />
+                    <rect x="914" y="74" width="106" height="62" rx="18" />
+                    <text x="936" y="102">Replies</text>
+                    <text x="936" y="122" class="sankey-small">${totalReplies}</text>
+                    <rect x="914" y="318" width="106" height="62" rx="18" />
+                    <text x="946" y="346">Won</text>
+                    <text x="946" y="366" class="sankey-small">${totalConversions}</text>
+                </svg>
+            `;
         }
 
         function renderRuntime() {
@@ -578,7 +761,9 @@
         }
 
         function hydrateSettingsForm() {
+            document.getElementById("targetInput").value = (state.settings.target_tags || []).join(", ");
             document.getElementById("searchInput").value = (state.settings.search_tags || []).join(", ");
+            document.getElementById("brandInput").value = (state.settings.brand_tags || []).join(", ");
             document.getElementById("watchInput").value = (state.settings.watch_terms || []).join(", ");
             document.getElementById("dmLimitInput").value = state.settings.daily_dm_limit || 0;
             document.getElementById("thresholdInput").value = state.settings.lead_score_threshold || 0;
@@ -612,8 +797,8 @@
             event.preventDefault();
             const message = document.getElementById("settingsMessage");
             const payload = {
-                target_tags: state.settings.target_tags || [],
-                brand_tags: state.settings.brand_tags || [],
+                target_tags: document.getElementById("targetInput").value.split(",").map((v) => v.trim()).filter(Boolean),
+                brand_tags: document.getElementById("brandInput").value.split(",").map((v) => v.trim()).filter(Boolean),
                 search_tags: document.getElementById("searchInput").value.split(",").map((v) => v.trim()).filter(Boolean),
                 watch_terms: document.getElementById("watchInput").value.split(",").map((v) => v.trim()).filter(Boolean),
                 daily_dm_limit: safeNumber(document.getElementById("dmLimitInput").value),
@@ -681,6 +866,12 @@
             setActivePage();
             document.getElementById("loginForm").addEventListener("submit", unlockSettings);
             document.getElementById("settingsForm").addEventListener("submit", saveSettings);
+            if (ACTIVE_PAGE === "settings") {
+                document.getElementById("loginForm").hidden = false;
+                document.getElementById("settingsForm").hidden = true;
+                document.getElementById("settingsMessage").textContent = "Authentication required.";
+            }
+            renderAll();
             await loadData();
             renderAll();
             window.setInterval(async () => {
