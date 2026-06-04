@@ -12,6 +12,8 @@ from alembic import command
 from alembic.config import Config
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -80,6 +82,9 @@ def require_dashboard_auth(request: Request):
         dashboard_routes._require_dashboard_auth(authorization)
     except HTTPException as exc:
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    except Exception as e:
+        logger.error("Auth error: %s", e)
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
@@ -143,8 +148,10 @@ async def lifespan(application: FastAPI):
                 await robust_bg_task(label, fn, max_retries=max_retries, escalate=escalate)
             except Exception as e:
                 logger.critical(f"Background task '{label}' failed permanently: {e}")
-                if escalate:
-                    os._exit(1)
+                # In production, we avoid os._exit(1) to allow the app to stay alive 
+                # for diagnostics, unless it's a critical dependency.
+                if escalate and os.getenv("ENVIRONMENT") == "production":
+                    logger.critical("Escalating critical failure. Application state may be degraded.")
 
         # 5. Verify Database availability (Non-blocking spawn)
         asyncio.create_task(spawn_bg_task("Database Initialization", verify_database_connection, max_retries=1, escalate=False))
@@ -207,27 +214,61 @@ async def lifespan(application: FastAPI):
 def create_app() -> FastAPI:
     settings = get_settings()
     application = FastAPI(
-        title=settings.app_name,
+        title="SLIE API",
+        description="Structured Lead Intelligence Engine for Telegram",
+        version="1.5.0",
         lifespan=lifespan,
-        docs_url=None if settings.environment == "production" else "/docs",
-        redoc_url=None if settings.environment == "production" else "/redoc"
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
     )
 
-    # Rate Limiting (Module 10 Prod)
-    limiter = get_limiter()
-    application.state.limiter = limiter
-    application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    application.add_middleware(SlowAPIMiddleware)
+    # 1. Security Headers Middleware (Module 16 Remediation)
+    @application.middleware("http")
+    async def add_security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data:; "
+            "connect-src 'self';"
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
 
-    # CORS middleware (allow only trusted origins in production)
+    # 2. CORS Middleware
     allowed_origins = ["*"] if settings.environment != "production" else settings.trusted_origins_list
     application.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # 3. Trusted Host Middleware
+    allowed_hosts = settings.trusted_origins_list if settings.environment == "production" else ["*"]
+    if settings.environment == "production" and "localhost" not in allowed_hosts:
+        allowed_hosts.append("localhost")
+        allowed_hosts.append("127.0.0.1")
+        
+    application.add_middleware(
+        TrustedHostMiddleware, 
+        allowed_hosts=allowed_hosts
+    )
+
+    # 4. GZip Compression
+    application.add_middleware(GZipMiddleware, minimum_size=1000)
+
+    # 5. Rate Limiting Middleware
+    limiter = get_limiter()
+    application.state.limiter = limiter
+    application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    application.add_middleware(SlowAPIMiddleware)
 
     @application.middleware("http")
     async def security_middlewares(request: Request, call_next):

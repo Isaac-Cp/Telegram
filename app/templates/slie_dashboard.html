@@ -7,7 +7,10 @@
     <meta name="theme-color" content="#020617">
     <title>SLIE Intelligence | Revenue Command</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    </noscript>
     <link rel="stylesheet" href="/dashboard/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -17,6 +20,7 @@
         <div class="liquid-glass-blob blob-1"></div>
         <div class="liquid-glass-blob blob-2"></div>
         <div class="liquid-glass-blob blob-3"></div>
+        <div class="liquid-glass-blob blob-4"></div>
     </div>
     
     <!-- Mobile Header -->
@@ -30,6 +34,17 @@
     </header>
 
     <div class="app-shell">
+        <!-- Login Modal (Module 16 Remediation) -->
+        <div id="loginModal" class="liquid-glass-container" style="display: none; z-index: 9999; background: var(--bg-deep);">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+                <div class="clay-card" style="width: 100%; max-width: 400px; padding: 2.5rem;">
+                    <h2 style="margin-bottom: 1.5rem; text-align: center;">Command Access</h2>
+                    <input type="password" id="adminPassword" placeholder="Enter Command Password" style="width: 100%; padding: 1rem; border-radius: 15px; background: var(--bg-surface); border: 1px solid var(--glass-border); color: white; margin-bottom: 1.5rem;">
+                    <button onclick="handleLogin()" style="width: 100%; padding: 1rem; border-radius: 15px; background: var(--accent); color: var(--bg-deep); font-weight: 800; border: none; cursor: pointer;">AUTHENTICATE</button>
+                    <p id="loginError" style="color: #ef4444; font-size: 0.8rem; margin-top: 1rem; text-align: center; display: none;">Invalid authentication credentials.</p>
+                </div>
+            </div>
+        </div>
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="brand" style="margin-bottom: 3rem;">
@@ -136,6 +151,27 @@
                         <canvas id="problemChart"></canvas>
                     </div>
                 </article>
+
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Influence Mapping</h2>
+                    <div class="chart-wrap">
+                        <canvas id="influenceChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Hourly Lead Heatmap</h2>
+                    <div class="chart-wrap">
+                        <canvas id="heatmapChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Sentiment Trends</h2>
+                    <div class="chart-wrap">
+                        <canvas id="sentimentTrendsChart"></canvas>
+                    </div>
+                </article>
             </div>
 
             <!-- Persona & Account Health -->
@@ -192,10 +228,54 @@
 
     <script src="/dashboard/js/theme-config.js"></script>
     <script>
+        // Auth Logic (Module 16 Remediation)
+        function getToken() {
+            return localStorage.getItem('slie_token');
+        }
+
+        async function handleLogin() {
+            const password = document.getElementById('adminPassword').value;
+            const errorEl = document.getElementById('loginError');
+            
+            try {
+                const response = await fetch('/api/v1/dashboard/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('slie_token', data.token);
+                    document.getElementById('loginModal').style.display = 'none';
+                    loadDashboardData();
+                } else {
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.style.display = 'block';
+            }
+        }
+
         // Initialize dashboard data
         async function loadDashboardData() {
+            const token = getToken();
+            if (!token) {
+                document.getElementById('loginModal').style.display = 'block';
+                return;
+            }
+
             try {
-                const response = await fetch('/api/v1/dashboard/summary');
+                const response = await fetch('/api/v1/dashboard/summary', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('slie_token');
+                    document.getElementById('loginModal').style.display = 'block';
+                    return;
+                }
+                
                 const data = await response.json();
                 
                 // Update KPIs
@@ -263,97 +343,182 @@
         }
 
         function renderCharts(data) {
-            // Performance Chart
-            const trendData = data.daily_trend || [];
-            const ctx1 = document.getElementById('performanceChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: trendData.map(d => d.date),
-                    datasets: [{
-                        label: 'Lead Detection',
-                        data: trendData.map(d => d.count),
-                        borderColor: '#38bdf8',
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { display: false },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', fontSize: 10 } }
+            const chartOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const canvasId = entry.target.id;
+                        initChart(canvasId, data);
+                        observer.unobserve(entry.target);
                     }
-                }
-            });
+                });
+            }, chartOptions);
 
-            // Sentiment Chart (Funnel)
-            const funnel = data.conversion_funnel || [];
-            const ctx2 = document.getElementById('sentimentChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: funnel.map(f => f.stage),
-                    datasets: [{
-                        data: funnel.map(f => f.count),
-                        backgroundColor: ['#38bdf8', '#6366f1', '#a855f7', '#22c55e', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '80%',
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
-                }
+            document.querySelectorAll('canvas').forEach(canvas => {
+                observer.observe(canvas);
             });
+        }
 
-            // LTV Chart
-            const ltv = data.ltv_distribution || {};
-            const ctx3 = document.getElementById('ltvChart').getContext('2d');
-            new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(ltv),
-                    datasets: [{
-                        data: Object.values(ltv),
-                        backgroundColor: '#38bdf8',
-                        borderRadius: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        function initChart(canvasId, data) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            if (canvasId === 'performanceChart') {
+                const trendData = data.daily_trend || [];
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: trendData.map(d => d.date),
+                        datasets: [{
+                            label: 'Lead Detection',
+                            data: trendData.map(d => d.count),
+                            borderColor: '#38bdf8',
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { display: false },
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8', fontSize: 10 } }
+                        }
                     }
-                }
-            });
+                });
+            } else if (canvasId === 'sentimentChart') {
+                const funnel = data.conversion_funnel || [];
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: funnel.map(f => f.stage),
+                        datasets: [{
+                            data: funnel.map(f => f.count),
+                            backgroundColor: ['#38bdf8', '#6366f1', '#a855f7', '#22c55e', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '80%',
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
+                    }
+                });
+            } else if (canvasId === 'ltvChart') {
+                const ltv = data.ltv_distribution || {};
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(ltv),
+                        datasets: [{
+                            data: Object.values(ltv),
+                            backgroundColor: '#38bdf8',
+                            borderRadius: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            } else if (canvasId === 'problemChart') {
+                const problems = data.problem_distribution || {};
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(problems),
+                        datasets: [{
+                            data: Object.values(problems),
+                            backgroundColor: ['#0ea5e9', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e', '#f59e0b'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
+                    }
+                });
+            } else if (canvasId === 'influenceChart') {
+                const influence = data.influence_distribution || {};
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(influence),
+                        datasets: [{
+                            data: Object.values(influence),
+                            backgroundColor: ['#38bdf8', '#818cf8', '#94a3b8'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
+                    }
+                });
+            } else if (canvasId === 'heatmapChart') {
+                const heatmap = data.hourly_heatmap || [];
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: heatmap.map(h => `${h.hour}:00`),
+                        datasets: [{
+                            data: heatmap.map(h => h.count),
+                            backgroundColor: '#38bdf8',
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            } else if (canvasId === 'sentimentTrendsChart') {
+                const sentimentTrends = data.sentiment_trends || {};
+                const dates = Object.keys(sentimentTrends).sort();
+                const sentimentTypes = Array.from(new Set(dates.flatMap(d => Object.keys(sentimentTrends[d]))));
+                
+                const datasets = sentimentTypes.map((type, i) => ({
+                    label: type,
+                    data: dates.map(d => sentimentTrends[d][type] || 0),
+                    borderColor: ['#38bdf8', '#6366f1', '#a855f7', '#22c55e', '#ef4444'][i % 5],
+                    tension: 0.3,
+                    fill: false
+                }));
 
-            // Problem Chart
-            const problems = data.problem_distribution || {};
-            const ctx4 = document.getElementById('problemChart').getContext('2d');
-            new Chart(ctx4, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(problems),
-                    datasets: [{
-                        data: Object.values(problems),
-                        backgroundColor: ['#0ea5e9', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e', '#f59e0b'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
-                }
-            });
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: dates, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } },
+                        scales: {
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
         }
 
         window.addEventListener('DOMContentLoaded', loadDashboardData);

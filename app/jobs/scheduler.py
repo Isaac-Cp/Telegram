@@ -5,8 +5,10 @@ import os
 import time
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from app.core.config import get_settings
+from app.db.session import engine
 from app.jobs.tasks import (
     cancel_revoked_follow_ups,
     close_stale_conversations,
@@ -42,8 +44,8 @@ def retryable_job(label, fn, max_retries=3, shutdown_on_failure=False):
                     await asyncio.sleep(delay)
                     delay = min(30, delay * 2)
             logger.critical(f"{label} failed after {max_retries} attempts.")
-            if shutdown_on_failure:
-                os._exit(1)
+            if shutdown_on_failure and os.getenv("ENVIRONMENT") == "production":
+                logger.critical("Escalating critical failure. Application state may be degraded.")
             raise last_exc
         return wrapper
 
@@ -61,8 +63,8 @@ def retryable_job(label, fn, max_retries=3, shutdown_on_failure=False):
                 time.sleep(delay)
                 delay = min(30, delay * 2)
         logger.critical(f"{label} failed after {max_retries} attempts.")
-        if shutdown_on_failure:
-            os._exit(1)
+        if shutdown_on_failure and os.getenv("ENVIRONMENT") == "production":
+            logger.critical("Escalating critical failure. Application state may be degraded.")
         raise last_exc
     return wrapper
 
@@ -70,7 +72,21 @@ def retryable_job(label, fn, max_retries=3, shutdown_on_failure=False):
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
-scheduler = AsyncIOScheduler(timezone=settings.timezone)
+# Module 16: Persistent Job Stores for Horizontal Scaling
+jobstores = {
+    'default': SQLAlchemyJobStore(engine=engine)
+}
+job_defaults = {
+    'coalesce': True,
+    'max_instances': 1,
+    'misfire_grace_time': 300
+}
+
+scheduler = AsyncIOScheduler(
+    timezone=settings.timezone,
+    jobstores=jobstores,
+    job_defaults=job_defaults
+)
 
 scheduler.add_job(retryable_job("queue_due_follow_ups", queue_due_follow_ups), "interval", minutes=5, id="queue_due_follow_ups", replace_existing=True)
 scheduler.add_job(retryable_job("cancel_revoked_follow_ups", cancel_revoked_follow_ups), "interval", minutes=5, id="cancel_revoked_follow_ups", replace_existing=True)

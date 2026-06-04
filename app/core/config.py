@@ -104,6 +104,11 @@ class Settings(BaseSettings):
     dashboard_admin_password: str = Field("changeme", alias="DASHBOARD_ADMIN_PASSWORD")
     trusted_origins: str | list[str] = Field("https://yourdomain.com", alias="TRUSTED_ORIGINS")
 
+    # Security (Module 16 Remediation)
+    secret_key: str = "super-secret-key-change-in-production"
+    access_token_expire_minutes: int = 60 * 24 * 7 # 1 week
+    dashboard_password_hash: str = "" # Hashed version of DASHBOARD_PASSWORD
+
     @property
     def trusted_origins_list(self) -> list[str]:
         if isinstance(self.trusted_origins, str):

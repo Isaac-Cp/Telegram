@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.config import get_settings
+from app.core import security
 from app.schemas.dashboard import DashboardSummary
 from app.services.dashboard import (
     get_conversations_elite,
@@ -130,22 +131,14 @@ def _admin_password() -> str:
         return os.getenv("DASHBOARD_ADMIN_PASSWORD", "changeme")
 
 
-def _mint_token() -> str:
-    token = secrets.token_urlsafe(24)
-    ACTIVE_TOKENS[token] = time.time() + TOKEN_TTL_SECONDS
-    return token
-
-
-def _require_dashboard_auth(authorization: str | None) -> None:
+def _require_dashboard_auth(authorization: str | None) -> dict:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing authorization token.")
     token = authorization.split(" ", 1)[1].strip()
-    expires_at = ACTIVE_TOKENS.get(token)
-    if not expires_at:
-        raise HTTPException(status_code=401, detail="Invalid authorization token.")
-    if expires_at < time.time():
-        ACTIVE_TOKENS.pop(token, None)
-        raise HTTPException(status_code=401, detail="Authorization token expired.")
+    payload = security.decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired authorization token.")
+    return payload
 
 
 def _fallback_stats() -> dict[str, Any]:
@@ -253,9 +246,19 @@ def _render_page(active_page: str) -> HTMLResponse:
 
 @router.post("/auth/login")
 def dashboard_login(payload: DashboardLoginRequest):
-    if payload.password != _admin_password():
+    settings = get_settings()
+    # Check against plain password or hashed password if available
+    is_valid = False
+    if settings.dashboard_password_hash:
+        is_valid = security.verify_password(payload.password, settings.dashboard_password_hash)
+    else:
+        is_valid = payload.password == _admin_password()
+        
+    if not is_valid:
         raise HTTPException(status_code=401, detail="Invalid password.")
-    return {"token": _mint_token(), "expires_in": TOKEN_TTL_SECONDS}
+        
+    access_token = security.create_access_token(subject="admin")
+    return {"token": access_token, "expires_in": settings.access_token_expire_minutes * 60}
 
 
 @router.get("/settings-config")

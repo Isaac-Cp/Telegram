@@ -60,20 +60,17 @@ class DashboardSummary(BaseModel):
     dms_sent: int
     reply_rate: float
     conversion_rate: float
-    
-    # Elite Upgrade Metrics
     high_value_leads: int
     reseller_prospects: int
     average_ltv_score: float
-    ltv_distribution: dict
-    problem_distribution: dict
-    sentiment_trends: dict = {}
-    hourly_heatmap: List[dict] = []
-    persona_performance: List[PersonaPerformance]
-    account_health: List[AccountHealth]
-    
-    # New detailed data
-    recent_leads: List[LeadStats]
-    top_groups: List[GroupPerformance]
-    daily_trend: List[DailyTrend]
-    conversion_funnel: List[ConversionFunnel]
+    ltv_distribution: dict[str, int]
+    problem_distribution: dict[str, int]
+    influence_distribution: dict[str, int]
+    sentiment_trends: dict[str, dict[str, int]]
+    hourly_heatmap: list[dict[str, Any]]
+    persona_performance: list[dict[str, Any]]
+    account_health: list[dict[str, Any]]
+    recent_leads: list[LeadStats]
+    top_groups: list[GroupPerformance]
+    daily_trend: list[DailyTrend]
+    conversion_funnel: list[ConversionFunnel]
