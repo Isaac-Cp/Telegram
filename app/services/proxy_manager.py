@@ -6,12 +6,39 @@ from app.models.telegram_account import TelegramAccount
 
 logger = logging.getLogger(__name__)
 
+import asyncio
+from app.db.session import SessionLocal
+
 class ProxyManager:
     """
     Elite Module 2: Telegram Proxy & Account Safety System.
     Manages proxy validation and rotation to protect accounts.
     """
-    
+    def __init__(self):
+        self._proxy_health = {} # Cache health status
+
+    async def run_background_validation(self):
+        """Elite Step: Move proxy checks to a background thread to prevent blocking the main loop."""
+        while True:
+            try:
+                with SessionLocal() as db:
+                    accounts = db.query(TelegramAccount).all()
+                    for account in accounts:
+                        config = self.get_proxy_config(account)
+                        if config:
+                            is_valid = self.validate_proxy_connection(config)
+                            self._proxy_health[account.phone_number] = is_valid
+                            if not is_valid:
+                                logger.warning(f"[Proxy Manager] Account {account.phone_number} has failing proxy!")
+                
+                await asyncio.sleep(600) # Re-validate every 10 minutes
+            except Exception as e:
+                logger.error(f"[Proxy Manager] Background validation error: {e}")
+                await asyncio.sleep(60)
+
+    def is_proxy_healthy(self, phone_number: str) -> bool:
+        """Returns the cached health status of an account's proxy."""
+        return self._proxy_health.get(phone_number, True)
     def get_proxy_config(self, account: TelegramAccount = None):
         """
         Retrieves proxy configuration for a specific account or from global settings.

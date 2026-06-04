@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, BigInteger, Boolean
+from sqlalchemy import String, Integer, BigInteger, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -7,7 +7,7 @@ class TelegramAccount(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "telegram_accounts"
 
     phone_number: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-    session_file: Mapped[str] = mapped_column(String(255))
+    session_file: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20), default="active") # active, limited, banned
     groups_joined: Mapped[int] = mapped_column(Integer, default=0)
     daily_dm_count: Mapped[int] = mapped_column(Integer, default=0)

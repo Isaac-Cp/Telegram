@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from app.models.follow_up_job import FollowUpJob
 from app.models.group import Group
 from app.models.lead import Lead
 from app.models.message import Message
+from app.models.message_analysis import MessageAnalysis
 from app.models.ticket import Ticket
 from app.schemas.dashboard import ConversionFunnel, DailyTrend, DashboardSummary, GroupPerformance, LeadStats
 
@@ -31,10 +32,25 @@ HIGH_VALUE_TIERS = {
 
 def _build_account_health(db: Session) -> list[dict]:
     from app.models.telegram_account import TelegramAccount
+    from app.services.proxy_manager import proxy_manager
+    from app.services.human_engine import human_engine
 
     accounts = db.query(TelegramAccount).all()
-    return [
-        {
+    health_data = []
+    active_cooldowns = human_engine.get_active_cooldowns()
+    
+    for account in accounts:
+        proxy_config = proxy_manager.get_proxy_config(account)
+        proxy_valid = proxy_manager.validate_proxy_connection(proxy_config) if proxy_config else True
+        
+        # Determine if this account is in cooldown (simplified)
+        # In a multi-account setup, we'd need account-specific cooldown tracking
+        # For now, we show the global bot cooldowns
+        cooldown_until = None
+        if active_cooldowns:
+            cooldown_until = max(active_cooldowns.values())
+
+        health_data.append({
             "phone": account.phone_number,
             "status": account.status,
             "dms_used": account.daily_dm_count,
@@ -43,9 +59,10 @@ def _build_account_health(db: Session) -> list[dict]:
             "dms_left": max(0, 10 - account.daily_dm_count),
             "replies_left": max(0, 5 - account.daily_reply_count),
             "joins_left": max(0, 2 - account.groups_joined),
-        }
-        for account in accounts
-    ]
+            "proxy_status": proxy_valid,
+            "cooldown_until": cooldown_until
+        })
+    return health_data
 
 
 def get_stats(db: Session):
@@ -118,6 +135,30 @@ def get_stats(db: Session):
     )
     problem_distribution = {row.problem_type: row.count for row in problem_rows if row.problem_type}
 
+    # Sentiment Trends over time (last 7 days)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    sentiment_time_rows = db.query(
+        func.date(Message.sent_at).label('date'),
+        MessageAnalysis.problem_type,
+        func.count(MessageAnalysis.id).label('count')
+    ).join(Message, Message.id == MessageAnalysis.message_id)\
+     .filter(Message.sent_at >= seven_days_ago)\
+     .group_by('date', MessageAnalysis.problem_type).all()
+    
+    sentiment_trends = {}
+    for row in sentiment_time_rows:
+        d = str(row.date)
+        if d not in sentiment_trends:
+            sentiment_trends[d] = {}
+        sentiment_trends[d][row.problem_type or "General"] = row.count
+
+    # Hourly Heatmap (Lead detection hours)
+    heatmap_rows = db.query(
+        func.extract('hour', Lead.timestamp).label('hour'),
+        func.count(Lead.id).label('count')
+    ).group_by('hour').all()
+    hourly_heatmap = [{"hour": int(row.hour), "count": row.count} for row in heatmap_rows]
+
     persona_name = func.coalesce(Lead.persona_id, "Unassigned")
     persona_rows = (
         db.query(
@@ -164,11 +205,47 @@ def get_stats(db: Session):
         "competitor_stats": competitor_stats,
         "ltv_distribution": ltv_distribution,
         "problem_distribution": problem_distribution,
+        "sentiment_trends": sentiment_trends,
+        "hourly_heatmap": hourly_heatmap,
         "persona_performance": persona_performance,
         "account_health": _build_account_health(db),
         "activity_log": activity_log,
         "dms_sent": dms_sent,
     }
+
+
+def get_high_intent_buyers_elite(db: Session):
+    """
+    Elite Step: Returns the top 20 high-intent buyers detected in the last 7 days.
+    Uses the Multi-Layer Dynamic Scoring model.
+    """
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    
+    # Query leads with score >= 60 (Warm/Hot) in last 7 days
+    leads = (
+        db.query(Lead)
+        .filter(Lead.timestamp >= seven_days_ago)
+        .filter(Lead.lead_score >= 60)
+        .order_by(desc(Lead.lead_score))
+        .limit(20)
+        .all()
+    )
+    
+    return [
+        {
+            "username": lead.user.username if lead.user else "Anonymous",
+            "score": lead.lead_score,
+            "intent": lead.intent_score,
+            "problem": lead.urgency_score,
+            "engagement": lead.engagement_score,
+            "recency": lead.recency_score,
+            "pattern": lead.pattern_score,
+            "temperature": lead.lead_temperature,
+            "timestamp": lead.timestamp.isoformat(),
+            "message": lead.message_text[:100] + ("..." if len(lead.message_text) > 100 else "")
+        }
+        for lead in leads
+    ]
 
 
 def get_conversions_elite(db: Session):
@@ -254,7 +331,21 @@ def get_conversations_elite(db: Session, username: str | None = None):
     ]
 
 
+import json
+
+_dashboard_cache = {
+    "data": None,
+    "timestamp": 0
+}
+CACHE_TTL = 60 # seconds
+
 def get_dashboard_summary(db: Session) -> DashboardSummary:
+    global _dashboard_cache
+    now_ts = time.time()
+    
+    if _dashboard_cache["data"] and (now_ts - _dashboard_cache["timestamp"] < CACHE_TTL):
+        return _dashboard_cache["data"]
+
     today = datetime.utcnow().date()
     now = datetime.utcnow()
     messages_analyzed = db.query(func.count(Message.id)).scalar() or 0
@@ -356,7 +447,7 @@ def get_dashboard_summary(db: Session) -> DashboardSummary:
 
     elite_stats = get_stats(db)
 
-    return DashboardSummary(
+    summary = DashboardSummary(
         contacts_total=db.query(func.count(Contact.id)).scalar() or 0,
         active_consents=db.query(func.count(Consent.id)).filter(Consent.revoked_at.is_(None)).scalar() or 0,
         open_conversations=(
@@ -403,3 +494,7 @@ def get_dashboard_summary(db: Session) -> DashboardSummary:
         daily_trend=daily_trend,
         conversion_funnel=conversion_funnel,
     )
+    
+    _dashboard_cache["data"] = summary
+    _dashboard_cache["timestamp"] = now_ts
+    return summary

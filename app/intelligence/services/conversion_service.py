@@ -50,7 +50,7 @@ class ConversionProbabilityEngine:
             influence_score_norm = (influence.influence_score / 100.0) if influence else 0.0
             
             # Engagement Score based on message count (Module 1 Influence Engine reuses this)
-            engagement_count = db.query(Lead.original_message).count() # Simplified placeholder
+            engagement_count = db.query(Lead.message_text).count() # Simplified placeholder
             engagement_score_norm = min(1.0, engagement_count / 10.0) # 10+ messages for full engagement score
 
             # 3. CONVERSION MODEL calculation

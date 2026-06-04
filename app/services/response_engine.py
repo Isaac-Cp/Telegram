@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import random
-from datetime import datetime, timedelta, time as dt_time
+from datetime import datetime, timedelta, timezone, time as dt_time
 from typing import List
 
 from sqlalchemy import select, and_, func, case, desc
@@ -22,6 +22,8 @@ from app.services.power_upgrades import power_upgrades_service
 from app.services.memory_engine import memory_engine
 from app.services.ltv_engine import ltv_engine
 from app.services.human_engine import human_engine
+
+from app.core.logging import log_error
 
 logger = logging.getLogger(__name__)
 
@@ -261,7 +263,9 @@ class ResponseEngine:
         context = memory_engine.get_ai_context(lead.id)
         
         # Check if high value reseller prospect (Module 16)
-        is_reseller = "reseller" in (lead.ltv_score_record.ltv_level if lead.ltv_score_record else "")
+        is_reseller = False
+        if lead.user and lead.user.ltv_score_record:
+            is_reseller = "reseller" in (lead.user.ltv_score_record.ltv_level or "").lower()
         
         strategy = ""
         if is_reseller:
@@ -283,7 +287,7 @@ class ResponseEngine:
         - end with a question
         """
         
-        prompt = f"Lead Original Message: {lead.original_message}\n\nProvide a technical authority follow-up DM."
+        prompt = f"Lead Original Message: {lead.message_text}\n\nProvide a technical authority follow-up DM."
         
         try:
             content = await ai_service.chat_completion(
@@ -349,7 +353,7 @@ class ResponseEngine:
 
                     # 1. Select persona for this lead (Module 5)
                     persona = power_upgrades_service.select_persona(lead)
-                    response_text = await self.generate_public_response(lead.id, lead.original_message, persona)
+                    response_text = await self.generate_public_response(lead.id, lead.message_text, persona)
                     
                     await human_engine.simulate_human_typing(client, group.telegram_id, len(response_text))
 
@@ -362,8 +366,8 @@ class ResponseEngine:
 
                     # Mark as sent and update CRM
                     lead.public_reply_sent = True
-                    lead.last_contact = datetime.utcnow()
-                    lead.first_contact = datetime.utcnow()
+                    lead.last_contact = datetime.now(timezone.utc)
+                    lead.first_contact = datetime.now(timezone.utc)
                     lead.conversion_stage = ConversionStage.CONTACTED
                     
                     # Log to Memory Engine (Module 15)
@@ -378,7 +382,7 @@ class ResponseEngine:
                         lead_id=lead.id,
                         message=response_text,
                         sender=persona['name'],
-                        timestamp=datetime.utcnow()
+                        timestamp=datetime.now(timezone.utc)
                     )
                     db.add(new_conv)
                     db.commit()
@@ -417,26 +421,28 @@ class ResponseEngine:
             # Elite Module 14, 15 & 16: Prioritize Tier 1 leads for DM follow-up
             # Fully Autonomous Mode: Include HIGH and MEDIUM leads (User Request)
             
-            min_wait = datetime.utcnow() - timedelta(minutes=15)
-            last_wait = datetime.utcnow() - timedelta(minutes=30)
+            min_wait = datetime.now(timezone.utc) - timedelta(minutes=15)
+            last_wait = datetime.now(timezone.utc) - timedelta(minutes=30)
             
-            lead_ids = db.execute(
-                select(Lead.id).where(
+            logger.info(f"Checking for leads with priority HIGH/MEDIUM, dm_sent=False. Min wait: {min_wait}")
+            
+            query = select(Lead.id).where(
                     and_(
                         Lead.priority_level.in_(["HIGH", "MEDIUM"]),
                         Lead.dm_sent == False,
                         Lead.conversion_stage.in_([ConversionStage.NEW, ConversionStage.CONTACTED]),
-                        Lead.last_contact <= min_wait,
-                        # Rule: Do not send DM if any contact (public or private) was within 30 minutes
+                        (Lead.last_contact.is_(None) | (Lead.last_contact <= min_wait)),
                         (Lead.last_contact.is_(None) | (Lead.last_contact <= last_wait)),
-                        # Rule: Stop if converted
                         Lead.conversion_stage != ConversionStage.CONVERTED
                     )
                 ).order_by(desc(Lead.opportunity_score)).limit(5)
-            ).scalars().all()
+            
+            lead_ids = db.execute(query).scalars().all()
+            logger.info(f"Found {len(lead_ids)} leads for private DM: {lead_ids}")
 
         for lead_id in lead_ids:
             try:
+                logger.info(f"Processing private DM for lead: {lead_id}")
                 # IMPORTANT: Apply delay OUTSIDE of session block to prevent QueuePool overflow
                 await human_engine.apply_randomized_delay("dm")
 
@@ -457,7 +463,7 @@ class ResponseEngine:
 
                     # Mark as sent and update CRM
                     lead.dm_sent = True
-                    lead.last_contact = datetime.utcnow()
+                    lead.last_contact = datetime.now(timezone.utc)
                     lead.conversion_stage = ConversionStage.CONTACTED
                     
                     # Log to Memory Engine (Module 15)
@@ -474,12 +480,12 @@ class ResponseEngine:
                         lead_id=lead.id,
                         message=dm_text,
                         sender=persona['name'],
-                        timestamp=datetime.utcnow()
+                        timestamp=datetime.now(timezone.utc)
                     )
                     db.add(new_conv)
                     db.commit()
                     logger.info(f"[SLIE Human Engine] Private DM sent to lead {lead.username} using account {phone_number}")
             except Exception as e:
-                logger.error(f"Error processing private DM for lead {lead_id}: {e}")
+                log_error(logger, e, context=f"Processing private DM for lead {lead_id}")
 
 response_engine = ResponseEngine()

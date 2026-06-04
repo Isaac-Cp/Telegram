@@ -1,6 +1,6 @@
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 from typing import List, Optional, Dict, Any
 
@@ -87,115 +87,200 @@ class LeadScoringEngine:
             logger.error(f"AI classification failed: {e}")
             return {"intent_type": "general_discussion", "intent_score": 0, "confidence": 0}
 
-    async def calculate_predictive_buyer_score(self, user_uuid: str, message_text: str) -> int:
+    async def calculate_predictive_buyer_score(self, lead_id: str, message_text: str) -> int:
         """
-        Elite Module 5: Predictive Buyer Engine.
-        Predict which users will likely buy IPTV soon based on signals.
-        Enhanced with Cross-Group Identity Tracking (Elite Module 4).
+        Elite Multi-Layer Dynamic Scoring (Layer 1-5).
+        Scores leads across 5 dimensions: Intent, Problem, Engagement, Recency, and Pattern.
         """
-        score = 0
-        text = message_text.lower()
-        
-        # 1. Complaint Signal (30 pts)
-        complaint_terms = ["not working", "buffering", "lagging", "error", "down", "freezing"]
-        if any(term in text for term in complaint_terms):
-            score += 30
-            
-        # 2. Recommendation Request (40 pts)
-        rec_terms = ["recommend", "any good", "best provider", "looking for", "suggest", "trial"]
-        if any(term in text for term in rec_terms):
-            score += 40
-            
-        # 3. Technical Terms (20 pts)
-        tech_terms = ["xtream", "m3u", "panel", "dns", "portal", "vpn", "hosting", "server"]
-        if any(term in text for term in tech_terms):
-            score += 20
-            
-        # 4. Activity Spike (10 pts - based on last 10 messages)
-        # Use a brief session for lookups
-        with SessionLocal() as db:
-            from app.models.user import User
-            from app.models.message import Message
-            from datetime import timedelta
-            user = db.get(User, user_uuid)
-            if user:
-                # 4. Activity Spike (10 pts - based on last 10 messages)
-                recent_count = db.query(Message).filter(
-                    Message.telegram_user_id == user.telegram_user_id,
-                    Message.sent_at >= datetime.utcnow() - timedelta(hours=1)
-                ).count()
-                if recent_count > 3: # More than 3 messages in an hour
-                    score += 10
-                
-                # STEP 5 — PROFILE AGGREGATION (Module 4 Step 5)
-                # Boost score based on cross-group presence and historical complaints
-                if user.groups_seen > 1:
-                    # +5 points for every additional group seen in, up to 20 points
-                    group_bonus = min((user.groups_seen - 1) * 5, 20)
-                    score += group_bonus
-
-                if user.complaints_count > 1:
-                    # +10 points for recurring complaints across groups
-                    complaint_bonus = min(user.complaints_count * 5, 30)
-                    score += complaint_bonus
-
-        # Determine category based on thresholds (Module 5 Thresholds)
-        category = "COLD"
-        if score > 70:
-            category = "HOT"
-        elif score >= 40:
-            category = "WARM"
-            
-        logger.info(f"[SLIE Predictive Engine] Buyer score for user {user_uuid}: {score} ({category} lead)")
-        return score
-
-    async def calculate_lead_score(self, lead_id: str, message_text: str, ai_result: dict) -> tuple[int, str]:
-        """
-        Calculates the lead score and determines strength using SLIE Elite formula (Module 7):
-        score = intent_score + urgency_bonus + question_bonus
-        """
-        # 1. Fetch data - BRIEF SESSION
         with SessionLocal() as db:
             lead = db.get(Lead, lead_id)
-            if not lead:
-                return 0, "ignore"
-            user_id = lead.user_id
+            if not lead: return 0
+            user = lead.user
 
-        # 2. Intent Score (from AI Module 6)
-        intent_score = ai_result.get("intent_score", 0)
+            # LAYER 1: Intent Score (0-40 points)
+            intent_score = 0
+            text = message_text.lower()
+            
+            # Very High Intent (+35 to +40)
+            vhi_terms = [
+                "recommend a provider", "recommend provider", "need a new iptv", 
+                "looking for a replacement", "who has a trial", "any good provider",
+                "looking for iptv", "suggest an iptv"
+            ]
+            # Medium Intent (+20 to +35)
+            mi_terms = [
+                "buffering", "freezing", "not working", "pricing", "cost", "how much",
+                "any trial", "test account", "technical question", "how to setup"
+            ]
+            
+            if any(term in text for term in vhi_terms):
+                intent_score = 40
+            elif any(term in text for term in mi_terms):
+                intent_score = 30
+            else:
+                intent_score = 10
+            
+            # LAYER 2: Problem Severity (0-20 points)
+            problem_score = 0
+            # Major Problem (+20)
+            major_probs = [
+                "service completely down", "constant buffering", "account disabled", 
+                "provider disappeared", "scammed", "no response from provider", "server down"
+            ]
+            if any(term in text for term in major_probs):
+                problem_score = 20
+            # Medium Problem (+10)
+            elif any(term in text for term in ["buffering", "channel issues", "lagging", "freezing"]):
+                problem_score = 10
+
+            # LAYER 3: Engagement Score (0-15 points)
+            engagement_score = 0
+            if user:
+                # Based on user's historical activity
+                if user.message_frequency > 15:
+                    engagement_score = 15
+                elif user.message_frequency > 5:
+                    engagement_score = 10
+                elif user.message_frequency > 1:
+                    engagement_score = 5
+
+            # LAYER 4: Recency Score (0-15 points)
+            # When a lead is first detected, it's "Today"
+            recency_score = 15
+
+            # LAYER 5: Buyer Pattern Score (0-10 points)
+            pattern_score = 0
+            # Positive Signals
+            pos_patterns = ["trial", "price", "compare", "recommend", "recurring", "complaint"]
+            if any(term in text for term in pos_patterns):
+                pattern_score += 10
+                
+            # Negative Signals (Advertisers/Sellers) - Strong Penalty
+            neg_patterns = [
+                "dm me", "best service", "join my", "panel available", "reseller", 
+                "best iptv", "whatsapp", "t.me/", "low price", "reliable service"
+            ]
+            if any(term in text for term in neg_patterns):
+                pattern_score -= 60 # Massive penalty for potential sellers
+
+            # UPDATE LEAD FIELDS
+            lead.intent_score = float(intent_score)
+            lead.urgency_score = float(problem_score)
+            lead.engagement_score = float(engagement_score)
+            lead.recency_score = float(recency_score)
+            lead.pattern_score = float(pattern_score)
+            
+            # FINAL FORMULA
+            total_score = intent_score + problem_score + engagement_score + recency_score + pattern_score
+            total_score = max(0, min(100, total_score))
+            
+            lead.lead_score = int(total_score)
+            lead.opportunity_score = float(total_score)
+            
+            # CATEGORIZE
+            if total_score >= 80:
+                lead.lead_temperature = "HOT"
+                lead.priority_level = "HIGH"
+            elif total_score >= 60:
+                lead.lead_temperature = "WARM"
+                lead.priority_level = "MEDIUM"
+            elif total_score >= 40:
+                lead.lead_temperature = "POTENTIAL"
+                lead.priority_level = "LOW"
+            else:
+                lead.lead_temperature = "COLD"
+                lead.priority_level = "IGNORE"
+
+            db.commit()
+            logger.info(f"[SLIE Dynamic Scoring] Lead {lead_id} scored {total_score} ({lead.lead_temperature})")
+            return int(total_score)
+
+    async def decay_lead_scores(self):
+        """
+        Elite Step: Buying intent expires. Decay recency score daily.
+        Recalculates total score based on the 5-layer model.
+        """
+        with SessionLocal() as db:
+            # Only decay leads that aren't already converted or disqualified
+            leads = db.execute(
+                select(Lead).where(
+                    and_(
+                        Lead.conversion_stage == ConversionStage.NEW,
+                        Lead.lead_temperature != "IGNORE"
+                    )
+                )
+            ).scalars().all()
+            
+            now = datetime.utcnow()
+            for lead in leads:
+                # Recalculate Recency Score based on timestamp
+                delta = now - lead.timestamp
+                days_old = delta.days
+                
+                if days_old == 0:
+                    lead.recency_score = 15
+                elif days_old <= 3:
+                    lead.recency_score = 10
+                elif days_old <= 7:
+                    lead.recency_score = 5
+                else:
+                    lead.recency_score = 0
+                
+                # Recalculate Total Score
+                total_score = (
+                    lead.intent_score + 
+                    lead.urgency_score + 
+                    lead.engagement_score + 
+                    lead.recency_score + 
+                    lead.pattern_score
+                )
+                total_score = max(0, min(100, total_score))
+                
+                lead.lead_score = int(total_score)
+                lead.opportunity_score = float(total_score)
+                
+                # Update Temperature
+                if total_score >= 80:
+                    lead.lead_temperature = "HOT"
+                elif total_score >= 60:
+                    lead.lead_temperature = "WARM"
+                elif total_score >= 40:
+                    lead.lead_temperature = "POTENTIAL"
+                else:
+                    lead.lead_temperature = "COLD"
+            
+            db.commit()
+            logger.info(f"[SLIE Decay] Decayed scores for {len(leads)} leads.")
+
+    async def get_top_intent_buyers(self, limit: int = 20, days: int = 7) -> List[Lead]:
+        """
+        Returns the highest-intent buyers detected in the last N days.
+        """
+        since = datetime.utcnow() - timedelta(days=days)
+        with SessionLocal() as db:
+            stmt = select(Lead).where(
+                and_(
+                    Lead.timestamp >= since,
+                    Lead.lead_temperature.in_(["HOT", "WARM"])
+                )
+            ).order_by(desc(Lead.lead_score)).limit(limit)
+            
+            leads = db.execute(stmt).scalars().all()
+            return list(leads)
+
+    async def calculate_lead_score(self, lead_id: str, message_text: str, ai_result: dict = None) -> tuple[int, str]:
+        """
+        Unified scoring entry point.
+        """
+        score = await self.calculate_predictive_buyer_score(lead_id, message_text)
         
-        # 3. Urgency Bonus (2 if urgent phrases detected)
-        has_urgency = any(kw in message_text.lower() for kw in URGENCY_KEYWORDS)
-        urgency_bonus = 2 if has_urgency else 0
-        
-        # 4. Question Bonus (1 if question detected)
-        question_bonus = 1 if "?" in message_text else 0
-        
-        # 5. Predictive Buyer Engine Integration (Module 5) - ASYNC (OUTSIDE SESSION)
-        buyer_score = await self.calculate_predictive_buyer_score(user_id, message_text)
-        
-        # Total Formula (Module 7 spec)
-        total_score = intent_score + urgency_bonus + question_bonus
-        
-        # Final classification based on combined signals
-        strength = "ignore"
-        if total_score >= 8 or buyer_score > 70:
-            strength = "strong lead"
-        elif total_score >= 5 or buyer_score > 40:
-            strength = "potential lead"
-        
-        # 6. Update Lead record - NEW BRIEF SESSION
         with SessionLocal() as db:
             lead = db.get(Lead, lead_id)
             if lead:
-                lead.lead_score = total_score
-                lead.lead_strength = strength
-                db.commit()
-                
-        logger.info(f"[SLIE Lead Engine] Lead {lead_id} scored {total_score} (Strength: {strength})")
-        return total_score, strength
+                return lead.lead_score, lead.lead_temperature or "COLD"
+        return score, "COLD"
 
-    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None, ai_analysis: dict = None, pain_signals: dict = None):
+    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None):
         """
         Performs full pipeline: Analyze -> Score -> Create Lead
         """
@@ -204,14 +289,13 @@ class LeadScoringEngine:
             logger.info(f"Skipping duplicate contact for user {user_id}")
             return None
 
-        # 1. Get or Create Lead - BRIEF SESSION
+        # 1. Get or Create Lead
         with SessionLocal() as db:
             from app.models.user import User
             user = db.execute(select(User).where(User.telegram_user_id == user_id)).scalar_one_or_none()
             if not user:
-                return None # Should have been created by scraper
+                return None
 
-            # Check if lead already exists but is still NEW
             existing_lead = db.execute(
                 select(Lead).where(
                     and_(
@@ -227,7 +311,7 @@ class LeadScoringEngine:
                 lead = Lead(
                     user_id=user.id,
                     group_id=group_id,
-                    original_message=message_text,
+                    message_text=message_text,
                     timestamp=datetime.utcnow(),
                     conversion_stage=ConversionStage.NEW
                 )
@@ -237,18 +321,10 @@ class LeadScoringEngine:
             lead_id = lead.id
             db.commit()
 
-        # 2. OPPORTUNITY SCORING (Module 1) - ASYNC (OUTSIDE SESSION)
-        opp_score, priority = await opportunity_engine.score_lead(lead_id)
-        
-        # 3. LTV SCORING (Module 2) - SYNCHRONOUS
-        ltv_score, ltv_tier = ltv_engine.calculate_ltv_score(lead_id)
+        # 2. Score Lead
+        await self.calculate_predictive_buyer_score(lead_id, message_text)
 
-        # 4. Trigger Async Power Upgrades - OUTSIDE SESSION
-        asyncio.create_task(power_upgrades_service.detect_lead_temperature(lead_id, message_text))
-        asyncio.create_task(opportunity_engine.process_lead_opportunity(lead_id))
-        asyncio.create_task(memory_engine.generate_conversation_summary(lead_id))
-
-        # 5. Store initial history and final update - BRIEF SESSION
+        # 3. Store initial history
         with SessionLocal() as db:
             lead = db.get(Lead, lead_id)
             if lead:
@@ -262,30 +338,19 @@ class LeadScoringEngine:
                 db.commit()
                 db.refresh(lead)
                 
-                logger.info(f"[SLIE Lead Engine] Lead processed: {username} (Opp: {opp_score}/{priority}, LTV: {ltv_score}/{ltv_tier})")
+                logger.info(f"[SLIE Lead Engine] Lead processed: {username} (Score: {lead.lead_score})")
                 return lead
         return None
 
-    async def get_top_leads(self, limit: int = 10) -> List[Lead]:
-        """
-        Retrieves the leads with the highest scores.
-        """
-        with SessionLocal() as db:
-            result = db.execute(
-                select(Lead)
-                .order_by(desc(Lead.lead_score))
-                .limit(limit)
-            ).scalars().all()
-            return list(result)
+lead_scoring = LeadScoringEngine()
+lead_scoring_engine = lead_scoring
 
-lead_scoring_engine = LeadScoringEngine()
-
-# Exportable functions
-async def calculate_lead_score(message: str):
-    return await lead_scoring_engine.calculate_lead_score(message)
+# Exportable functions for compatibility
+async def calculate_lead_score(lead_id: str, message_text: str):
+    return await lead_scoring.calculate_lead_score(lead_id, message_text)
 
 async def create_lead(user_id: int, username: str, group_id: str, message: str):
-    return await lead_scoring_engine.create_lead(user_id, username, group_id, message)
+    return await lead_scoring.create_lead(user_id, username, group_id, message)
 
-async def get_top_leads(limit: int = 10):
-    return await lead_scoring_engine.get_top_leads(limit)
+async def get_top_leads(limit: int = 20, days: int = 7):
+    return await lead_scoring.get_top_intent_buyers(limit, days)

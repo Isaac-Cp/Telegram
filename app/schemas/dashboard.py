@@ -38,6 +38,8 @@ class AccountHealth(BaseModel):
     dms_left: int = 0
     replies_left: int = 0
     joins_left: int = 0
+    proxy_status: bool = True
+    cooldown_until: Optional[datetime] = None
 
 class DashboardSummary(BaseModel):
     contacts_total: int
@@ -65,6 +67,8 @@ class DashboardSummary(BaseModel):
     average_ltv_score: float
     ltv_distribution: dict
     problem_distribution: dict
+    sentiment_trends: dict = {}
+    hourly_heatmap: List[dict] = []
     persona_performance: List[PersonaPerformance]
     account_health: List[AccountHealth]
     

@@ -23,7 +23,10 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     message_text: Mapped[str] = mapped_column(Text)
     intent_type: Mapped[str | None] = mapped_column(String(50)) # Module 4 Step 5: complaint, help_request
     intent_score: Mapped[float] = mapped_column(default=0.0)
-    urgency_score: Mapped[float] = mapped_column(default=0.0)
+    urgency_score: Mapped[float] = mapped_column(default=0.0) # Problem Severity
+    engagement_score: Mapped[float] = mapped_column(default=0.0)
+    recency_score: Mapped[float] = mapped_column(default=0.0)
+    pattern_score: Mapped[float] = mapped_column(default=0.0)
     opportunity_score: Mapped[float] = mapped_column(default=0.0)
     priority_level: Mapped[str] = mapped_column(String(20), default="LOW") # HIGH, MEDIUM, LOW
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)

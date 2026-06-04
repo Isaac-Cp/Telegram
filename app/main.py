@@ -91,109 +91,114 @@ async def lifespan(application: FastAPI):
     
     settings = get_settings()
 
-    # Delay heavier runtime imports until startup so the dashboard can boot faster.
-    from app.jobs.scheduler import scheduler
-    from app.jobs.tasks import slie_message_scanning
-    from app.jobs.worker import follow_up_worker
-    from app.services.response_engine import response_engine
-    
-    # 3. Initialize Sentry (Module 10 Prod)
-    if settings.sentry_dsn:
-        sentry_sdk.init(
-            dsn=settings.sentry_dsn,
-            environment=settings.environment,
-            traces_sample_rate=1.0,
-            profiles_sample_rate=1.0,
-        )
-        logger.info("Sentry monitoring initialized.")
-
-
-    # 4. Enforce Alembic migrations at startup
-    try:
-        import subprocess
-        import sys
-        result = subprocess.run([
-            sys.executable, "-m", "alembic", "upgrade", "head"
-        ], capture_output=True, text=True, check=True, timeout=10)
-        logger.info("Alembic migrations applied successfully.")
-    except Exception as e:
-        logger.warning(f"Alembic migrations could not be applied or timed out: {e}")
-
-    async def robust_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = True):
-        for attempt in range(1, max_retries + 1):
-            try:
-                result = fn()
-                if inspect.isawaitable(result):
-                    await result
-                return
-            except Exception as e:
-                logger.error(f"{label} failed (attempt {attempt}/{max_retries}): {e}")
-                if attempt == max_retries:
-                    break
-                await asyncio.sleep(min(30, 2 ** attempt))
-        if escalate:
-            logger.critical(f"{label} failed after {max_retries} attempts. Escalating.")
-            raise RuntimeError(f"{label} failed after retries")
-        logger.error(f"{label} failed after {max_retries} attempts.")
-
-    async def spawn_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = False):
-        try:
-            await robust_bg_task(label, fn, max_retries=max_retries, escalate=escalate)
-        except Exception as e:
-            logger.critical(f"Background task '{label}' failed permanently: {e}")
-            if escalate:
-                os._exit(1)
-
-    # 5. Verify Database availability and ensure migrations succeeded
-    try:
-        await robust_bg_task("Database Initialization", verify_database_connection, max_retries=1, escalate=False)
-    except Exception as e:
-        logger.warning(f"Database Initialization failed, continuing in limited mode: {e}")
-
-    # 6. Initialize Redis (Module 10 Prod)
-    try:
-        await robust_bg_task("Redis Initialization", redis_client.connect, max_retries=1, escalate=False)
-    except Exception as e:
-        logger.warning(f"Redis Initialization failed, continuing in limited mode: {e}")
-
-    async def telegram_clients_bg():
-        from slie.telegram.telegram_client import telegram_engine
-        from app.services.telegram_client import telegram_client_manager
-
-        await telegram_engine.connect()
-        if settings.telegram_session_string:
-            await telegram_client_manager.get_client()
-            logger.info("Elite Telegram Client initialized.")
-
-    asyncio.create_task(spawn_bg_task("Telegram Clients Initialization", telegram_clients_bg, max_retries=5, escalate=True))
-
-    async def personas_bg():
-        from app.services.power_upgrades import power_upgrades_service
-        await power_upgrades_service.ensure_personas_initialized()
-        logger.info("Power Upgrades personas initialized.")
-
-    asyncio.create_task(spawn_bg_task("Personas Initialization", personas_bg, max_retries=5, escalate=True))
-
-    # 7. Start schedulers and background tasks
-    if settings.scheduler_enabled:
-        scheduler.start()
-        # Start message scanning in background with retry
-        asyncio.create_task(spawn_bg_task("Message Scanning", slie_message_scanning, max_retries=5, escalate=False))
-        # Start Human Behavior Simulation Engine background tasks (Module 3)
-        asyncio.create_task(spawn_bg_task("Response Engine Active Hours", response_engine.manage_active_hours, max_retries=5, escalate=False))
-        # Start Follow-Up Worker (Module 9 Support)
-        if settings.background_workers_enabled:
-            asyncio.create_task(spawn_bg_task("Follow-Up Worker", follow_up_worker.start, max_retries=5, escalate=False))
-            logger.info("Follow-Up Worker background task started.")
-        logger.info("SLIE Background Schedulers and Scrapers started.")
-    else:
-        logger.info("Background schedulers are disabled (SCHEDULER_ENABLED=false).")
+    async def startup_logic():
+        # Delay heavier runtime imports until startup so the dashboard can boot faster.
+        from app.jobs.scheduler import scheduler
+        from app.jobs.tasks import slie_message_scanning
+        from app.jobs.worker import follow_up_worker
+        from app.services.response_engine import response_engine
         
+        # 3. Initialize Sentry (Module 10 Prod)
+        if settings.sentry_dsn:
+            sentry_sdk.init(
+                dsn=settings.sentry_dsn,
+                environment=settings.environment,
+                traces_sample_rate=1.0,
+                profiles_sample_rate=1.0,
+            )
+            logger.info("Sentry monitoring initialized.")
+
+
+        # 4. Enforce Alembic migrations at startup
+        if os.getenv("DEVELOPMENT", "").lower() != "true":
+            try:
+                import subprocess
+                import sys
+                subprocess.run([
+                    sys.executable, "-m", "alembic", "upgrade", "head"
+                ], capture_output=True, text=True, check=True, timeout=10)
+                logger.info("Alembic migrations applied successfully.")
+            except Exception as e:
+                logger.warning(f"Alembic migrations could not be applied or timed out: {e}")
+
+        async def robust_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = True):
+            for attempt in range(1, max_retries + 1):
+                try:
+                    result = fn()
+                    if inspect.isawaitable(result):
+                        await result
+                    return
+                except Exception as e:
+                    logger.error(f"{label} failed (attempt {attempt}/{max_retries}): {e}")
+                    if attempt == max_retries:
+                        break
+                    await asyncio.sleep(min(30, 2 ** attempt))
+            if escalate:
+                logger.critical(f"{label} failed after {max_retries} attempts. Escalating.")
+                raise RuntimeError(f"{label} failed after retries")
+            logger.error(f"{label} failed after {max_retries} attempts.")
+
+        async def spawn_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = False):
+            try:
+                await robust_bg_task(label, fn, max_retries=max_retries, escalate=escalate)
+            except Exception as e:
+                logger.critical(f"Background task '{label}' failed permanently: {e}")
+                if escalate:
+                    os._exit(1)
+
+        # 5. Verify Database availability (Non-blocking spawn)
+        asyncio.create_task(spawn_bg_task("Database Initialization", verify_database_connection, max_retries=1, escalate=False))
+
+        # 6. Initialize Redis (Non-blocking spawn)
+        asyncio.create_task(spawn_bg_task("Redis Initialization", redis_client.connect, max_retries=1, escalate=False))
+
+        async def telegram_clients_bg():
+            from app.services.telegram_client import telegram_client_manager
+            if settings.telegram_session_string:
+                try:
+                    await telegram_client_manager.get_client()
+                    logger.info("Elite Telegram Client initialized.")
+                except Exception as e:
+                    logger.error(f"Telegram Client Initialization failed: {e}")
+
+        asyncio.create_task(spawn_bg_task("Telegram Clients Initialization", telegram_clients_bg, max_retries=5, escalate=False))
+
+        async def personas_bg():
+            from app.services.power_upgrades import power_upgrades_service
+            await power_upgrades_service.ensure_personas_initialized()
+            logger.info("Power Upgrades personas initialized.")
+
+        asyncio.create_task(spawn_bg_task("Personas Initialization", personas_bg, max_retries=5, escalate=True))
+
+        # 7. Start schedulers and background tasks
+        if settings.scheduler_enabled and os.getenv("DEVELOPMENT", "").lower() != "true":
+            scheduler.start()
+            asyncio.create_task(spawn_bg_task("Message Scanning", slie_message_scanning, max_retries=5, escalate=False))
+            asyncio.create_task(spawn_bg_task("Response Engine Active Hours", response_engine.manage_active_hours, max_retries=5, escalate=False))
+            from app.services.proxy_manager import proxy_manager
+            asyncio.create_task(spawn_bg_task("Proxy Validation", proxy_manager.run_background_validation, max_retries=5, escalate=False))
+            if settings.background_workers_enabled:
+                asyncio.create_task(spawn_bg_task("Follow-Up Worker", follow_up_worker.start, max_retries=5, escalate=False))
+                logger.info("Follow-Up Worker background task started.")
+            logger.info("SLIE Background Schedulers and Scrapers started.")
+        elif os.getenv("DEVELOPMENT", "").lower() == "true":
+            logger.info("Background schedulers and tasks skipped in Development Mode.")
+        else:
+            logger.info("Background schedulers are disabled (SCHEDULER_ENABLED=false).")
+
+    # Start all startup logic in a non-blocking way
+    asyncio.create_task(startup_logic())
+    
     yield
     
     # Shutdown flow
-    if settings.scheduler_enabled and scheduler.running:
-        scheduler.shutdown(wait=False)
+    try:
+        from app.jobs.scheduler import scheduler
+        if settings.scheduler_enabled and scheduler.running:
+            scheduler.shutdown(wait=False)
+    except Exception:
+        pass
+    
     await redis_client.disconnect()
     logger.info("SLIE Application shutdown complete.")
 

@@ -138,26 +138,47 @@ class OpportunityScoringEngine:
             if not lead or not lead.user:
                 return 0.0, "LOW"
 
-            original_message = lead.original_message
-            # Capture user object for synchronous calculation
-            user = lead.user
-
-            # 2. Urgency Score (30% weight) - SYNCHRONOUS
-            urgency_score = self.calculate_urgency_score(
-                lead, original_message, db
-            )
-
-            # 3. Activity Score (20% weight) - SYNCHRONOUS
-            activity_score = self.calculate_activity_score(user)
-
-        # 4. Intent Score (50% weight) - ASYNC AI CALL (OUTSIDE SESSION)
-        intent_score = await self.calculate_intent_score(original_message)
+            message_text = lead.message_text
+            
+            # 1. Update Lead with predictive scoring (Module 5)
+            # This is where we integrate with the new scoring logic
+            from app.services.lead_scoring import lead_scoring
+            await lead_scoring.calculate_predictive_buyer_score(lead_id, message_text)
+            
+            # 2. Calculate intent and urgency
+            intent_score = await self.calculate_intent_score(message_text)
+            urgency_score = self.calculate_urgency_score(lead, message_text, db)
+            
+            # 3. Activity Score (20% weight)
+            activity_score = self.calculate_activity_score(lead.user)
 
         # SCORING MODEL (Master Prompt Step 9)
+        # Enhanced with Historical Conversion Weights (Module 16)
+        # If historical conversion rate for similar leads is high, boost score
+        conversion_boost = 0.0
+        with SessionLocal() as db:
+            from app.models.enums import ConversionStage
+            # Simplified historical correlation: how many HOT leads in this group converted?
+            if lead.group_id:
+                total_leads = db.query(func.count(Lead.id)).filter(
+                    Lead.group_id == lead.group_id,
+                    Lead.lead_temperature == "HOT"
+                ).scalar() or 0
+                
+                converted_leads = db.query(func.count(Lead.id)).filter(
+                    Lead.group_id == lead.group_id,
+                    Lead.conversion_stage == ConversionStage.CONVERTED
+                ).scalar() or 0
+                
+                if total_leads > 5:
+                    conversion_rate = converted_leads / total_leads
+                    conversion_boost = conversion_rate * 2.0 # Max 2.0 boost
+
         opportunity_score = (
-            (intent_score * 0.5)
-            + (urgency_score * 0.3)
-            + (activity_score * 0.2)
+            (intent_score * 0.4)
+            + (urgency_score * 0.25)
+            + (activity_score * 0.15)
+            + (conversion_boost * 0.2)
         )
         opportunity_score = round(max(0.0, min(10.0, opportunity_score)), 2)
 

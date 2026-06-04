@@ -37,6 +37,14 @@ from app.services.database_cleanup import DatabaseCleanupService
 
 logger = logging.getLogger(__name__)
 
+from app.services.lead_scoring import lead_scoring
+
+async def slie_score_decay():
+    """Module 16: Decay lead scores based on recency (Every 24h)."""
+    logger.info("Running SLIE Score Decay task...")
+    await lead_scoring.decay_lead_scores()
+
+
 async def slie_power_upgrades():
     """Run Phase 2 Power Upgrades: Opportunity Clustering, Authority Ranking, and Trend Detection (Module 11)."""
     logger.info("Running SLIE power upgrades task...")

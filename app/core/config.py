@@ -85,10 +85,10 @@ class Settings(BaseSettings):
     reddit_client_secret: str = Field("", alias="REDDIT_CLIENT_SECRET")
     reddit_user_agent: str = "slie-bot/0.1"
     
-    # SLIE Limits
-    max_groups_join_per_day: int = 2
-    max_public_replies_per_day: int = 5
-    max_dms_per_day: int = 2 # Updated for maximum safety as per user request
+    # SLIE Limits (Updated as per user request)
+    max_groups_join_per_day: int = 7
+    max_public_replies_per_day: int = 20
+    max_dms_per_day: int = 4
     public_reply_delay_minutes: int = 20
     dm_delay_min_minutes: int = 15
     dm_delay_max_minutes: int = 45

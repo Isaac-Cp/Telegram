@@ -3,929 +3,360 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SLIE live dashboard for outreach, leads, groups, activity, targeting, and runtime settings.">
-    <meta name="theme-color" content="#061331">
-    <meta property="og:title" content="SLIE Revenue Command Dashboard">
-    <meta property="og:description" content="Live outreach, lead, group, persona, and system settings dashboard.">
-    <meta property="og:type" content="website">
-    <title>SLIE Dashboard</title>
+    <meta name="description" content="SLIE Premium Revenue Command Dashboard">
+    <meta name="theme-color" content="#020617">
+    <title>SLIE Intelligence | Revenue Command</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/dashboard/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <a class="skip-link" href="#main-content">Skip to dashboard</a>
-    <div class="liquid-bg" aria-hidden="true"></div>
+<body data-active-page="__ACTIVE_PAGE__">
+    <!-- Liquid Glass Background -->
+    <div class="liquid-glass-container" aria-hidden="true">
+        <div class="liquid-glass-blob blob-1"></div>
+        <div class="liquid-glass-blob blob-2"></div>
+        <div class="liquid-glass-blob blob-3"></div>
+    </div>
+    
+    <!-- Mobile Header -->
+    <header class="mobile-nav">
+        <div class="brand">
+            <span style="font-weight: 800; color: var(--accent);">SLIE</span>
+        </div>
+        <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle Menu">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+    </header>
 
     <div class="app-shell">
-        <aside class="sidebar" aria-label="Dashboard navigation">
-            <a class="brand" href="/api/v1/dashboard/overview" aria-label="SLIE dashboard overview">
-                <span class="brand-mark">S</span>
-                <span>
-                    <strong>SLIE</strong>
-                    <small>Revenue Command</small>
-                </span>
-            </a>
-
-            <nav class="side-nav">
-                <a data-nav="overview" href="/api/v1/dashboard/overview"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg></span>Overview</a>
-                <a data-nav="activity" href="/api/v1/dashboard/activity"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 13h4l2-7 4 14 2-7h4"/></svg></span>Activity</a>
-                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 19V8m7 11V4m7 15v-7"/></svg></span>Pipeline</a>
-                <a data-nav="watch" href="/api/v1/dashboard/watch"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></span>Watch</a>
-                <a data-nav="targeting" href="/api/v1/dashboard/targeting"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></span>Targeting</a>
-                <a data-nav="settings" href="/api/v1/dashboard/settings"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Zm8-3.5 2-1.5-2-3.5-2.4 1a7.4 7.4 0 0 0-1.6-.9L15.7 4h-4l-.4 2.6c-.6.2-1.1.5-1.6.9L7.3 6.5l-2 3.5L7 12l-1.7 2 2 3.5 2.4-1c.5.4 1 .7 1.6.9l.4 2.6h4l.4-2.6c.6-.2 1.1-.5 1.6-.9l2.4 1 2-3.5Z"/></svg></span>Settings</a>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand" style="margin-bottom: 3rem;">
+                <h1 style="font-size: 1.5rem; color: var(--accent);">REVENUE COMMAND</h1>
+                <p style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.1em;">PREMIUM INTELLIGENCE</p>
+            </div>
+            
+            <nav class="side-nav" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="/api/v1/dashboard/overview" class="nav-item active">Overview</a>
+                <a href="/api/v1/dashboard/activity" class="nav-item">Activity</a>
+                <a href="/api/v1/dashboard/pipeline" class="nav-item">Pipeline</a>
+                <a href="/api/v1/dashboard/targeting" class="nav-item">Targeting</a>
+                <a href="/api/v1/dashboard/settings" class="nav-item">Settings</a>
             </nav>
-
-            <div class="backend-pill">
-                <span></span>
-                Live backend link
+            
+            <div style="margin-top: auto;">
+                <div class="clay-card" style="padding: 1rem; font-size: 0.8rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e;"></div>
+                        <span style="font-weight: 700;">BOT ACTIVE</span>
+                    </div>
+                    <p style="color: var(--text-secondary);">Grace ATV Pro</p>
+                </div>
             </div>
         </aside>
 
-        <header class="mobile-nav" aria-label="Mobile dashboard navigation">
-            <a class="brand brand--mobile" href="/api/v1/dashboard/overview">
-                <span class="brand-mark">S</span>
-                <span>
-                    <strong>SLIE</strong>
-                    <small id="mobile-page-label">Overview</small>
-                </span>
-            </a>
-            <nav class="mobile-icon-nav" aria-label="Primary pages">
-                <a data-nav="overview" href="/api/v1/dashboard/overview" aria-label="Overview" title="Overview"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg></a>
-                <a data-nav="activity" href="/api/v1/dashboard/activity" aria-label="Activity" title="Activity"><svg viewBox="0 0 24 24"><path d="M4 13h4l2-7 4 14 2-7h4"/></svg></a>
-                <a data-nav="pipeline" href="/api/v1/dashboard/pipeline" aria-label="Pipeline" title="Pipeline"><svg viewBox="0 0 24 24"><path d="M5 19V8m7 11V4m7 15v-7"/></svg></a>
-                <a data-nav="watch" href="/api/v1/dashboard/watch" aria-label="Watch" title="Watch"><svg viewBox="0 0 24 24"><path d="M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></a>
-                <a data-nav="settings" href="/api/v1/dashboard/settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Zm8-3.5 2-1.5-2-3.5-2.4 1a7.4 7.4 0 0 0-1.6-.9L15.7 4h-4l-.4 2.6c-.6.2-1.1.5-1.6.9L7.3 6.5l-2 3.5L7 12l-1.7 2 2 3.5 2.4-1c.5.4 1 .7 1.6.9l.4 2.6h4l.4-2.6c.6-.2 1.1-.5 1.6-.9l2.4 1 2-3.5Z"/></svg></a>
-            </nav>
-        </header>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="hero">
+                <p style="color: var(--accent); font-weight: 800; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase;">Intelligence Overview</p>
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Revenue Dashboard</h1>
+            </header>
 
-        <main id="main-content" class="main-content">
-            <section class="hero card">
-                <div>
-                    <p class="eyebrow" id="page-kicker">Dashboard</p>
-                    <h1 id="page-title">Dashboard overview</h1>
-                </div>
-                <div class="hero-metrics" aria-label="Live overview metrics">
-                    <article><span>DMs</span><strong data-metric="dms">0</strong></article>
-                    <article><span>Replies</span><strong data-metric="replies">0</strong></article>
-                    <article><span>Conversions</span><strong data-metric="conversions">0</strong></article>
-                </div>
-            </section>
-
-            <section class="page page-overview" data-page="overview">
-                <section class="kpi-grid" id="kpiGrid" aria-label="Live KPI cards">
-                    <article class="kpi-card kpi-card--blue 3d-hover">
-                        <b>DM</b>
-                        <span>Total DMs</span>
-                        <strong data-kpi="totalDms">0</strong>
-                        <small data-kpi-note="totalDms">Live outreach volume</small>
-                    </article>
-                    <article class="kpi-card kpi-card--cyan 3d-hover">
-                        <b>LR</b>
-                        <span>Lead responses</span>
-                        <strong data-kpi="responses">0</strong>
-                        <small data-kpi-note="responses">Replies and inbound signals</small>
-                    </article>
-                    <article class="kpi-card kpi-card--gold 3d-hover">
-                        <b>SR</b>
-                        <span>Success rate</span>
-                        <strong data-kpi="successRate">0.0%</strong>
-                        <small data-kpi-note="successRate">Conversions from detected leads</small>
-                    </article>
-                    <article class="kpi-card kpi-card--violet 3d-hover">
-                        <b>AL</b>
-                        <span>Active leads</span>
-                        <strong data-kpi="activeLeads">0</strong>
-                        <small data-kpi-note="activeLeads">Current lead pipeline</small>
-                    </article>
-                    <article class="kpi-card kpi-card--green 3d-hover">
-                        <b>MA</b>
-                        <span>Messages analyzed</span>
-                        <strong data-kpi="messages">0</strong>
-                        <small data-kpi-note="messages">Total scanned messages</small>
-                    </article>
-                    <article class="kpi-card kpi-card--ice 3d-hover">
-                        <b>GP</b>
-                        <span>Groups joined</span>
-                        <strong data-kpi="groups">0</strong>
-                        <small data-kpi-note="groups">Live joined groups</small>
-                    </article>
-                </section>
-
-                <div class="dashboard-grid dashboard-grid--two">
-                    <article class="card chart-card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Outreach performance</p>
-                                <h2>Outreach journey graph</h2>
-                            </div>
-                            <span class="status-pill">Multi-line</span>
-                        </div>
-                        <div class="chart-wrap"><canvas id="outreachChart"></canvas></div>
-                    </article>
-
-                    <article class="card chart-card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Group portfolio</p>
-                                <h2>Joined and lead quality</h2>
-                            </div>
-                            <span class="status-pill">Doughnut</span>
-                        </div>
-                        <div class="chart-wrap chart-wrap--donut"><canvas id="groupsChart"></canvas></div>
-                        <div class="legend-grid" id="groupsLegend"></div>
-                    </article>
-                </div>
-
-                <div class="dashboard-grid dashboard-grid--two">
-                    <article class="card chart-card chart-card--compact">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Success rate</p>
-                                <h2>Leads to wins</h2>
-                            </div>
-                            <span class="status-pill">Pie</span>
-                        </div>
-                        <div class="chart-wrap chart-wrap--donut"><canvas id="successChart"></canvas></div>
-                        <div class="legend-grid" id="successLegend"></div>
-                    </article>
-
-                    <article class="card chart-card chart-card--compact">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Lead quality</p>
-                                <h2>High-value and reseller split</h2>
-                            </div>
-                            <span class="status-pill">Live</span>
-                        </div>
-                        <div class="chart-wrap"><canvas id="leadQualityChart"></canvas></div>
-                    </article>
-                </div>
-
-                <article class="card">
-                    <div class="card-head">
-                        <div>
-                            <p class="eyebrow">AI persona flow</p>
-                            <h2>AI persona lead flow</h2>
-                        </div>
-                        <span class="status-pill">Sankey</span>
-                    </div>
-                    <div class="sankey sankey-svg-wrap" id="personaSankey" aria-label="AI persona lead flow"></div>
+            <!-- KPI Grid -->
+            <section class="kpi-grid">
+                <article class="clay-card kpi-card">
+                    <b>DM</b>
+                    <span>Outreach</span>
+                    <strong id="kpi-dms">0</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>LR</b>
+                    <span>Responses</span>
+                    <strong id="kpi-responses">0</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>SR</b>
+                    <span>Success Rate</span>
+                    <strong id="kpi-success">0%</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>AL</b>
+                    <span>Active Leads</span>
+                    <strong id="kpi-leads">0</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>GJ</b>
+                    <span>Groups Joined</span>
+                    <strong id="kpi-groups">0</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>MA</b>
+                    <span>Analyzed</span>
+                    <strong id="kpi-analyzed">0</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>HVL</b>
+                    <span>High Value</span>
+                    <strong id="kpi-hvl">0</strong>
+                </article>
+                <article class="clay-card kpi-card">
+                    <b>LTV</b>
+                    <span>Avg LTV</span>
+                    <strong id="kpi-ltv">0</strong>
                 </article>
             </section>
 
-            <section class="page page-activity" data-page="activity" hidden>
-                <div class="dashboard-grid dashboard-grid--two">
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Runtime</p>
-                                <h2>System status</h2>
-                            </div>
-                            <span class="status-pill" id="runtimeBadge">Checking</span>
-                        </div>
-                        <div class="status-map" id="runtimeMap"></div>
-                    </article>
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Activity</p>
-                                <h2>Latest events</h2>
-                            </div>
-                            <span class="status-pill">Live</span>
-                        </div>
-                        <div class="timeline" id="activityTimeline"></div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="page page-pipeline" data-page="pipeline" hidden>
-                <div class="dashboard-grid dashboard-grid--two">
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Leads</p>
-                                <h2>Priority queue</h2>
-                            </div>
-                            <span class="status-pill" id="leadCount">0 leads</span>
-                        </div>
-                        <div class="table-list" id="leadList"></div>
-                    </article>
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Groups</p>
-                                <h2>Highest yield channels</h2>
-                            </div>
-                            <span class="status-pill" id="groupCount">0 groups</span>
-                        </div>
-                        <div class="table-list" id="groupList"></div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="page page-watch" data-page="watch" hidden>
-                <div class="dashboard-grid dashboard-grid--two">
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Market watch</p>
-                                <h2>Competitor signals</h2>
-                            </div>
-                            <span class="status-pill">Live intel</span>
-                        </div>
-                        <div class="table-list" id="competitorList"></div>
-                    </article>
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Account health</p>
-                                <h2>Telegram capacity</h2>
-                            </div>
-                            <span class="status-pill" id="accountCount">0 accounts</span>
-                        </div>
-                        <div class="table-list" id="accountList"></div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="page page-targeting" data-page="targeting" hidden>
-                <div class="dashboard-grid dashboard-grid--two">
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Targeting</p>
-                                <h2>Search tags</h2>
-                            </div>
-                            <span class="status-pill">Editable</span>
-                        </div>
-                        <div class="tag-cloud" id="searchTags"></div>
-                    </article>
-                    <article class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="eyebrow">Watch terms</p>
-                                <h2>Lead triggers</h2>
-                            </div>
-                            <span class="status-pill">Live</span>
-                        </div>
-                        <div class="tag-cloud" id="watchTerms"></div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="page page-settings" data-page="settings" hidden>
-                <article class="card settings-card">
-                    <div class="card-head">
-                        <div>
-                            <p class="eyebrow">Settings</p>
-                            <h2>Dashboard controls</h2>
-                        </div>
-                        <span class="status-pill">Protected</span>
+            <!-- Charts Section -->
+            <div class="dashboard-grid dashboard-grid--two">
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Outreach Performance</h2>
+                    <div class="chart-wrap">
+                        <canvas id="performanceChart"></canvas>
                     </div>
-                    <form id="loginForm" class="settings-login">
-                        <label>
-                            Password
-                            <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Enter settings password">
-                        </label>
-                        <button type="submit">Unlock settings</button>
-                    </form>
-                    <form id="settingsForm" class="settings-form" hidden>
-                        <label>Target tags<textarea id="targetInput" rows="3"></textarea></label>
-                        <label>Search tags<textarea id="searchInput" rows="3"></textarea></label>
-                        <label>Brand tags<textarea id="brandInput" rows="3"></textarea></label>
-                        <label>Watch terms<textarea id="watchInput" rows="3"></textarea></label>
-                        <label>Daily DM limit<input id="dmLimitInput" type="number" min="0"></label>
-                        <label>Lead score threshold<input id="thresholdInput" type="number" min="0" max="100"></label>
-                        <label class="switch-row"><input id="autoJoinInput" type="checkbox"> Auto join groups</label>
-                        <label class="switch-row"><input id="telegramInput" type="checkbox"> Telegram outreach</label>
-                        <label>Notes<textarea id="notesInput" rows="4"></textarea></label>
-                        <button type="submit">Save settings</button>
-                    </form>
-                    <p class="form-message" id="settingsMessage" aria-live="polite"></p>
                 </article>
-            </section>
-
-            <section class="page page-styleguide" data-page="styleguide" hidden>
-                <article class="card">
-                    <div class="card-head">
-                        <div>
-                            <p class="eyebrow">Styleguide</p>
-                            <h2>Interface preview</h2>
-                        </div>
+                
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Market Sentiment</h2>
+                    <div class="chart-wrap">
+                        <canvas id="sentimentChart"></canvas>
                     </div>
-                    <div class="tag-cloud">
-                        <span>Liquid glass</span>
-                        <span>Royal blue</span>
-                        <span>Live data</span>
+                </article>
+
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">LTV Distribution</h2>
+                    <div class="chart-wrap">
+                        <canvas id="ltvChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="clay-card chart-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Problem Distribution</h2>
+                    <div class="chart-wrap">
+                        <canvas id="problemChart"></canvas>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Persona & Account Health -->
+            <div class="dashboard-grid dashboard-grid--two" style="margin-top: 2rem;">
+                <article class="clay-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Persona Performance</h2>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="text-align: left; font-size: 0.8rem; color: var(--text-secondary); border-bottom: 1px solid var(--glass-border);">
+                                    <th style="padding: 0.75rem;">PERSONA</th>
+                                    <th style="padding: 0.75rem;">LEADS</th>
+                                    <th style="padding: 0.75rem;">CONV</th>
+                                    <th style="padding: 0.75rem;">RATE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="personaTable"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <article class="clay-card">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Account Health</h2>
+                    <div id="accountHealth" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </article>
+            </div>
+
+            <!-- Recent Activity Table -->
+            <section style="margin-top: 2rem;">
+                <article class="clay-card" style="padding: 0;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid var(--glass-border);">
+                        <h2 style="font-size: 1.25rem;">Real-time Intelligence Feed</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+                            <thead>
+                                <tr style="text-align: left; font-size: 0.8rem; color: var(--text-secondary); border-bottom: 1px solid var(--glass-border);">
+                                    <th style="padding: 1rem;">SOURCE</th>
+                                    <th style="padding: 1rem;">LEAD</th>
+                                    <th style="padding: 1rem;">INTENT</th>
+                                    <th style="padding: 1rem;">STATUS</th>
+                                    <th style="padding: 1rem;">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityFeed">
+                                <!-- Dynamic items will be injected here -->
+                            </tbody>
+                        </table>
                     </div>
                 </article>
             </section>
         </main>
     </div>
 
+    <script src="/dashboard/js/theme-config.js"></script>
     <script>
-        const ACTIVE_PAGE = "__ACTIVE_PAGE__";
-        const API = "/api/v1/dashboard";
-        const pages = {
-            overview: ["Dashboard overview", "Overview"],
-            activity: ["Operations activity", "Activity"],
-            pipeline: ["Pipeline analytics", "Pipeline"],
-            watch: ["Watch center", "Watch"],
-            targeting: ["Targeting control", "Targeting"],
-            settings: ["Dashboard settings", "Settings"],
-            styleguide: ["Styleguide", "Styleguide"],
-        };
-        const state = {
-            summary: {},
-            stats: {},
-            leads: [],
-            groups: [],
-            conversions: [],
-            settings: {},
-            charts: {},
-            token: localStorage.getItem("slie_dashboard_token") || "",
-        };
-
-        const csrfSafeText = (value) => String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-
-        function safeNumber(value) {
-            const n = Number(value);
-            return Number.isFinite(n) ? n : 0;
-        }
-
-        async function fetchJson(url, fallback, options = {}) {
+        // Initialize dashboard data
+        async function loadDashboardData() {
             try {
-                const res = await fetch(url, options);
-                if (!res.ok) return fallback;
-                return await res.json();
+                const response = await fetch('/api/v1/dashboard/summary');
+                const data = await response.json();
+                
+                // Update KPIs
+                document.getElementById('kpi-dms').textContent = data.dms_sent || 0;
+                document.getElementById('kpi-responses').textContent = data.leads_detected_total || 0;
+                document.getElementById('kpi-success').textContent = (data.conversion_rate || 0) + '%';
+                document.getElementById('kpi-leads').textContent = data.leads_detected_today || 0;
+                document.getElementById('kpi-groups').textContent = data.groups_joined || 0;
+                document.getElementById('kpi-analyzed').textContent = data.messages_analyzed || 0;
+                document.getElementById('kpi-hvl').textContent = data.high_value_leads || 0;
+                document.getElementById('kpi-ltv').textContent = data.average_ltv_score || 0;
+                
+                // Update Tables
+                updatePersonaTable(data.persona_performance);
+                updateAccountHealth(data.account_health);
+                updateActivityFeed(data.recent_leads);
+
+                // Render Charts
+                renderCharts(data);
             } catch (error) {
-                console.warn("Dashboard request failed", url, error);
-                return fallback;
+                console.error('Error loading dashboard stats:', error);
             }
         }
 
-        function setActivePage() {
-            const page = pages[ACTIVE_PAGE] ? ACTIVE_PAGE : "overview";
-            document.querySelectorAll("[data-page]").forEach((section) => {
-                section.hidden = section.dataset.page !== page;
-            });
-            document.querySelectorAll("[data-nav]").forEach((link) => {
-                link.classList.toggle("is-active", link.dataset.nav === page);
-            });
-            document.title = `${pages[page][0]} | SLIE`;
-            document.getElementById("page-title").textContent = pages[page][0];
-            document.getElementById("page-kicker").textContent = pages[page][1];
-            document.getElementById("mobile-page-label").textContent = pages[page][1];
+        function updatePersonaTable(personas) {
+            const tbody = document.getElementById('personaTable');
+            tbody.innerHTML = (personas || []).map(p => `
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 1rem; font-weight: 700;">${p.name}</td>
+                    <td style="padding: 1rem;">${p.leads}</td>
+                    <td style="padding: 1rem;">${p.conversions}</td>
+                    <td style="padding: 1rem; color: var(--accent);">${p.rate}%</td>
+                </tr>
+            `).join('');
         }
 
-        function setMetric(name, value) {
-            const el = document.querySelector(`[data-metric="${name}"]`);
-            if (el) el.textContent = value;
-        }
-
-        function renderHero() {
-            const outbound = safeNumber(state.summary.outbound_messages_today ?? state.summary.dms_sent ?? state.stats.dms_sent);
-            const replies = safeNumber(state.summary.public_replies_sent ?? state.summary.inbound_messages_today);
-            setMetric("dms", outbound);
-            setMetric("replies", replies);
-            setMetric("conversions", safeNumber(state.summary.conversions ?? state.stats.conversions));
-        }
-
-        function formatRate(value) {
-            return `${safeNumber(value).toFixed(1)}%`;
-        }
-
-        function setKpi(name, value, note) {
-            const valueEl = document.querySelector(`[data-kpi="${name}"]`);
-            const noteEl = document.querySelector(`[data-kpi-note="${name}"]`);
-            if (valueEl) valueEl.textContent = value;
-            if (noteEl && note) noteEl.textContent = note;
-        }
-
-        function renderKpis() {
-            const totalDms = safeNumber(state.summary.dms_sent ?? state.stats.dms_sent);
-            const responses = safeNumber(state.summary.public_replies_sent) + safeNumber(state.summary.inbound_messages_today);
-            const leads = safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected ?? state.leads.length);
-            const conversions = safeNumber(state.summary.conversions ?? state.stats.conversions ?? state.conversions.length);
-            const conversionRate = safeNumber(state.summary.conversion_rate ?? state.stats.conversion_rate);
-            setKpi("totalDms", totalDms.toLocaleString(), `${safeNumber(state.summary.outbound_messages_today)} sent today`);
-            setKpi("responses", responses.toLocaleString(), `${formatRate(state.summary.reply_rate)} reply rate`);
-            setKpi("successRate", formatRate(conversionRate), `${conversions.toLocaleString()} conversions`);
-            setKpi("activeLeads", leads.toLocaleString(), `${safeNumber(state.summary.leads_detected_today)} added today`);
-            setKpi("messages", safeNumber(state.summary.messages_analyzed ?? state.stats.messages_analyzed).toLocaleString(), "Analyzed by the engine");
-            setKpi("groups", safeNumber(state.summary.groups_joined ?? state.stats.total_groups_joined ?? state.groups.length).toLocaleString(), "Joined group count");
-        }
-
-        function chart(id, config) {
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            if (!window.Chart) {
-                renderCanvasFallback(canvas, config);
-                return;
-            }
-            if (state.charts[id]) state.charts[id].destroy();
-            state.charts[id] = new Chart(canvas, config);
-        }
-
-        function fitCanvas(canvas) {
-            const rect = canvas.getBoundingClientRect();
-            const ratio = window.devicePixelRatio || 1;
-            canvas.width = Math.max(320, rect.width) * ratio;
-            canvas.height = Math.max(260, rect.height) * ratio;
-            const ctx = canvas.getContext("2d");
-            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-            return { ctx, width: canvas.width / ratio, height: canvas.height / ratio };
-        }
-
-        function renderCanvasFallback(canvas, config) {
-            const { ctx, width, height } = fitCanvas(canvas);
-            ctx.clearRect(0, 0, width, height);
-            ctx.font = "12px Manrope";
-            ctx.fillStyle = "#bfd4f7";
-            const type = config.type;
-            if (type === "line") return drawFallbackLine(ctx, width, height, config);
-            if (type === "bar") return drawFallbackBar(ctx, width, height, config);
-            if (type === "doughnut" || type === "pie") return drawFallbackDonut(ctx, width, height, config, type === "doughnut");
-        }
-
-        function drawGrid(ctx, left, top, right, bottom) {
-            ctx.strokeStyle = "rgba(156,195,255,.14)";
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 5; i++) {
-                const y = top + ((bottom - top) / 5) * i;
-                ctx.beginPath();
-                ctx.moveTo(left, y);
-                ctx.lineTo(right, y);
-                ctx.stroke();
-            }
-        }
-
-        function drawFallbackLine(ctx, width, height, config) {
-            const left = 54;
-            const right = width - 24;
-            const top = 34;
-            const bottom = height - 52;
-            const datasets = config.data.datasets || [];
-            const labels = config.data.labels || [];
-            const max = Math.max(1, ...datasets.flatMap((dataset) => dataset.data || []).map(safeNumber));
-            drawGrid(ctx, left, top, right, bottom);
-            labels.forEach((label, index) => {
-                const x = left + ((right - left) / Math.max(1, labels.length - 1)) * index;
-                ctx.fillStyle = "#9fb7d8";
-                ctx.fillText(String(label), x - 14, height - 22);
-            });
-            datasets.forEach((dataset) => {
-                const data = dataset.data || [];
-                ctx.strokeStyle = dataset.borderColor || "#78b9ff";
-                ctx.fillStyle = dataset.borderColor || "#78b9ff";
-                ctx.lineWidth = dataset.borderDash ? 2 : 3;
-                ctx.setLineDash(dataset.borderDash || []);
-                ctx.beginPath();
-                data.forEach((value, index) => {
-                    const x = left + ((right - left) / Math.max(1, data.length - 1)) * index;
-                    const y = bottom - (safeNumber(value) / max) * (bottom - top);
-                    if (index === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.stroke();
-                ctx.setLineDash([]);
-                data.forEach((value, index) => {
-                    const x = left + ((right - left) / Math.max(1, data.length - 1)) * index;
-                    const y = bottom - (safeNumber(value) / max) * (bottom - top);
-                    ctx.beginPath();
-                    ctx.arc(x, y, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-            });
-        }
-
-        function drawFallbackBar(ctx, width, height, config) {
-            const labels = config.data.labels || [];
-            const dataset = config.data.datasets?.[0] || { data: [] };
-            const data = dataset.data || [];
-            const colors = dataset.backgroundColor || ["#78b9ff"];
-            const left = 42;
-            const top = 28;
-            const bottom = height - 52;
-            const max = Math.max(1, ...data.map(safeNumber));
-            drawGrid(ctx, left, top, width - 18, bottom);
-            data.forEach((value, index) => {
-                const barWidth = Math.max(26, (width - left - 42) / Math.max(1, data.length) - 18);
-                const x = left + index * (barWidth + 18) + 10;
-                const h = (safeNumber(value) / max) * (bottom - top);
-                ctx.fillStyle = Array.isArray(colors) ? colors[index % colors.length] : colors;
-                ctx.beginPath();
-                ctx.roundRect(x, bottom - h, barWidth, h, 12);
-                ctx.fill();
-                ctx.fillStyle = "#bfd4f7";
-                ctx.fillText(String(labels[index] || ""), x - 4, height - 22);
-            });
-        }
-
-        function drawFallbackDonut(ctx, width, height, config, cutout = true) {
-            const dataset = config.data.datasets?.[0] || { data: [] };
-            const data = dataset.data || [];
-            const colors = dataset.backgroundColor || ["#78b9ff", "#35d8bd", "#d6ad62"];
-            const total = Math.max(1, data.reduce((sum, value) => sum + safeNumber(value), 0));
-            const cx = width / 2;
-            const cy = height / 2;
-            const radius = Math.min(width, height) * .34;
-            let start = -Math.PI / 2;
-            data.forEach((value, index) => {
-                const slice = (safeNumber(value) / total) * Math.PI * 2;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy);
-                ctx.arc(cx, cy, radius, start, start + slice);
-                ctx.closePath();
-                ctx.fillStyle = Array.isArray(colors) ? colors[index % colors.length] : colors;
-                ctx.fill();
-                start += slice;
-            });
-            if (cutout) {
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius * .62, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(3, 12, 31, .9)";
-                ctx.fill();
-            }
-        }
-
-        function renderOutreachChart() {
-            const trend = Array.isArray(state.summary.daily_trend) && state.summary.daily_trend.length
-                ? state.summary.daily_trend
-                : [];
-            const today = new Date();
-            const lastSevenLabels = Array.from({ length: 7 }, (_, index) => {
-                const date = new Date(today);
-                date.setDate(today.getDate() - (6 - index));
-                return date.toISOString().slice(5, 10);
-            });
-            const labels = trend.length ? trend.map((item) => item.date || item.label) : lastSevenLabels;
-            const leadCounts = trend.length ? trend.map((item) => safeNumber(item.count ?? item.leads)) : [safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected)];
-            const paddedLeads = trend.length ? leadCounts : [0, 0, 0, 0, 0, 0, leadCounts[0]];
-            const dms = trend.length
-                ? trend.map((item, index) => safeNumber(item.dms_sent ?? item.outbound_messages ?? Math.round(safeNumber(state.summary.dms_sent ?? state.stats.dms_sent) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
-                : [0, 0, 0, 0, 0, 0, safeNumber(state.summary.dms_sent ?? state.stats.dms_sent)];
-            const replies = trend.length
-                ? trend.map((item, index) => safeNumber(item.replies ?? item.public_replies ?? Math.round(safeNumber(state.summary.public_replies_sent) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
-                : [0, 0, 0, 0, 0, 0, safeNumber(state.summary.public_replies_sent ?? state.summary.inbound_messages_today)];
-            const conversions = trend.length
-                ? trend.map((item, index) => safeNumber(item.conversions ?? Math.round(safeNumber(state.summary.conversions) * (leadCounts[index] / Math.max(1, leadCounts.reduce((a, b) => a + b, 0))))))
-                : [0, 0, 0, 0, 0, 0, safeNumber(state.summary.conversions ?? state.stats.conversions)];
-            const replyRateLine = replies.map((reply, index) => {
-                const sent = safeNumber(dms[index]);
-                return sent ? Number(((reply / sent) * 100).toFixed(2)) : 0;
-            });
-            chart("outreachChart", {
-                type: "line",
-                data: {
-                    labels,
-                    datasets: [
-                        { label: "Leads detected", data: paddedLeads, borderColor: "#b7cfff", backgroundColor: "rgba(183,207,255,.12)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
-                        { label: "DMs sent", data: dms, borderColor: "#67b7ff", backgroundColor: "rgba(103,183,255,.14)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
-                        { label: "Lead responses", data: replies, borderColor: "#30e0b2", backgroundColor: "rgba(48,224,178,.12)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
-                        { label: "Conversions", data: conversions, borderColor: "#d6ad62", backgroundColor: "rgba(214,173,98,.12)", tension: .42, fill: true, pointRadius: 4, pointHoverRadius: 7 },
-                        { label: "Reply rate %", data: replyRateLine, borderColor: "#f1d79a", backgroundColor: "rgba(241,215,154,.08)", borderDash: [6, 6], tension: .36, yAxisID: "rate", pointRadius: 3 },
-                    ],
-                },
-                options: chartOptions("Timeline", "Volume", true),
-            });
-        }
-
-        function renderGroupsChart() {
-            const totalGroups = safeNumber(state.stats.total_groups_joined ?? state.summary.groups_joined ?? state.groups.length);
-            const topGroups = Array.isArray(state.summary.top_groups) ? state.summary.top_groups : [];
-            const high = topGroups.filter((group) => safeNumber(group.leads_generated) > 0).length || state.groups.filter((group) => safeNumber(group.leads ?? group.score) > 0).length;
-            const low = Math.max(0, totalGroups - high);
-            const dormant = topGroups.filter((group) => safeNumber(group.messages_scanned) === 0).length || state.groups.filter((group) => safeNumber(group.messages ?? group.message_count) === 0).length;
-            const active = Math.max(0, totalGroups - dormant);
-            const labels = ["Active joined", "High-lead groups", "Low-lead groups", "Dormant groups"];
-            const values = [active, high, low, dormant];
-            chart("groupsChart", {
-                type: "doughnut",
-                data: {
-                    labels,
-                    datasets: [{ data: values.map((v) => Math.max(v, 0)), backgroundColor: ["#67b7ff", "#30e0b2", "#f8c15c", "#8fb6ff"], borderWidth: 0 }],
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: "70%", plugins: { legend: { display: false } } },
-            });
-            document.getElementById("groupsLegend").innerHTML = labels.map((label, index) => `<span><i style="background:${["#67b7ff", "#30e0b2", "#f8c15c", "#8fb6ff"][index]}"></i>${label}: ${values[index]}</span>`).join("");
-        }
-
-        function renderSuccessChart() {
-            const leads = safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected ?? state.leads.length);
-            const conversions = safeNumber(state.summary.conversions ?? state.stats.conversions ?? state.conversions.length);
-            const responses = safeNumber(state.summary.public_replies_sent) + safeNumber(state.summary.inbound_messages_today);
-            const open = Math.max(0, leads - conversions - responses);
-            const labels = ["Converted", "Responded", "Open"];
-            const values = [conversions, responses, open];
-            chart("successChart", {
-                type: "pie",
-                data: {
-                    labels,
-                    datasets: [{ data: values, backgroundColor: ["#f8c15c", "#30e0b2", "#67b7ff"], borderWidth: 0 }],
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
-            });
-            document.getElementById("successLegend").innerHTML = labels.map((label, index) => `<span><i style="background:${["#f8c15c", "#30e0b2", "#67b7ff"][index]}"></i>${label}: ${values[index]}</span>`).join("");
-        }
-
-        function renderLeadQualityChart() {
-            const highValue = safeNumber(state.summary.high_value_leads ?? state.stats.high_value_leads);
-            const resellers = safeNumber(state.summary.reseller_prospects ?? state.stats.reseller_prospects);
-            const highProb = safeNumber(state.stats.high_prob_leads);
-            const leads = safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected ?? state.leads.length);
-            chart("leadQualityChart", {
-                type: "bar",
-                data: {
-                    labels: ["All leads", "High-value", "Reseller", "High-probability"],
-                    datasets: [{ label: "Lead count", data: [leads, highValue, resellers, highProb], backgroundColor: ["#67b7ff", "#30e0b2", "#f8c15c", "#8fb6ff"], borderRadius: 16 }],
-                },
-                options: chartOptions("Lead segment", "Count"),
-            });
-        }
-
-        function chartOptions(xTitle, yTitle, includeRate = false) {
-            const scales = {
-                x: { title: { display: true, text: xTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
-                y: { beginAtZero: true, title: { display: true, text: yTitle, color: "#91a9cf" }, ticks: { color: "#bfd4f7" }, grid: { color: "rgba(156,195,255,.12)" } },
-            };
-            if (includeRate) {
-                scales.rate = { beginAtZero: true, position: "right", title: { display: true, text: "Rate %", color: "#c9ad69" }, ticks: { color: "#d9c286" }, grid: { drawOnChartArea: false } };
-            }
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: "index", intersect: false },
-                plugins: { legend: { labels: { color: "#c9dcff", usePointStyle: true, boxWidth: 8 } } },
-                scales,
-            };
-        }
-
-        function renderSankey() {
-            const personas = Array.isArray(state.summary.persona_performance) && state.summary.persona_performance.length
-                ? state.summary.persona_performance
-                : [{ persona: "AI Persona", leads: safeNumber(state.summary.leads_detected_total ?? state.stats.leads_detected), conversions: safeNumber(state.summary.conversions), reply_rate: safeNumber(state.summary.reply_rate) }];
-            const totalLeads = personas.reduce((sum, item) => sum + safeNumber(item.leads), 0);
-            const totalConversions = personas.reduce((sum, item) => sum + safeNumber(item.conversions), 0);
-            const totalReplies = safeNumber(state.summary.public_replies_sent) + safeNumber(state.summary.inbound_messages_today);
-            const rows = personas.slice(0, 5);
-            const colors = ["#67b7ff", "#30e0b2", "#d6ad62", "#9ab7ff", "#79dec8"];
-            const personaNodes = rows.map((item, index) => {
-                const y = 92 + index * 78;
-                const leads = safeNumber(item.leads);
-                const stroke = Math.max(8, Math.min(42, (leads / Math.max(1, totalLeads)) * 42));
-                return `
-                    <path class="sankey-path" d="M150 245 C250 ${y}, 310 ${y}, 405 ${y}" stroke="${colors[index % colors.length]}" stroke-width="${stroke}" />
-                    <rect x="405" y="${y - 24}" width="190" height="48" rx="16" />
-                    <text x="424" y="${y - 4}">${csrfSafeText(item.name || item.persona || `Persona ${index + 1}`)}</text>
-                    <text x="424" y="${y + 16}" class="sankey-small">${leads} leads - ${formatRate(item.rate)}</text>
-                    <path class="sankey-path" d="M595 ${y} C680 ${y}, 705 245, 790 245" stroke="${colors[index % colors.length]}" stroke-width="${Math.max(6, stroke * .72)}" />
-                `;
-            }).join("");
-            const repliedStroke = Math.max(8, Math.min(38, (totalReplies / Math.max(1, totalLeads)) * 38));
-            const wonStroke = Math.max(8, Math.min(38, (totalConversions / Math.max(1, totalLeads)) * 38));
-            document.getElementById("personaSankey").innerHTML = `
-                <svg viewBox="0 0 1040 430" role="img" aria-label="AI persona Sankey diagram">
-                    <defs>
-                        <filter id="sankeyGlow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    </defs>
-                    <rect x="28" y="182" width="122" height="126" rx="26" />
-                    <text x="58" y="238">AI Engine</text>
-                    <text x="58" y="260" class="sankey-small">${totalLeads} leads</text>
-                    ${personaNodes}
-                    <rect x="790" y="184" width="128" height="122" rx="26" />
-                    <text x="818" y="238">Qualified</text>
-                    <text x="818" y="260" class="sankey-small">${totalLeads} leads</text>
-                    <path class="sankey-path" d="M918 232 C960 190, 966 136, 1010 116" stroke="#30e0b2" stroke-width="${repliedStroke}" />
-                    <path class="sankey-path" d="M918 258 C960 294, 966 336, 1010 356" stroke="#d6ad62" stroke-width="${wonStroke}" />
-                    <rect x="914" y="74" width="106" height="62" rx="18" />
-                    <text x="936" y="102">Replies</text>
-                    <text x="936" y="122" class="sankey-small">${totalReplies}</text>
-                    <rect x="914" y="318" width="106" height="62" rx="18" />
-                    <text x="946" y="346">Won</text>
-                    <text x="946" y="366" class="sankey-small">${totalConversions}</text>
-                </svg>
-            `;
-        }
-
-        function renderRuntime() {
-            const blockers = safeNumber(state.summary.open_tickets) + safeNumber(state.summary.follow_ups_due);
-            const items = [
-                ["Scheduler", state.settings.telegram_outreach_enabled ? "Ready" : "Paused"],
-                ["Telegram", state.settings.telegram_outreach_enabled ? "Enabled" : "Disabled"],
-                ["Accounts", safeNumber(state.summary.contacts_total)],
-                ["Blockers", blockers],
-            ];
-            document.getElementById("runtimeBadge").textContent = blockers ? "Needs attention" : "Clear";
-            document.getElementById("runtimeMap").innerHTML = items.map(([label, value]) => `<article><span>${label}</span><strong>${value}</strong></article>`).join("");
-        }
-
-        function renderTimeline() {
-            const log = Array.isArray(state.stats.activity_log) && state.stats.activity_log.length ? state.stats.activity_log : [];
-            document.getElementById("activityTimeline").innerHTML = log.length
-                ? log.slice(0, 8).map((item) => `<article><span></span><div><strong>${item.title || item.type || "Activity"}</strong><small>${item.timestamp || item.created_at || "Live"}</small></div></article>`).join("")
-                : `<article><span></span><div><strong>No recent events</strong><small>Waiting for live activity</small></div></article>`;
-        }
-
-        function renderList(id, rows, empty, mapRow) {
-            document.getElementById(id).innerHTML = rows.length ? rows.slice(0, 8).map(mapRow).join("") : `<div class="empty-state">${empty}</div>`;
-        }
-
-        function renderPipeline() {
-            const leads = state.leads.slice(0, 5);
-            document.getElementById('leadList').innerHTML = leads.length ? leads.map((lead, index) => `
-                <article class="cursor-pointer 3d-hover" onclick="openLeadModal('${lead.username}')">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl bg-highlight/10 flex items-center justify-center text-highlight font-bold shadow-clay-button">${lead.username ? lead.username[0].toUpperCase() : '?'}</div>
-                        <div>
-                            <strong>${lead.username || 'Anonymous'}</strong>
-                            <small class="text-[10px] text-slate-500 uppercase tracking-widest">${lead.status || 'NEW'}</small>
-                        </div>
+        function updateAccountHealth(accounts) {
+            const container = document.getElementById('accountHealth');
+            container.innerHTML = (accounts || []).map(a => `
+                <div class="clay-card" style="padding: 1rem; box-shadow: var(--clay-shadow-outer-sm), var(--clay-shadow-inner-sm);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 800; font-size: 0.8rem;">${a.phone}</span>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${a.status === 'active' ? '#22c55e' : '#ef4444'}; box-shadow: 0 0 8px ${a.status === 'active' ? '#22c55e' : '#ef4444'};"></div>
                     </div>
-                    <span>${safeNumber(lead.score || lead.lead_score)} score</span>
-                </article>`).join('') : `<div class="empty-state">No leads yet</div>`;
-            const groups = state.summary.top_groups?.length ? state.summary.top_groups : state.groups;
-            renderList("groupList", groups, "No groups yet", (group) => `<article><strong>${group.group_name || group.name || group.title || "Unnamed group"}</strong><span>${safeNumber(group.leads_generated ?? group.leads)} leads - ${safeNumber(group.messages_scanned ?? group.messages ?? group.message_count)} messages</span></article>`);
+                    <div style="display: flex; gap: 1rem; font-size: 0.7rem; color: var(--text-secondary);">
+                        <span>DMs: ${a.dms_used}/${a.dms_used + a.dms_left}</span>
+                        <span>Joins: ${a.joins_used}/${a.joins_used + a.joins_left}</span>
+                        <span style="color: ${a.proxy_status ? '#22c55e' : '#ef4444'}">Proxy: ${a.proxy_status ? 'OK' : 'ERR'}</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function renderWatch() {
-            const competitors = Array.isArray(state.stats.competitor_stats) ? state.stats.competitor_stats : [];
-            const accounts = Array.isArray(state.stats.account_health) ? state.stats.account_health : [];
-            document.getElementById("accountCount").textContent = `${accounts.length} accounts`;
-            renderList("competitorList", competitors, "No competitor signals yet", (row) => `<article><strong>${row.name || row.competitor || "Competitor"}</strong><span>${safeNumber(row.mentions)} mentions</span></article>`);
-            renderList("accountList", accounts, "No account data yet", (row) => `<article><strong>${row.account || row.phone || "Account"}</strong><span>${row.status || "Unknown"}</span></article>`);
+        function updateActivityFeed(leads) {
+            const tbody = document.getElementById('activityFeed');
+            tbody.innerHTML = (leads || []).map(l => `
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 1rem; font-size: 0.7rem; color: var(--text-secondary);">${l.group_name || 'N/A'}</td>
+                    <td style="padding: 1rem; font-weight: 700;">${l.username || 'Anonymous'}</td>
+                    <td style="padding: 1rem;"><span style="padding: 0.25rem 0.5rem; border-radius: 8px; background: var(--bg-surface); font-size: 0.7rem; font-weight: 800; color: var(--accent);">${l.lead_score}</span></td>
+                    <td style="padding: 1rem;"><span style="font-size: 0.7rem; text-transform: uppercase;">${l.status}</span></td>
+                    <td style="padding: 1rem;"><button style="padding: 0.25rem 0.75rem; border-radius: 8px; background: var(--clay-bg); border: none; color: var(--text-primary); font-size: 0.6rem; font-weight: 800; cursor: pointer; box-shadow: var(--clay-shadow-outer-sm);">VIEW</button></td>
+                </tr>
+            `).join('');
         }
 
-        function renderTargeting() {
-            const tags = state.settings.search_tags || [];
-            const terms = state.settings.watch_terms || [];
-            document.getElementById("searchTags").innerHTML = tags.map((tag) => `<span>${tag}</span>`).join("") || `<span>No search tags</span>`;
-            document.getElementById("watchTerms").innerHTML = terms.map((tag) => `<span>${tag}</span>`).join("") || `<span>No watch terms</span>`;
-        }
-
-        function hydrateSettingsForm() {
-            document.getElementById("targetInput").value = (state.settings.target_tags || []).join(", ");
-            document.getElementById("searchInput").value = (state.settings.search_tags || []).join(", ");
-            document.getElementById("brandInput").value = (state.settings.brand_tags || []).join(", ");
-            document.getElementById("watchInput").value = (state.settings.watch_terms || []).join(", ");
-            document.getElementById("dmLimitInput").value = state.settings.daily_dm_limit || 0;
-            document.getElementById("thresholdInput").value = state.settings.lead_score_threshold || 0;
-            document.getElementById("autoJoinInput").checked = Boolean(state.settings.auto_join_groups);
-            document.getElementById("telegramInput").checked = Boolean(state.settings.telegram_outreach_enabled);
-            document.getElementById("notesInput").value = state.settings.notes || "";
-        }
-
-        async function unlockSettings(event) {
-            event.preventDefault();
-            const password = document.getElementById("passwordInput").value;
-            const message = document.getElementById("settingsMessage");
-            const res = await fetchJson(`${API}/auth/login`, null, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password }),
-            });
-            if (!res?.token) {
-                message.textContent = "Invalid password.";
-                return;
-            }
-            state.token = res.token;
-            localStorage.setItem("slie_dashboard_token", res.token);
-            document.getElementById("loginForm").hidden = true;
-            document.getElementById("settingsForm").hidden = false;
-            message.textContent = "Settings unlocked.";
-            hydrateSettingsForm();
-        }
-
-        async function saveSettings(event) {
-            event.preventDefault();
-            const message = document.getElementById("settingsMessage");
-            const payload = {
-                target_tags: document.getElementById("targetInput").value.split(",").map((v) => v.trim()).filter(Boolean),
-                brand_tags: document.getElementById("brandInput").value.split(",").map((v) => v.trim()).filter(Boolean),
-                search_tags: document.getElementById("searchInput").value.split(",").map((v) => v.trim()).filter(Boolean),
-                watch_terms: document.getElementById("watchInput").value.split(",").map((v) => v.trim()).filter(Boolean),
-                daily_dm_limit: safeNumber(document.getElementById("dmLimitInput").value),
-                lead_score_threshold: safeNumber(document.getElementById("thresholdInput").value),
-                auto_join_groups: document.getElementById("autoJoinInput").checked,
-                telegram_outreach_enabled: document.getElementById("telegramInput").checked,
-                notes: document.getElementById("notesInput").value,
-            };
-            const saved = await fetchJson(`${API}/settings-config`, null, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${state.token}` },
-                body: JSON.stringify(payload),
-            });
-            if (!saved) {
-                message.textContent = "Could not save settings.";
-                return;
-            }
-            state.settings = saved;
-            message.textContent = "Settings saved.";
-            renderTargeting();
-        }
-
-        async function loadData() {
-            const [summary, stats, settings] = await Promise.all([
-                fetchJson(`${API}/summary`, {}),
-                fetchJson(`${API}/stats`, {}),
-                fetchJson(`${API}/settings-config`, {}),
-            ]);
-            state.summary = summary || {};
-            state.stats = stats || {};
-            state.settings = settings || {};
-            renderHero();
-            renderKpis();
-            renderRuntime();
-            renderTargeting();
-            hydrateSettingsForm();
-
-            const [leads, groups, conversions] = await Promise.all([
-                fetchJson(`${API}/leads`, []),
-                fetchJson(`${API}/groups`, []),
-                fetchJson(`${API}/conversions`, []),
-            ]);
-            state.leads = Array.isArray(leads) ? leads : [];
-            state.groups = Array.isArray(groups) ? groups : [];
-            state.conversions = Array.isArray(conversions) ? conversions : [];
-        }
-
-        function renderAll() {
-            renderHero();
-            renderKpis();
-            renderOutreachChart();
-            renderGroupsChart();
-            renderSuccessChart();
-            renderLeadQualityChart();
-            renderSankey();
-            renderRuntime();
-            renderTimeline();
-            renderPipeline();
-            renderWatch();
-            renderTargeting();
-            hydrateSettingsForm();
-        }
-
-        async function init() {
-            setActivePage();
-            document.getElementById("loginForm").addEventListener("submit", unlockSettings);
-            document.getElementById("settingsForm").addEventListener("submit", saveSettings);
-            if (ACTIVE_PAGE === "settings") {
-                document.getElementById("loginForm").hidden = false;
-                document.getElementById("settingsForm").hidden = true;
-                document.getElementById("settingsMessage").textContent = "Authentication required.";
-            }
-            renderAll();
-            await loadData();
-            renderAll();
-            window.setInterval(async () => {
-                await loadData();
-                renderAll();
-            }, 15000);
-        }
-
-        window.addEventListener("DOMContentLoaded", () => {
-            init().catch((error) => {
-                console.error("Dashboard init failed", error);
-                document.body.classList.add("dashboard-error");
-            });
-
-            // 3D Perspective Mouse Effect
-            let mouseX = 0;
-            let mouseY = 0;
-            let targetX = 0;
-            let targetY = 0;
-
-            document.addEventListener('mousemove', (e) => {
-                mouseX = e.pageX;
-                mouseY = e.pageY;
-            });
-
-            function update3DEffects() {
-                targetX += (mouseX - targetX) * 0.1;
-                targetY += (mouseY - targetY) * 0.1;
-
-                const x = (window.innerWidth / 2 - targetX) / 80;
-                const y = (window.innerHeight / 2 - targetY) / 80;
-
-                document.querySelectorAll('.3d-hover').forEach(el => {
-                    if (el.matches(':hover')) {
-                        el.style.transform = `perspective(1000px) rotateY(${x}deg) rotateX(${-y}deg) translateZ(30px)`;
-                    } else {
-                        el.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg) translateZ(0px)';
+        function renderCharts(data) {
+            // Performance Chart
+            const trendData = data.daily_trend || [];
+            const ctx1 = document.getElementById('performanceChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: trendData.map(d => d.date),
+                    datasets: [{
+                        label: 'Lead Detection',
+                        data: trendData.map(d => d.count),
+                        borderColor: '#38bdf8',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', fontSize: 10 } }
                     }
-                });
+                }
+            });
 
-                requestAnimationFrame(update3DEffects);
-            }
+            // Sentiment Chart (Funnel)
+            const funnel = data.conversion_funnel || [];
+            const ctx2 = document.getElementById('sentimentChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: funnel.map(f => f.stage),
+                    datasets: [{
+                        data: funnel.map(f => f.count),
+                        backgroundColor: ['#38bdf8', '#6366f1', '#a855f7', '#22c55e', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
+                }
+            });
 
-            requestAnimationFrame(update3DEffects);
-        });
+            // LTV Chart
+            const ltv = data.ltv_distribution || {};
+            const ctx3 = document.getElementById('ltvChart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ltv),
+                    datasets: [{
+                        data: Object.values(ltv),
+                        backgroundColor: '#38bdf8',
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+
+            // Problem Chart
+            const problems = data.problem_distribution || {};
+            const ctx4 = document.getElementById('problemChart').getContext('2d');
+            new Chart(ctx4, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(problems),
+                    datasets: [{
+                        data: Object.values(problems),
+                        backgroundColor: ['#0ea5e9', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 6 } } }
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDashboardData);
     </script>
 </body>
 </html>

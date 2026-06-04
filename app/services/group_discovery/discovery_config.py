@@ -3,7 +3,14 @@ TARGET_KEYWORDS = [
     "iptv help",
     "iptv discussion",
     "streaming help",
-    "smart tv channels"
+    "smart tv channels",
+    "iptv community",
+    "iptv support",
+    "iptv reviews",
+    "iptv setup",
+    "firestick help",
+    "tivimate",
+    "ott navigator"
 ]
 
 SELLER_PROMOTION_KEYWORDS = [

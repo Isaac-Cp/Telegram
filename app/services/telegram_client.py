@@ -10,12 +10,15 @@ from app.models.telegram_account import TelegramAccount
 from sqlalchemy import select
 from app.services.proxy_manager import proxy_manager
 
+from app.core.logging import log_error
+
 logger = logging.getLogger(__name__)
 
 class TelegramClientManager:
     _instance = None
     _clients: dict[str, TelegramClient] = {} # Map phone_number to client
     _active_phone: Optional[str] = None
+    _lock = asyncio.Lock()
 
     def __new__(cls):
         if cls._instance is None:
@@ -75,68 +78,92 @@ class TelegramClientManager:
 
     async def get_client(self, phone_number: str = None, action_type: str = None) -> TelegramClient:
         """Module 8: Returns a connected Telethon client for a specific account or the next available one."""
-        settings = get_settings()
-        
-        acc = None
-        if not phone_number:
-            acc = await self.rotate_account(action_type)
-            if not acc:
-                # Fallback to .env session if no DB accounts exist yet
-                if settings.telegram_session_string:
-                    return await self._connect_env_client()
-                raise ValueError("No active Telegram accounts available.")
-            phone_number = acc.phone_number
-            session_str = acc.session_file # Using session_file as session string for now
-        else:
-            with SessionLocal() as db:
-                acc = db.execute(
-                    select(TelegramAccount).where(TelegramAccount.phone_number == phone_number)
-                ).scalar_one_or_none()
+        async with self._lock:
+            settings = get_settings()
+            
+            acc = None
+            if not phone_number:
+                acc = await self.rotate_account(action_type)
                 if not acc:
-                    raise ValueError(f"Account {phone_number} not found.")
-                session_str = acc.session_file
+                    # Fallback to .env session if no DB accounts exist yet
+                    if settings.telegram_session_string:
+                        return await self._connect_env_client_locked()
+                    raise ValueError("No active Telegram accounts available.")
+                phone_number = acc.phone_number
+                session_str = acc.session_file # Using session_file as session string for now
+            else:
+                with SessionLocal() as db:
+                    acc = db.execute(
+                        select(TelegramAccount).where(TelegramAccount.phone_number == phone_number)
+                    ).scalar_one_or_none()
+                    if not acc:
+                        raise ValueError(f"Account {phone_number} not found.")
+                    session_str = acc.session_file
 
-        if phone_number in self._clients and self._clients[phone_number].is_connected():
-            return self._clients[phone_number]
+            if phone_number in self._clients:
+                client = self._clients[phone_number]
+                if client.is_connected():
+                    return client
+                try:
+                    await client.connect()
+                    return client
+                except Exception as e:
+                    log_error(logger, e, context=f"Reconnect failed for {phone_number}")
+                    logger.warning(f"Failed to reconnect existing client for {phone_number}: {e}. Creating new instance...")
 
-        # Get proxy config (Module 2 Safety)
-        proxy = proxy_manager.get_proxy_config(acc)
-        if proxy and not proxy_manager.validate_proxy_connection(proxy):
-            logger.warning(f"Proxy validation failed for account {phone_number}. Attempting direct connection if safe...")
-            # If in production, you might want to raise an error instead of falling back
-            if settings.environment == "production":
-                 raise ConnectionError(f"Proxy failed for production account {phone_number}")
+            # Get proxy config (Module 2 Safety)
+            proxy = proxy_manager.get_proxy_config(acc)
+            if proxy and not proxy_manager.validate_proxy_connection(proxy):
+                logger.warning(f"Proxy validation failed for account {phone_number}. Attempting direct connection if safe...")
+                # If in production, you might want to raise an error instead of falling back
+                if settings.environment == "production":
+                     raise ConnectionError(f"Proxy failed for production account {phone_number}")
 
-        api_id = acc.api_id if acc and acc.api_id else settings.telegram_api_id
-        api_hash = acc.api_hash if acc and acc.api_hash else settings.telegram_api_hash
+            api_id = acc.api_id if acc and acc.api_id else settings.telegram_api_id
+            api_hash = acc.api_hash if acc and acc.api_hash else settings.telegram_api_hash
 
-        client = TelegramClient(
-            StringSession(session_str),
-            api_id,
-            api_hash,
-            proxy=proxy
-        )
-        
-        await client.connect()
-        self._clients[phone_number] = client
-        return client
+            await asyncio.sleep(5) # Breathe for Telegram
+            client = TelegramClient(
+                StringSession(session_str),
+                api_id,
+                api_hash,
+                proxy=proxy,
+                device_model="Desktop",
+                system_version="Windows 10",
+                app_version="4.8.4"
+            )
+            
+            await client.connect()
+            self._clients[phone_number] = client
+            return client
 
-    async def _connect_env_client(self) -> TelegramClient:
-        """Connect using fallback .env session string."""
+    async def _connect_env_client_locked(self) -> TelegramClient:
+        """Internal connect using fallback .env session string (Assumes lock is held)."""
         settings = get_settings()
         phone = settings.telegram_phone
         
-        if phone in self._clients and self._clients[phone].is_connected():
-            return self._clients[phone]
+        if phone in self._clients:
+            client = self._clients[phone]
+            if client.is_connected():
+                return client
+            try:
+                await client.connect()
+                return client
+            except Exception as e:
+                logger.warning(f"Failed to reconnect existing env client: {e}. Creating new instance...")
             
         # Get global proxy for env client
         proxy = proxy_manager.get_proxy_config()
         
+        await asyncio.sleep(5) # Breathe for Telegram
         client = TelegramClient(
             StringSession(settings.telegram_session_string),
             settings.telegram_api_id,
             settings.telegram_api_hash,
-            proxy=proxy
+            proxy=proxy,
+            device_model="Desktop",
+            system_version="Windows 10",
+            app_version="4.8.4"
         )
         await client.connect()
         self._clients[phone] = client

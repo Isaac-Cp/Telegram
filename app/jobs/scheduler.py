@@ -21,6 +21,7 @@ from app.jobs.tasks import (
     slie_private_dms,
     slie_reddit_discovery,
     slie_power_upgrades,
+    slie_score_decay,
     cleanup_database,
 )
 
@@ -77,10 +78,10 @@ scheduler.add_job(retryable_job("refresh_engagement_scores", refresh_engagement_
 scheduler.add_job(retryable_job("close_stale_conversations", close_stale_conversations), "interval", hours=1, id="close_stale_conversations", replace_existing=True)
 scheduler.add_job(retryable_job("snapshot_daily_metrics", snapshot_daily_metrics), "cron", hour=23, minute=55, id="snapshot_daily_metrics", replace_existing=True)
 
-# SLIE Discovery Engine Jobs
-scheduler.add_job(retryable_job("slie_keyword_discovery", slie_keyword_discovery), "interval", hours=6, id="slie_keyword_discovery", replace_existing=True)
-scheduler.add_job(retryable_job("slie_group_analysis", slie_group_analysis), "interval", hours=12, id="slie_group_analysis", replace_existing=True)
-scheduler.add_job(retryable_job("slie_join_scheduler", slie_join_scheduler), "interval", hours=1, id="slie_join_scheduler", replace_existing=True)
+# SLIE Discovery Engine Jobs - Accelerated for session
+scheduler.add_job(retryable_job("slie_keyword_discovery", slie_keyword_discovery), "interval", minutes=10, id="slie_keyword_discovery", replace_existing=True)
+scheduler.add_job(retryable_job("slie_group_analysis", slie_group_analysis), "interval", minutes=10, id="slie_group_analysis", replace_existing=True)
+scheduler.add_job(retryable_job("slie_join_scheduler", slie_join_scheduler), "interval", minutes=10, id="slie_join_scheduler", replace_existing=True)
 scheduler.add_job(retryable_job("slie_ltv_recalculation", slie_ltv_recalculation), "interval", hours=24, id="slie_ltv_recalculation", replace_existing=True)
 
 # SLIE Messaging Jobs
@@ -88,6 +89,7 @@ scheduler.add_job(retryable_job("slie_public_replies", slie_public_replies), "in
 scheduler.add_job(retryable_job("slie_private_dms", slie_private_dms), "interval", minutes=2, id="slie_private_dms", replace_existing=True)
 scheduler.add_job(retryable_job("slie_reddit_discovery", slie_reddit_discovery), "interval", hours=1, id="slie_reddit_discovery", replace_existing=True)
 scheduler.add_job(retryable_job("slie_power_upgrades", slie_power_upgrades), "interval", minutes=30, id="slie_power_upgrades", replace_existing=True)
+scheduler.add_job(retryable_job("slie_score_decay", slie_score_decay), "interval", hours=24, id="slie_score_decay", replace_existing=True)
 
 # Database cleanup job
 scheduler.add_job(retryable_job("cleanup_database", cleanup_database), "cron", hour=3, minute=0, id="database_cleanup", replace_existing=True)

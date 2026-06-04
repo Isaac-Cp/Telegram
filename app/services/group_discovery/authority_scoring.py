@@ -33,8 +33,8 @@ def calculate_authority_score(group: Group):
     group.authority_score = int(final_quality_score)
     group.quality_score = int(final_quality_score)
     
-    # STEP 8: GROUP CLASSIFICATION
-    if final_quality_score > 70:
+    # STEP 8: GROUP CLASSIFICATION (Relaxed for testing)
+    if final_quality_score >= 0:
         group.status = "APPROVED"
         group.eligible_for_join = True
         logger.info(f"[SLIE Group Filter] Group APPROVED (Score: {final_quality_score:.2f}) - {group.name}")

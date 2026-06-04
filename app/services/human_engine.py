@@ -1,9 +1,10 @@
 import asyncio
 import logging
 import random
-from datetime import datetime, date, time as dt_time, timedelta
-from typing import Optional, Dict, Any, Tuple
-from sqlalchemy import select, func, and_
+from datetime import datetime, date, time as dt_time, timedelta, timezone
+from typing import Dict
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
@@ -15,15 +16,17 @@ logger = logging.getLogger(__name__)
 
 # Safety Limits (Master Prompt Step 16) - Adjusted per User Request
 SAFE_LIMITS = {
-    "group_join_daily": 2,
-    "public_reply_daily": 15,
-    "dm_daily": 3,
+    "group_join_daily": 7,
+    "public_reply_daily": 20,
+    "dm_daily": 4,
     "public_reply_hourly": 5,
-    "dm_hourly": 1
+    "dm_hourly": 2
 }
 
-# Cooldown Period (Module 4)
-COOLDOWN_MINUTES = 60
+# Cooldown Period (Module 4) - Base minutes
+COOLDOWN_MINUTES_BASE = 60
+
+from app.services.safety_controller import safety_controller
 
 class HumanBehaviorEngine:
     """
@@ -33,33 +36,31 @@ class HumanBehaviorEngine:
 
     def __init__(self):
         self.settings = get_settings()
-        self._cooldown_active: Dict[str, datetime] = {}
 
-    async def authorize_action(self, action_type: str) -> bool:
+    def get_active_cooldowns(self) -> Dict[str, datetime]:
+        """
+        Returns a dictionary of currently active cooldowns.
+        """
+        return safety_controller._cooldowns
+
+    async def authorize_action(self, action_type: str, phone_number: str = None) -> bool:
         """
         All outgoing actions must pass through the Human Behavior Engine before execution.
         Check daily/hourly limits and cooldown status.
         """
-        # 1. Check Cooldown
-        if action_type in self._cooldown_active:
-            if datetime.utcnow() < self._cooldown_active[action_type]:
-                logger.warning(f"[SLIE Safety] cooldown activated: {action_type} - Active until {self._cooldown_active[action_type]}")
-                return False
-            else:
-                del self._cooldown_active[action_type]
+        if not phone_number:
+            phone_number = self.settings.telegram_phone
 
-        # 2. Check Safety Limits
         with SessionLocal() as db:
-            if not await self._check_safety_limits(db, action_type):
-                logger.warning(f"[SLIE Safety] cooldown activated: {action_type} - Limit reached. Triggering cooldown.")
-                self._cooldown_active[action_type] = datetime.utcnow() + timedelta(minutes=COOLDOWN_MINUTES)
+            # 1. Use Centralized Safety Controller (Module 16)
+            if not safety_controller.is_action_safe(db, phone_number, action_type):
+                # Randomized cooldown: 45 to 120 minutes
+                cooldown_duration = random.randint(45, 120)
+                safety_controller.trigger_cooldown(phone_number, action_type, cooldown_duration)
                 return False
 
-        # 3. Apply Activity Distribution (Randomness)
-        if random.random() < 0.1:
-            delay = random.randint(5 * 60, 15 * 60) # 5-15 min delay
-            logger.info(f"[SLIE Human Engine] delay applied: {action_type} - Random distribution delay: {delay // 60} minutes")
-            await asyncio.sleep(delay)
+        # 2. Apply Smart Delay from Safety Controller
+        await safety_controller.apply_smart_delay(action_type)
             
         return True
 
@@ -68,7 +69,7 @@ class HumanBehaviorEngine:
         Define maximum safe limits for each account (Master Prompt Step 16).
         """
         today = date.today()
-        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
         
         if action_type == "group_join":
             count = db.query(func.count(Group.id)).filter(
@@ -117,10 +118,10 @@ class HumanBehaviorEngine:
         """
         # Define ranges (min_sec, max_sec)
         delays = {
-            "group_join": (300, 1800), # 5-30 min
-            "public_reply": (600, 1200), # 10-20 min
-            "dm": (900, 2700), # 15-45 min
-            "message_reply": (5, 20) # 5-20 sec for typing
+            "group_join": (30, 120), # Reduced for testing: 30s-2min
+            "public_reply": (60, 300), # Reduced for testing: 1-5 min
+            "dm": (60, 300), # Reduced for testing: 1-5 min
+            "message_reply": (2, 10) # 2-10 sec for typing
         }
         
         min_sec, max_sec = delays.get(action_type, (60, 300))

@@ -2,15 +2,105 @@
  * SLIE Premium Intelligence - Core Theme Styles
  * This file contains the foundational CSS components, animations, 
  * and custom utility classes that define the application's visual language.
+ * 
+ * Note: Processed for direct browser compatibility (standard CSS).
  */
 
-@layer base {
-    body {
-        @apply bg-obsidian text-slate-300 antialiased selection:bg-highlight/30 selection:text-white font-sans overflow-x-hidden;
-    }
-    h1, h2, h3, h4 {
-        @apply font-serif;
-    }
+:root {
+    --obsidian: #01040d;
+    --highlight: #3b82f6;
+    --clay-base: #112240;
+    --accent: #64ffda;
+    --blue: #78b9ff;
+    --clay-bg: rgba(255, 255, 255, 0.08);
+    --clay-shadow-out: 8px 8px 16px rgba(0, 0, 0, 0.4), -4px -4px 12px rgba(255, 255, 255, 0.05);
+    --clay-shadow-in: inset 4px 4px 8px rgba(255, 255, 255, 0.1), inset -4px -4px 8px rgba(0, 0, 0, 0.3);
+    --clay-border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body {
+    background-color: var(--obsidian);
+    color: #cbd5e1; /* slate-300 */
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+body::selection {
+    background-color: rgba(59, 130, 246, 0.3); /* highlight/30 */
+    color: white;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Lora', serif;
+}
+
+/* Claymorphism & 3D Depth Enhancements */
+.clay-card {
+    background: var(--clay-base);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2.5rem;
+    box-shadow: 
+        12px 12px 24px 0 rgba(0, 0, 0, 0.4), 
+        -8px -8px 24px 0 rgba(255, 255, 255, 0.02),
+        inset 4px 4px 8px 0 rgba(255, 255, 255, 0.03),
+        inset -4px -4px 8px 0 rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+    overflow: hidden;
+    position: relative;
+    transform-style: preserve-3d;
+}
+
+.clay-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+    pointer-events: none;
+    border-radius: 2.5rem;
+}
+
+.clay-card:hover {
+    transform: perspective(1000px) translateZ(25px);
+    box-shadow: 
+        20px 20px 40px 0 rgba(0, 0, 0, 0.5), 
+        -10px -10px 30px 0 rgba(255, 255, 255, 0.03),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.clay-button {
+    background: linear-gradient(145deg, var(--blue), #4a90e2);
+    border-radius: 16px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3), inset 2px 2px 4px rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clay-button:active {
+    box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(0.98);
+}
+
+/* 3D Depth for headers */
+.depth-text {
+    text-shadow: 0 1px 0 #ccc,
+                 0 2px 0 #c9c9c9,
+                 0 3px 0 #bbb,
+                 0 4px 0 #b9b9b9,
+                 0 5px 0 #aaa,
+                 0 6px 1px rgba(0,0,0,.1),
+                 0 0 5px rgba(0,0,0,.1),
+                 0 1px 3px rgba(0,0,0,.3),
+                 0 3px 5px rgba(0,0,0,.2),
+                 0 5px 10px rgba(0,0,0,.25),
+                 0 10px 10px rgba(0,0,0,.2),
+                 0 20px 20px rgba(0,0,0,.15);
 }
 
 /* Ambient Occlusion & Advanced Shadows */
@@ -32,30 +122,20 @@
 
 /* UI Components - Refined Blend */
 .glass-panel {
-    @apply bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-2xl transition-all duration-500 rounded-[2.5rem];
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s ease;
+    border-radius: 2.5rem;
     box-shadow: 
         0 8px 32px 0 rgba(0, 0, 0, 0.4),
         inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-.clay-card {
-    @apply bg-clay-base rounded-[2.5rem] border border-white/5 transition-all duration-500 overflow-hidden relative;
-    box-shadow: 
-        12px 12px 24px 0 rgba(0, 0, 0, 0.4), 
-        -8px -8px 24px 0 rgba(255, 255, 255, 0.02),
-        inset 4px 4px 8px 0 rgba(255, 255, 255, 0.03),
-        inset -4px -4px 8px 0 rgba(0, 0, 0, 0.3);
-    transform-style: preserve-3d;
-}
-
-.clay-card::after {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none rounded-[2.5rem];
-}
-
 /* Advanced 3D Interactive Blend */
 .clay-interactive {
-    @apply transition-all duration-300 rounded-2xl;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 1rem;
     background: #112240;
     box-shadow: 
         6px 6px 12px 0 rgba(0, 0, 0, 0.4), 
@@ -64,21 +144,32 @@
 }
 
 .clay-interactive:hover {
-    @apply -translate-y-1;
+    transform: translateY(-0.25rem);
     box-shadow: 
         10px 10px 20px 0 rgba(0, 0, 0, 0.5), 
         -6px -6px 20px 0 rgba(255, 255, 255, 0.03);
 }
 
 .clay-interactive:active {
-    @apply translate-y-0 scale-95;
+    transform: translateY(0) scale(0.95);
     box-shadow: 
         inset 4px 4px 8px 0 rgba(0, 0, 0, 0.5), 
         inset -2px -2px 6px 0 rgba(255, 255, 255, 0.02);
 }
 
 .clay-input {
-    @apply bg-obsidian/50 shadow-clay-inset border border-white/5 focus:border-highlight/30 focus:outline-none transition-all duration-300 rounded-2xl px-5 py-3;
+    background: rgba(1, 4, 13, 0.5); /* obsidian/50 */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    border-radius: 1rem;
+    padding: 0.75rem 1.25rem;
+    color: white;
+}
+
+.clay-input:focus {
+    border-color: rgba(59, 130, 246, 0.3); /* highlight/30 */
+    outline: none;
+    box-shadow: inset 4px 4px 8px 0 rgba(0, 0, 0, 0.4), inset -4px -4px 8px 0 rgba(255, 255, 255, 0.03);
 }
 
 /* 3D & Interaction */
@@ -91,16 +182,9 @@
     transform-style: preserve-3d;
 }
 
-.3d-hover {
-    @apply transition-all duration-500 ease-out;
+.\33 d-hover {
+    transition: all 0.5s ease-out;
     transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
-}
-
-.clay-card:hover {
-    transform: perspective(1000px) translateZ(25px);
-    box-shadow: 
-        0 25px 50px -12px rgba(0, 0, 0, 0.5),
-        inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 /* Background Effects */
@@ -112,7 +196,11 @@
 }
 
 .floating-orb {
-    @apply absolute rounded-full blur-[100px] opacity-20 mix-blend-screen animate-pulse-slow;
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(100px);
+    opacity: 0.2;
+    mix-blend-mode: screen;
 }
 
 /* Utility */
@@ -121,11 +209,17 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/5 rounded-full hover:bg-white/10 transition-colors;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 9999px;
+    transition: background-color 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .section-hidden {

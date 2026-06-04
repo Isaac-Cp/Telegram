@@ -22,6 +22,7 @@ from app.services.dashboard import (
     get_leads_elite,
     get_reseller_prospects_elite,
     get_stats,
+    get_high_intent_buyers_elite,
 )
 
 router = APIRouter()
@@ -206,6 +207,10 @@ def _safe_call(label: str, fn, fallback, *args):
 
 def _build_dashboard_html(active_page: str) -> str:
     template_path = Path(__file__).resolve().parents[2] / "templates" / "slie_dashboard.html"
+    # Fallback to app/templates if not in root templates
+    if not template_path.exists():
+        template_path = Path(__file__).resolve().parents[1] / "templates" / "slie_dashboard.html"
+        
     if template_path.exists():
         return _apply_dashboard_tokens(template_path.read_text(encoding="utf-8"), active_page)
 
@@ -292,6 +297,12 @@ def conversions_endpoint(db: Session = Depends(get_db)):
 @router.get("/reseller-prospects")
 def reseller_prospects_endpoint(db: Session = Depends(get_db)):
     return _safe_call("reseller-prospects", get_reseller_prospects_elite, [], db)
+
+
+@router.get("/high-intent-buyers")
+def high_intent_buyers_endpoint(db: Session = Depends(get_db)):
+    """Show the 20 highest-intent buyers detected in the last 7 days."""
+    return _safe_call("high-intent-buyers", get_high_intent_buyers_elite, [], db)
 
 
 @router.get("/conversations")

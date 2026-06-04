@@ -1,7 +1,8 @@
 import logging
 import random
-from datetime import datetime
-from typing import List, Optional
+import re
+from datetime import datetime, timezone
+from typing import List
 
 from sqlalchemy import select, desc
 from telethon import events, types
@@ -27,7 +28,7 @@ AI_REPLY_FALLBACKS = [
     "That's exactly the kind of challenge I help users solve daily. Our setup process is designed to handle those scenarios seamlessly. Want to explore how it works?",
 ]
 
-from app.services.response_engine import response_engine, AIDEN_SYSTEM_PROMPT
+from app.services.response_engine import response_engine
 from app.services.ai_service import ai_service
 from app.models.lead import Lead
 from app.models.lead_conversation import LeadConversation
@@ -119,7 +120,6 @@ class MessageScraper:
             return False
             
         # 3. message contains only URLs
-        import re
         # More robust URL detection: if removing URLs leaves no text
         url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
         text_no_urls = re.sub(url_pattern, '', text).strip()
@@ -128,12 +128,15 @@ class MessageScraper:
             
         return True
 
-    async def start_message_listener(self):
+    async def start_message_listener(self, client=None):
         """
         Starts the real-time message listener for all joined groups.
         Captures new messages and saves them to the database.
         """
-        self._client = await telegram_client_manager.get_client()
+        if client:
+            self._client = client
+        else:
+            self._client = await telegram_client_manager.get_client()
         
         @self._client.on(events.NewMessage)
         async def handler(event):
@@ -215,14 +218,14 @@ class MessageScraper:
 
             # Update Lead Status
             lead.conversion_stage = ConversionStage.RESPONDED
-            lead.last_contact = datetime.utcnow()
+            lead.last_contact = datetime.now(timezone.utc)
 
             # Store lead's message in history
             lead_msg = LeadConversation(
                 lead_id=lead.id,
                 message=message_text,
                 sender="User",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             db.add(lead_msg)
             
@@ -278,7 +281,7 @@ class MessageScraper:
                 lead_id=lead.id,
                 message=reply_text,
                 sender=persona['name'],
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             db.add(ai_msg)
             db.commit()
@@ -297,7 +300,6 @@ class MessageScraper:
         from app.intelligence.services.influence_service import influence_engine
         from app.intelligence.services.competitor_service import competitor_scanner
         from app.intelligence.services.conversion_service import conversion_engine
-        from sqlalchemy import func
 
         try:
             message_text = event.message.message or ""
@@ -325,8 +327,8 @@ class MessageScraper:
                     user = User(
                         telegram_user_id=telegram_user_id,
                         username=getattr(sender, 'username', None),
-                        first_seen=datetime.utcnow(),
-                        last_seen=datetime.utcnow(),
+                        first_seen=datetime.now(timezone.utc),
+                        last_seen=datetime.now(timezone.utc),
                         groups_seen=0,
                         messages_today=0,
                         message_frequency=0,
@@ -337,9 +339,9 @@ class MessageScraper:
                     db.flush()
 
                 # Update User activity metrics
-                today = datetime.utcnow().date()
+                today = datetime.now(timezone.utc).date()
                 last_seen_date = user.last_seen.date() if user.last_seen else None
-                user.last_seen = datetime.utcnow()
+                user.last_seen = datetime.now(timezone.utc)
                 user.message_frequency += 1
                 
                 if last_seen_date == today:
@@ -362,13 +364,13 @@ class MessageScraper:
                         identity = CrossGroupIdentity(
                             user_id=user.id,
                             group_id=group_id,
-                            first_seen_in_group=datetime.utcnow(),
-                            last_seen_in_group=datetime.utcnow()
+                            first_seen_in_group=datetime.now(timezone.utc),
+                            last_seen_in_group=datetime.now(timezone.utc)
                         )
                         db.add(identity)
                         user.groups_seen += 1
                     else:
-                        identity.last_seen_in_group = datetime.utcnow()
+                        identity.last_seen_in_group = datetime.now(timezone.utc)
                 
                 # Save raw message
                 new_msg = Message(
@@ -451,8 +453,8 @@ class MessageScraper:
 message_scraper = MessageScraper()
 
 # Exportable functions as per requirements
-async def start_message_listener():
-    await message_scraper.start_message_listener()
+async def start_message_listener(client=None):
+    await message_scraper.start_message_listener(client)
 
 async def save_message(event, sender):
     await message_scraper.save_message(event, sender)
