@@ -293,7 +293,7 @@ class MessageScraper:
         STEP 1 — MESSAGE COLLECTION (Message Intelligence Engine)
         Persists a captured Telegram message and runs intelligence analysis.
         """
-        from app.services.lead_scoring import lead_scoring_engine
+        from app.services.lead_scoring import lead_scoring
         from app.models.user import User
         from app.models.group import Group
         from app.models.cross_group_identity import CrossGroupIdentity
@@ -398,13 +398,13 @@ class MessageScraper:
                 db.commit()
 
             # 2. ASYNC AI ANALYSIS: Detect Pain Signals and Analyze AI - OUTSIDE DB SESSION
-            pain_signals = await lead_scoring_engine.detect_pain_signals(message_text)
+            pain_signals = await lead_scoring.detect_pain_signals(message_text)
             has_pain = any(len(v) > 0 for v in pain_signals.values())
 
             import random
             if has_pain or random.random() < 0.05:
                 # Perform long-running AI analysis outside the session
-                ai_result = await lead_scoring_engine.analyze_message_ai(str(message_id), message_text)
+                ai_result = await lead_scoring.analyze_message_ai(str(message_id), message_text)
                 intent_type = ai_result.get("intent_type", "general_discussion")
 
                 # 3. FINAL DB UPDATES: Update User metrics and Lead Creation - NEW SESSION
@@ -420,7 +420,7 @@ class MessageScraper:
                         user.technical_questions_count += 1
 
                     # LEAD CREATION (Step 5)
-                    await lead_scoring_engine.create_lead(
+                    await lead_scoring.create_lead(
                         user_id=telegram_user_id,
                         username=user.username,
                         group_id=chat_id,

@@ -2,11 +2,10 @@ import asyncio
 import logging
 import random
 from datetime import datetime, timedelta, timezone, time as dt_time
-from typing import List
 
-from sqlalchemy import select, and_, func, case, desc
+from sqlalchemy import select, and_, func, desc
 from sqlalchemy.orm import Session
-from telethon import functions, types
+from telethon import functions
 
 from app.core.config import get_settings
 from app.db.session import SessionLocal
@@ -15,12 +14,9 @@ from app.models.lead_conversation import LeadConversation
 from app.models.group import Group
 from app.models.enums import ConversionStage
 from app.services.telegram_client import telegram_client_manager
-from app.services.lead_scoring import lead_scoring_engine
-from app.services.crm import lead_crm_service
 from app.services.ai_service import ai_service
 from app.services.power_upgrades import power_upgrades_service
 from app.services.memory_engine import memory_engine
-from app.services.ltv_engine import ltv_engine
 from app.services.human_engine import human_engine
 
 from app.core.logging import log_error

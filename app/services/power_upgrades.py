@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, func, and_
 from app.db.session import SessionLocal
@@ -204,7 +204,7 @@ class PowerUpgradesService:
         Example: buffering complaints, server down, playlist errors.
         CLUSTER TRIGGER: 5 similar complaints within 12 hours.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         twelve_hours_ago = now - timedelta(hours=12)
 
         with SessionLocal() as db:
@@ -403,7 +403,7 @@ class PowerUpgradesService:
         ACTION:
         Generate authority explanation post in groups.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         two_hours_ago = now - timedelta(hours=2)
 
         with SessionLocal() as db:

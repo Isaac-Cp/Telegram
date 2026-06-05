@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin, utcnow
 from app.models.enums import ConversionStage
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     pattern_score: Mapped[float] = mapped_column(default=0.0)
     opportunity_score: Mapped[float] = mapped_column(default=0.0)
     priority_level: Mapped[str] = mapped_column(String(20), default="LOW") # HIGH, MEDIUM, LOW
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     
     # Existing fields (to keep support for old code if needed)
     lead_score: Mapped[int] = mapped_column(Integer, default=0)

@@ -30,12 +30,18 @@ class MockRedis:
             # check expiry
             existing = self._data.get(name)
             if existing:
-                val, expire = existing
+                _, expire = existing
                 if expire is None or expire >= now:
                     return False
         if xx and name not in self._data:
             return False
-        expire_ts = now + ex if ex else None
+        
+        # Use px (milliseconds) if provided and ex is not
+        if px and not ex:
+            expire_ts = now + (px // 1000)
+        else:
+            expire_ts = now + ex if ex else None
+            
         self._data[name] = (str(value), expire_ts)
         return True
 
@@ -103,7 +109,11 @@ class RedisClient:
             await self._redis.ping()
             logger.info("[SLIE Redis] Connected successfully to %s", self.settings.redis_url)
         except Exception as e:
-            logger.warning("[SLIE Redis] Could not connect to real Redis: %s", e)
+            if self.settings.environment == "production":
+                logger.critical("[SLIE Redis] CRITICAL: Could not connect to real Redis in production: %s", e)
+                raise RuntimeError(f"Real Redis is mandatory in production environment. Error: {e}")
+            
+            logger.warning("[SLIE Redis] Could not connect to real Redis: %s. Falling back to Mock.", e)
             self._redis = MockRedis()
 
     @property

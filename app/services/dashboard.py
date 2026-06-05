@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import json
 
 from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session
@@ -331,23 +332,28 @@ def get_conversations_elite(db: Session, username: str | None = None):
     ]
 
 
-import json
+from app.core.redis_client import redis_client
 
-_dashboard_cache = {
-    "data": None,
-    "timestamp": 0
-}
+_DASHBOARD_CACHE_KEY = "dashboard:summary:cache"
 CACHE_TTL = 60 # seconds
 
-def get_dashboard_summary(db: Session) -> DashboardSummary:
-    global _dashboard_cache
-    now_ts = time.time()
-    
-    if _dashboard_cache["data"] and (now_ts - _dashboard_cache["timestamp"] < CACHE_TTL):
-        return _dashboard_cache["data"]
+async def get_dashboard_summary(db: Session) -> DashboardSummary:
+    """
+    Elite Module 12: Dashboard Summary Data.
+    Optimized with 60-second Redis caching for production scalability.
+    """
+    # 1. Try to get from Redis cache
+    try:
+        cached_data = await redis_client.client.get(_DASHBOARD_CACHE_KEY)
+        if cached_data:
+            data_dict = json.loads(cached_data)
+            return DashboardSummary(**data_dict)
+    except Exception as e:
+        logger.warning("Failed to retrieve dashboard cache from Redis: %s", e)
 
-    today = datetime.utcnow().date()
-    now = datetime.utcnow()
+    # 2. If not in cache, perform heavy queries
+    today = datetime.now(timezone.utc).date()
+    now = datetime.now(timezone.utc)
     messages_analyzed = db.query(func.count(Message.id)).scalar() or 0
 
     inbound_messages_today = (
@@ -497,7 +503,15 @@ def get_dashboard_summary(db: Session) -> DashboardSummary:
         daily_trend=daily_trend,
         conversion_funnel=conversion_funnel,
     )
-    
-    _dashboard_cache["data"] = summary
-    _dashboard_cache["timestamp"] = now_ts
+
+    # 3. Save to Redis cache
+    try:
+        await redis_client.client.set(
+            _DASHBOARD_CACHE_KEY, 
+            json.dumps(summary.model_dump(), default=str), 
+            ex=CACHE_TTL
+        )
+    except Exception as e:
+        logger.warning("Failed to save dashboard cache to Redis: %s", e)
+
     return summary

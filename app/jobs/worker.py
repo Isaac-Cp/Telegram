@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select
 from app.db.session import SessionLocal
 from app.models.follow_up_job import FollowUpJob
@@ -60,7 +60,7 @@ class FollowUpWorker:
                     success = await self._handle_reseller_follow_up(job)
                 
                 job.status = FollowUpJobStatus.COMPLETED if success else FollowUpJobStatus.FAILED
-                job.completed_at = datetime.utcnow()
+                job.completed_at = datetime.now(timezone.utc)
                 db.commit()
                 logger.info(f"Job {job_id} {job.status}")
             except Exception as e:

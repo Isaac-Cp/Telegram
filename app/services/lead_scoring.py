@@ -1,23 +1,14 @@
 import logging
 import json
-from datetime import datetime, timedelta
-import asyncio
-from typing import List, Optional, Dict, Any
-
-from sqlalchemy import select, desc, and_
-from app.core.config import get_settings
+from datetime import datetime, timedelta, timezone
+from typing import List
+from sqlalchemy import desc, and_, select
 from app.db.session import SessionLocal
-from app.models.lead import Lead
-from app.models.message import Message
+from app.models.lead import Lead, ConversionStage
 from app.models.message_analysis import MessageAnalysis
-from app.models.lead_conversation import LeadConversation
-from app.models.enums import ConversionStage
-from app.services.crm import lead_crm_service
 from app.services.ai_service import ai_service
-from app.services.power_upgrades import power_upgrades_service
-from app.services.opportunity_engine import opportunity_engine
-from app.services.memory_engine import memory_engine
-from app.services.ltv_engine import ltv_engine
+from app.services.crm import lead_crm_service
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +186,31 @@ class LeadScoringEngine:
             logger.info(f"[SLIE Dynamic Scoring] Lead {lead_id} scored {total_score} ({lead.lead_temperature})")
             return int(total_score)
 
+    async def detect_pain_signals(self, text: str) -> dict:
+        """
+        Module 1: Pain Signal Detection.
+        Extract specific pain points from user messages.
+        """
+        text = text.lower()
+        signals = {
+            "technical": [],
+            "service": [],
+            "financial": []
+        }
+        
+        tech_pain = ["buffering", "freezing", "lag", "quality", "hd", "4k", "server"]
+        service_pain = ["down", "offline", "unreliable", "scam", "disappeared", "no reply"]
+        financial_pain = ["price", "cost", "expensive", "refund", "billing"]
+        
+        for term in tech_pain:
+            if term in text: signals["technical"].append(term)
+        for term in service_pain:
+            if term in text: signals["service"].append(term)
+        for term in financial_pain:
+            if term in text: signals["financial"].append(term)
+            
+        return signals
+
     async def decay_lead_scores(self):
         """
         Elite Step: Buying intent expires. Decay recency score daily.
@@ -211,7 +227,7 @@ class LeadScoringEngine:
                 )
             ).scalars().all()
             
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             for lead in leads:
                 # Recalculate Recency Score based on timestamp
                 delta = now - lead.timestamp
@@ -256,7 +272,7 @@ class LeadScoringEngine:
         """
         Returns the highest-intent buyers detected in the last N days.
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = datetime.now(timezone.utc) - timedelta(days=days)
         with SessionLocal() as db:
             stmt = select(Lead).where(
                 and_(
@@ -280,7 +296,7 @@ class LeadScoringEngine:
                 return lead.lead_score, lead.lead_temperature or "COLD"
         return score, "COLD"
 
-    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None):
+    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None, ai_analysis: dict = None, pain_signals: dict = None):
         """
         Performs full pipeline: Analyze -> Score -> Create Lead
         """
@@ -312,11 +328,14 @@ class LeadScoringEngine:
                     user_id=user.id,
                     group_id=group_id,
                     message_text=message_text,
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                     conversion_stage=ConversionStage.NEW
                 )
                 db.add(lead)
                 db.flush()
+            
+            if ai_analysis:
+                lead.intent_type = ai_analysis.get("intent_type")
             
             lead_id = lead.id
             db.commit()
@@ -326,13 +345,14 @@ class LeadScoringEngine:
 
         # 3. Store initial history
         with SessionLocal() as db:
+            from app.models.lead_conversation import LeadConversation
             lead = db.get(Lead, lead_id)
             if lead:
                 new_conv = LeadConversation(
                     lead_id=lead.id,
                     message=message_text,
                     sender="User",
-                    timestamp=datetime.utcnow()
+                    timestamp=datetime.now(timezone.utc)
                 )
                 db.add(new_conv)
                 db.commit()
@@ -349,8 +369,8 @@ lead_scoring_engine = lead_scoring
 async def calculate_lead_score(lead_id: str, message_text: str):
     return await lead_scoring.calculate_lead_score(lead_id, message_text)
 
-async def create_lead(user_id: int, username: str, group_id: str, message: str):
-    return await lead_scoring.create_lead(user_id, username, group_id, message)
+async def create_lead(user_id: int, username: str, group_id: str, message: str, ai_analysis: dict = None, pain_signals: dict = None):
+    return await lead_scoring.create_lead(user_id, username, group_id, message, ai_analysis=ai_analysis, pain_signals=pain_signals)
 
 async def get_top_leads(limit: int = 20, days: int = 7):
     return await lead_scoring.get_top_intent_buyers(limit, days)

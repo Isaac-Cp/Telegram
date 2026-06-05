@@ -1,6 +1,6 @@
 import logging
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Tuple
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
@@ -77,7 +77,7 @@ class OpportunityScoringEngine:
             score += 4
 
         # 2. Activity spike (Module 1 Step 4)
-        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
         recent_count = (
             db.query(func.count(Message.id))
             .filter(

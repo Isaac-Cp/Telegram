@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional, Any
 
 class LeadStats(BaseModel):
     username: Optional[str]
@@ -60,6 +60,7 @@ class DashboardSummary(BaseModel):
     dms_sent: int
     reply_rate: float
     conversion_rate: float
+    high_prob_leads: int = 0
     high_value_leads: int
     reseller_prospects: int
     average_ltv_score: float
@@ -70,6 +71,8 @@ class DashboardSummary(BaseModel):
     hourly_heatmap: list[dict[str, Any]]
     persona_performance: list[dict[str, Any]]
     account_health: list[dict[str, Any]]
+    competitor_stats: list[dict[str, Any]] = []
+    activity_log: list[dict[str, Any]] = []
     recent_leads: list[LeadStats]
     top_groups: list[GroupPerformance]
     daily_trend: list[DailyTrend]

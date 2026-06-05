@@ -1,12 +1,10 @@
 import json
 import logging
 import os
-import secrets
-import time
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -26,8 +24,11 @@ from app.services.dashboard import (
     get_high_intent_buyers_elite,
 )
 
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
+security_scheme = HTTPBearer()
 
 SETTINGS_PATH = Path(__file__).resolve().parents[2] / "data" / "dashboard_settings.json"
 TOKEN_TTL_SECONDS = 60 * 60 * 24
@@ -131,13 +132,14 @@ def _admin_password() -> str:
         return os.getenv("DASHBOARD_ADMIN_PASSWORD", "changeme")
 
 
-def _require_dashboard_auth(authorization: str | None) -> dict:
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing authorization token.")
-    token = authorization.split(" ", 1)[1].strip()
-    payload = security.decode_token(token)
+def get_current_admin(token: HTTPAuthorizationCredentials = Depends(security_scheme)) -> dict:
+    payload = security.decode_token(token.credentials)
     if not payload:
-        raise HTTPException(status_code=401, detail="Invalid or expired authorization token.")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired authorization token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return payload
 
 
@@ -190,6 +192,14 @@ def _fallback_summary() -> dict[str, Any]:
     }
 
 
+async def _async_safe_call(label: str, fn, fallback, *args):
+    try:
+        return await fn(*args)
+    except Exception as exc:
+        logger.warning("Dashboard fallback for %s: %s", label, exc)
+        return fallback
+
+
 def _safe_call(label: str, fn, fallback, *args):
     try:
         return fn(*args)
@@ -213,26 +223,42 @@ def _build_dashboard_html(active_page: str) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SLIE Intelligence</title>
+    <title>SLIE Intelligence | Command Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/dashboard/js/theme-config.js"></script>
-    <link rel="stylesheet" href="/dashboard/css/theme-core.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Manrope:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #010409;
+            --accent: #58a6ff;
+            --clay-bg: #161b22;
+            --clay-shadow: 20px 20px 60px rgba(0, 0, 0, 0.8), -10px -10px 40px rgba(255, 255, 255, 0.03);
+            --clay-inner: inset 10px 10px 20px rgba(255, 255, 255, 0.05), inset -10px -10px 20px rgba(0, 0, 0, 0.6);
+        }
+        body { background: var(--bg-deep); font-family: 'Manrope', sans-serif; color: #c9d1d9; }
+        .classic { font-family: 'Cormorant Garamond', serif; }
+        .clay-card {
+            background: var(--clay-bg);
+            border-radius: 40px;
+            box-shadow: var(--clay-shadow), var(--clay-inner);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
 </head>
-<body class="premium-gradient flex items-center justify-center min-h-screen p-6">
-    <div class="glass-panel p-12 text-center max-w-md shadow-2xl relative z-10">
-        <div class="w-16 h-16 bg-gradient-to-br from-highlight to-deep-blue rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-clay-button animate-float">
-            <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+<body class="flex items-center justify-center min-h-screen p-6">
+    <div class="clay-card p-12 text-center max-w-md w-full">
+        <div class="w-20 h-20 bg-[#161b22] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-[10px_10px_20px_rgba(0,0,0,0.6),-5px_-5px_15px_rgba(255,255,255,0.02)]">
+            <svg class="w-10 h-10 text-[#58a6ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         </div>
-        <h1 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Revenue Command</h1>
-        <p class="text-slate-400 text-sm mb-8 font-medium">Premium Intelligence Interface</p>
+        <h1 class="text-4xl font-bold text-white mb-3 classic">Revenue Command</h1>
+        <p class="text-slate-400 text-sm mb-10 font-semibold tracking-widest uppercase">Premium Intelligence Interface</p>
         
-        <div class="clay-card p-6 space-y-4">
-            <div class="animate-pulse flex space-x-4 justify-center">
-                <div class="h-2 w-2 bg-accent rounded-full shadow-[0_0_12px_rgba(100,255,218,0.6)]"></div>
-                <div class="h-2 w-2 bg-accent rounded-full shadow-[0_0_12px_rgba(100,255,218,0.6)]"></div>
-                <div class="h-2 w-2 bg-accent rounded-full shadow-[0_0_12px_rgba(100,255,218,0.6)]"></div>
+        <div class="p-8 space-y-4">
+            <div class="flex space-x-4 justify-center">
+                <div class="h-3 w-3 bg-[#58a6ff] rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="h-3 w-3 bg-[#58a6ff] rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="h-3 w-3 bg-[#58a6ff] rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
             </div>
-            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Template loading or unavailable</p>
+            <p class="text-xs text-slate-500 uppercase tracking-widest font-bold mt-4">System Initializing...</p>
         </div>
     </div>
 </body>
@@ -261,61 +287,58 @@ def dashboard_login(payload: DashboardLoginRequest):
     return {"token": access_token, "expires_in": settings.access_token_expire_minutes * 60}
 
 
-@router.get("/settings-config")
-def dashboard_settings_config(authorization: str | None = Header(default=None)):
-    if authorization:
-        _require_dashboard_auth(authorization)
+@router.get("/settings-config", dependencies=[Depends(get_current_admin)])
+def dashboard_settings_config():
     return _load_settings()
 
 
-@router.put("/settings-config")
+@router.put("/settings-config", dependencies=[Depends(get_current_admin)])
 def update_dashboard_settings(
     payload: DashboardSettingsPayload,
-    authorization: str | None = Header(default=None),
 ):
-    _require_dashboard_auth(authorization)
     return _save_settings(payload)
 
 
-@router.get("/stats")
+@router.get("/stats", dependencies=[Depends(get_current_admin)])
 def stats_endpoint(db: Session = Depends(get_db)):
     return _safe_call("stats", get_stats, _fallback_stats(), db)
 
 
-@router.get("/leads")
+@router.get("/leads", dependencies=[Depends(get_current_admin)])
 def leads_endpoint(db: Session = Depends(get_db)):
     return _safe_call("leads", get_leads_elite, [], db)
 
 
-@router.get("/groups")
+@router.get("/groups", dependencies=[Depends(get_current_admin)])
 def groups_endpoint(db: Session = Depends(get_db)):
+    logger.info("Accessing groups endpoint")
     return _safe_call("groups", get_groups_elite, [], db)
 
 
-@router.get("/conversions")
+@router.get("/conversions", dependencies=[Depends(get_current_admin)])
 def conversions_endpoint(db: Session = Depends(get_db)):
     return _safe_call("conversions", get_conversions_elite, [], db)
 
 
-@router.get("/reseller-prospects")
+@router.get("/reseller-prospects", dependencies=[Depends(get_current_admin)])
 def reseller_prospects_endpoint(db: Session = Depends(get_db)):
     return _safe_call("reseller-prospects", get_reseller_prospects_elite, [], db)
 
 
-@router.get("/high-intent-buyers")
+@router.get("/high-intent-buyers", dependencies=[Depends(get_current_admin)])
 def high_intent_buyers_endpoint(db: Session = Depends(get_db)):
     """Show the 20 highest-intent buyers detected in the last 7 days."""
     return _safe_call("high-intent-buyers", get_high_intent_buyers_elite, [], db)
 
 
-@router.get("/conversations")
+@router.get("/conversations", dependencies=[Depends(get_current_admin)])
 def conversations_endpoint(username: str | None = None, db: Session = Depends(get_db)):
     return _safe_call("conversations", get_conversations_elite, [], db, username)
 
 
-@router.get("/summary", response_model=DashboardSummary)
-def dashboard_summary_endpoint(db: Session = Depends(get_db)) -> DashboardSummary:
-    return _safe_call("summary", get_dashboard_summary, _fallback_summary(), db)
+@router.get("/summary", response_model=DashboardSummary, dependencies=[Depends(get_current_admin)])
+async def dashboard_summary_endpoint(db: Session = Depends(get_db)) -> DashboardSummary:
+    return await _async_safe_call("summary", get_dashboard_summary, _fallback_summary(), db)
 
 
 @router.get("/", response_class=HTMLResponse)

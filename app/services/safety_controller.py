@@ -24,9 +24,9 @@ class SafetyController:
         # Cooldown tracking (in-memory fallback, preferably in Redis)
         self._cooldowns: Dict[str, datetime] = {}
         self.limits = {
-            "dm": {"daily": 50, "hourly": 10},
-            "public_reply": {"daily": 100, "hourly": 20},
-            "group_join": {"daily": 7, "hourly": 2},
+            "dm": {"daily": self.settings.max_dms_per_day, "hourly": 2},
+            "public_reply": {"daily": self.settings.max_public_replies_per_day, "hourly": 5},
+            "group_join": {"daily": self.settings.max_groups_join_per_day, "hourly": 2},
         }
 
     def is_action_safe(self, db, account_phone: str, action_type: str) -> bool:
@@ -69,7 +69,18 @@ class SafetyController:
                 func.date(Group.updated_at) == today
             ).scalar() or 0
             return count < self.limits["group_join"]["daily"]
-        # ... other checks ...
+        elif action_type == "public_reply":
+            count = db.query(func.count(Lead.id)).filter(
+                Lead.public_reply_sent == True,
+                func.date(Lead.updated_at) == today
+            ).scalar() or 0
+            return count < self.limits["public_reply"]["daily"]
+        elif action_type == "dm":
+            count = db.query(func.count(Lead.id)).filter(
+                Lead.dm_sent == True,
+                func.date(Lead.last_contact) == today
+            ).scalar() or 0
+            return count < self.limits["dm"]["daily"]
         return True
 
     def is_in_cooldown(self, account_phone: str, action_type: str) -> bool:
@@ -89,13 +100,13 @@ class SafetyController:
     async def apply_smart_delay(self, action_type: str):
         """Apply a randomized delay based on action type to mimic human behavior."""
         if action_type == "dm":
-            delay = random.randint(30, 120)
+            delay = random.randint(self.settings.dm_delay_min_minutes * 60, self.settings.dm_delay_max_minutes * 60)
         elif action_type == "public_reply":
-            delay = random.randint(15, 60)
+            delay = self.settings.public_reply_delay_minutes * 60
         else:
             delay = random.randint(10, 30)
         
-        logger.info(f"[Safety Controller] Applying smart delay for {action_type}: {delay}s")
+        logger.info(f"[Safety Controller] Applying smart delay for {action_type}: {delay // 60}m {delay % 60}s")
         await asyncio.sleep(delay)
 
 safety_controller = SafetyController()

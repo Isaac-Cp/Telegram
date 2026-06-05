@@ -5,24 +5,18 @@ import os
 import sentry_sdk
 import time
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Any, Callable
 
-from alembic import command
-from alembic.config import Config
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app import models  # noqa: F401
-from app.api.routes import dashboard as dashboard_routes
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -35,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 RATE_LIMIT_WINDOW = 60  # seconds
 
-async def track_rate_limit_metrics(request: Request):
+async def track_rate_limit_metrics(_request: Request):
     window = int(time.time()) // RATE_LIMIT_WINDOW
     key = f"rate_limit:metrics:{window}"
     try:
@@ -47,47 +41,36 @@ async def track_rate_limit_metrics(request: Request):
         logger.debug("Rate limit metrics tracking failed: %s", e)
 
 
-def require_dashboard_auth(request: Request):
-    # Skip auth for the login endpoint and for the HTML page routes themselves
-    path = request.url.path
-    if not path.startswith("/api/v1/dashboard"):
-        return None
+from app.api.routes import health as health_routes
 
-    # List of routes that serve HTML or are public
-    public_dashboard_routes = {
-        "/api/v1/dashboard/",
-        "/api/v1/dashboard/overview",
-        "/api/v1/dashboard/activity",
-        "/api/v1/dashboard/pipeline",
-        "/api/v1/dashboard/targeting",
-        "/api/v1/dashboard/watch",
-        "/api/v1/dashboard/settings",
-        "/api/v1/dashboard/styleguide",
-        "/api/v1/dashboard/auth/login",
-    }
+async def robust_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = True):
+    for attempt in range(1, max_retries + 1):
+        try:
+            result = fn()
+            if inspect.isawaitable(result):
+                await result
+            return
+        except Exception as e:
+            logger.error(f"{label} failed (attempt {attempt}/{max_retries}): {e}")
+            if attempt == max_retries:
+                break
+            await asyncio.sleep(min(30, 2 ** attempt))
+    if escalate:
+        logger.critical(f"{label} failed after {max_retries} attempts. Escalating.")
+        raise RuntimeError(f"{label} failed after retries")
+    logger.error(f"{label} failed after {max_retries} attempts.")
 
-    if path in public_dashboard_routes:
-        return None
-
-    # For API data routes, we require auth unless in development and specifically requested
-    # However, to make it easier for the user to "fix all errors", let's allow GET requests
-    # to the data endpoints if they don't have an auth header, but they'll get fallback data
-    # OR we just enforce auth for sensitive operations (PUT/POST/DELETE).
-    
-    if request.method == "GET":
-        return None
-
-    authorization = request.headers.get("Authorization")
+async def spawn_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = False):
     try:
-        dashboard_routes._require_dashboard_auth(authorization)
-    except HTTPException as exc:
-        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+        await robust_bg_task(label, fn, max_retries=max_retries, escalate=escalate)
     except Exception as e:
-        logger.error("Auth error: %s", e)
-        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+        logger.critical(f"Background task '{label}' failed permanently: {e}")
+        if escalate:
+            health_routes.SYSTEM_HEALTH["degraded"].append(label)
+            logger.critical(f"Escalating critical failure in {label}. Application state is now DEGRADED.")
 
 @asynccontextmanager
-async def lifespan(application: FastAPI):
+async def lifespan(_application: FastAPI):
     # 1. Load and validate environment variables (Module 10 Prod)
     load_and_validate_env()
     
@@ -125,33 +108,6 @@ async def lifespan(application: FastAPI):
                 logger.info("Alembic migrations applied successfully.")
             except Exception as e:
                 logger.warning(f"Alembic migrations could not be applied or timed out: {e}")
-
-        async def robust_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = True):
-            for attempt in range(1, max_retries + 1):
-                try:
-                    result = fn()
-                    if inspect.isawaitable(result):
-                        await result
-                    return
-                except Exception as e:
-                    logger.error(f"{label} failed (attempt {attempt}/{max_retries}): {e}")
-                    if attempt == max_retries:
-                        break
-                    await asyncio.sleep(min(30, 2 ** attempt))
-            if escalate:
-                logger.critical(f"{label} failed after {max_retries} attempts. Escalating.")
-                raise RuntimeError(f"{label} failed after retries")
-            logger.error(f"{label} failed after {max_retries} attempts.")
-
-        async def spawn_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5, escalate: bool = False):
-            try:
-                await robust_bg_task(label, fn, max_retries=max_retries, escalate=escalate)
-            except Exception as e:
-                logger.critical(f"Background task '{label}' failed permanently: {e}")
-                # In production, we avoid os._exit(1) to allow the app to stay alive 
-                # for diagnostics, unless it's a critical dependency.
-                if escalate and os.getenv("ENVIRONMENT") == "production":
-                    logger.critical("Escalating critical failure. Application state may be degraded.")
 
         # 5. Verify Database availability (Non-blocking spawn)
         asyncio.create_task(spawn_bg_task("Database Initialization", verify_database_connection, max_retries=1, escalate=False))
@@ -210,7 +166,6 @@ async def lifespan(application: FastAPI):
     logger.info("SLIE Application shutdown complete.")
 
 
-
 def create_app() -> FastAPI:
     settings = get_settings()
     application = FastAPI(
@@ -232,7 +187,7 @@ def create_app() -> FastAPI:
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data:; "
-            "connect-src 'self';"
+            "connect-src 'self' http://localhost:8000;"
         )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -269,13 +224,6 @@ def create_app() -> FastAPI:
     application.state.limiter = limiter
     application.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     application.add_middleware(SlowAPIMiddleware)
-
-    @application.middleware("http")
-    async def security_middlewares(request: Request, call_next):
-        auth_response = require_dashboard_auth(request)
-        if auth_response:
-            return auth_response
-        return await call_next(request)
 
     @application.middleware("http")
     async def rate_metrics_middleware(request: Request, call_next):

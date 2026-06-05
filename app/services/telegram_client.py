@@ -1,9 +1,8 @@
 import asyncio
 import logging
 from typing import Optional, List
-from telethon import TelegramClient, events, functions
+from telethon import TelegramClient
 from telethon.sessions import StringSession
-from telethon.tl.types import User
 from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models.telegram_account import TelegramAccount
@@ -169,7 +168,7 @@ class TelegramClientManager:
         self._clients[phone] = client
         return client
 
-    async def _on_connection_event(self, event):
+    async def _on_connection_event(self, _event):
         """Internal handler for logging connection events."""
         # Telethon doesn't have a simple 'on_connect' event for add_event_handler
         # but we can log state changes if we use more advanced connection listeners.

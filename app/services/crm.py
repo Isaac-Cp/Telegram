@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from sqlalchemy import select, and_
@@ -21,9 +21,9 @@ class LeadCRMService:
                 
                 # Track first contact
                 if status == ConversionStage.CONTACTED and not lead.first_contact:
-                    lead.first_contact = datetime.utcnow()
+                    lead.first_contact = datetime.now(timezone.utc)
                 
-                lead.last_contact = datetime.utcnow()
+                lead.last_contact = datetime.now(timezone.utc)
                 db.commit()
                 logger.info(f"Lead {lead_id} status updated from {old_status} to {status}")
 
@@ -34,14 +34,14 @@ class LeadCRMService:
                 lead_id=lead_id,
                 message=message,
                 sender=sender,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             db.add(new_conv)
             
             # Also update last_contact on lead
             lead = db.execute(select(Lead).where(Lead.id == lead_id)).scalar_one_or_none()
             if lead:
-                lead.last_contact = datetime.utcnow()
+                lead.last_contact = datetime.now(timezone.utc)
                 
                 # If user responds, update status
                 if sender.lower() != "aiden" and lead.conversion_stage == ConversionStage.CONTACTED:
