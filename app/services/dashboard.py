@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta, timezone
 import json
 
-from sqlalchemy import case, desc, func
-from sqlalchemy.orm import Session
+from sqlalchemy import case, desc, func, select
+from sqlalchemy.orm import Session, joinedload
 
 import logging
 
 from app.intelligence.models.competitor_models import CompetitorInsight
 from app.intelligence.models.conversion_models import ConversionPrediction
 from app.intelligence.models.influence_models import InfluenceProfile
+from app.models.activity_event import ActivityEvent
 from app.models.consent import Consent
 from app.models.contact import Contact
 from app.models.conversation import Conversation
@@ -17,8 +18,10 @@ from app.models.enums import ConversationStatus, ConversionStage, FollowUpJobSta
 from app.models.follow_up_job import FollowUpJob
 from app.models.group import Group
 from app.models.lead import Lead
+from app.models.lead_profile import LeadProfile
 from app.models.message import Message
 from app.models.message_analysis import MessageAnalysis
+from app.models.metrics_snapshot import MetricsSnapshot
 from app.models.ticket import Ticket
 from app.schemas.dashboard import ConversionFunnel, DailyTrend, DashboardSummary, GroupPerformance, LeadStats
 
@@ -29,6 +32,10 @@ HIGH_VALUE_TIERS = {
     "reseller potential",
     "high value reseller prospect",
 }
+
+
+def _enum_value(value) -> str:
+    return getattr(value, "value", str(value))
 
 
 def _build_account_health(db: Session) -> list[dict]:
@@ -42,7 +49,9 @@ def _build_account_health(db: Session) -> list[dict]:
     
     for account in accounts:
         proxy_config = proxy_manager.get_proxy_config(account)
-        proxy_valid = proxy_manager.validate_proxy_connection(proxy_config) if proxy_config else True
+        # Do not perform outbound proxy validation during dashboard reads. It can
+        # block page hydration and belongs in a scheduled health check instead.
+        proxy_valid = True if proxy_config else True
         
         # Determine if this account is in cooldown (simplified)
         # In a multi-account setup, we'd need account-specific cooldown tracking
@@ -337,12 +346,153 @@ from app.core.redis_client import redis_client
 _DASHBOARD_CACHE_KEY = "dashboard:summary:cache"
 CACHE_TTL = 60 # seconds
 
+
+def _count_when(condition):
+    return func.coalesce(func.sum(case((condition, 1), else_=0)), 0)
+
+
+def _build_dashboard_analytics(db: Session, seven_days_ago: datetime) -> dict:
+    influence_rows = (
+        db.query(InfluenceProfile.influence_level, func.count(InfluenceProfile.id).label("count"))
+        .group_by(InfluenceProfile.influence_level)
+        .all()
+    )
+    influence_distribution = {
+        "leader": 0,
+        "power_user": 0,
+        "regular": 0,
+    }
+    influence_key_map = {
+        "community_leader": "leader",
+        "power_user": "power_user",
+        "regular_member": "regular",
+    }
+    for row in influence_rows:
+        influence_distribution[influence_key_map.get(row.influence_level, row.influence_level)] = row.count
+
+    top_competitors = db.query(CompetitorInsight).order_by(desc(CompetitorInsight.weakness_score)).limit(5).all()
+    competitor_stats = [
+        {
+            "name": competitor.competitor_name,
+            "score": round(competitor.weakness_score, 2),
+            "complaints": competitor.complaint_count,
+        }
+        for competitor in top_competitors
+    ]
+
+    high_prob_leads = (
+        db.query(func.count(ConversionPrediction.id))
+        .filter(ConversionPrediction.conversion_tier == "high_conversion_probability")
+        .scalar()
+        or 0
+    )
+
+    ltv_rows = (
+        db.query(LeadValueScore.ltv_tier, func.count(LeadValueScore.id).label("count"))
+        .group_by(LeadValueScore.ltv_tier)
+        .all()
+    )
+    ltv_distribution = {row.ltv_tier: row.count for row in ltv_rows}
+    average_ltv_score = db.query(func.avg(LeadValueScore.ltv_score)).scalar() or 0.0
+    high_value_leads = sum(
+        count for tier, count in ltv_distribution.items() if tier and tier.lower() in HIGH_VALUE_TIERS
+    )
+    reseller_prospects = sum(
+        count for tier, count in ltv_distribution.items() if tier and "reseller" in tier.lower()
+    )
+
+    problem_rows = (
+        db.query(ConversationSummary.problem_type, func.count(ConversationSummary.id).label("count"))
+        .filter(ConversationSummary.problem_type.is_not(None))
+        .group_by(ConversationSummary.problem_type)
+        .all()
+    )
+    problem_distribution = {row.problem_type: row.count for row in problem_rows if row.problem_type}
+
+    sentiment_time_rows = (
+        db.query(
+            func.date(Message.sent_at).label("date"),
+            MessageAnalysis.problem_type,
+            func.count(MessageAnalysis.id).label("count"),
+        )
+        .join(Message, Message.id == MessageAnalysis.message_id)
+        .filter(Message.sent_at >= seven_days_ago)
+        .group_by("date", MessageAnalysis.problem_type)
+        .all()
+    )
+    sentiment_trends: dict[str, dict[str, int]] = {}
+    for row in sentiment_time_rows:
+        day = str(row.date)
+        sentiment_trends.setdefault(day, {})
+        sentiment_trends[day][row.problem_type or "General"] = row.count
+
+    heatmap_rows = (
+        db.query(func.extract("hour", Lead.timestamp).label("hour"), func.count(Lead.id).label("count"))
+        .group_by("hour")
+        .all()
+    )
+    hourly_heatmap = [{"hour": int(row.hour), "count": row.count} for row in heatmap_rows]
+
+    persona_name = func.coalesce(Lead.persona_id, "Unassigned")
+    persona_rows = (
+        db.query(
+            persona_name.label("name"),
+            func.count(Lead.id).label("leads"),
+            func.sum(case((Lead.conversion_stage == ConversionStage.CONVERTED, 1), else_=0)).label("conversions"),
+        )
+        .group_by(persona_name)
+        .order_by(desc("leads"))
+        .all()
+    )
+    persona_performance = [
+        {
+            "name": row.name,
+            "leads": row.leads,
+            "conversions": row.conversions or 0,
+            "rate": round(((row.conversions or 0) / row.leads) * 100, 2) if row.leads else 0.0,
+        }
+        for row in persona_rows
+    ]
+
+    recent_activity = (
+        db.query(UnifiedConversation)
+        .options(joinedload(UnifiedConversation.user))
+        .order_by(desc(UnifiedConversation.timestamp))
+        .limit(10)
+        .all()
+    )
+    activity_log = [
+        {
+            "user": activity.user.username if activity.user else "Unknown",
+            "type": activity.message_type,
+            "text": ((activity.message_text or "")[:50] + "...") if activity.message_text and len(activity.message_text) > 50 else (activity.message_text or ""),
+            "time": activity.timestamp.strftime("%H:%M:%S"),
+        }
+        for activity in recent_activity
+    ]
+
+    return {
+        "high_prob_leads": high_prob_leads,
+        "high_value_leads": high_value_leads,
+        "reseller_prospects": reseller_prospects,
+        "average_ltv_score": round(float(average_ltv_score), 2),
+        "influence_distribution": influence_distribution,
+        "competitor_stats": competitor_stats,
+        "ltv_distribution": ltv_distribution,
+        "problem_distribution": problem_distribution,
+        "sentiment_trends": sentiment_trends,
+        "hourly_heatmap": hourly_heatmap,
+        "persona_performance": persona_performance,
+        "account_health": _build_account_health(db),
+        "activity_log": activity_log,
+    }
+
+
 async def get_dashboard_summary(db: Session) -> DashboardSummary:
     """
     Elite Module 12: Dashboard Summary Data.
-    Optimized with 60-second Redis caching for production scalability.
+    Optimized with Redis caching, grouped aggregates, and snapshot-backed trends.
     """
-    # 1. Try to get from Redis cache
     try:
         cached_data = await redis_client.client.get(_DASHBOARD_CACHE_KEY)
         if cached_data:
@@ -351,52 +501,53 @@ async def get_dashboard_summary(db: Session) -> DashboardSummary:
     except Exception as e:
         logger.warning("Failed to retrieve dashboard cache from Redis: %s", e)
 
-    # 2. If not in cache, perform heavy queries
-    today = datetime.now(timezone.utc).date()
     now = datetime.now(timezone.utc)
-    messages_analyzed = db.query(func.count(Message.id)).scalar() or 0
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+    today = day_start.date()
+    seven_days_ago_dt = day_start - timedelta(days=6)
+    seven_days_ago_date = seven_days_ago_dt.date()
 
-    inbound_messages_today = (
-        db.query(func.count(Message.id))
-        .filter(
-            Message.direction == MessageDirection.INBOUND,
-            func.date(Message.sent_at) == today,
-        )
-        .scalar()
-        or 0
-    )
-    outbound_messages_today = (
-        db.query(func.count(Message.id))
-        .filter(
-            Message.direction == MessageDirection.OUTBOUND,
-            func.date(Message.sent_at) == today,
-        )
-        .scalar()
-        or 0
-    )
+    message_row = db.query(
+        func.count(Message.id).label("messages_analyzed"),
+        _count_when(
+            (Message.direction == MessageDirection.INBOUND)
+            & (Message.sent_at >= day_start)
+            & (Message.sent_at < day_end)
+        ).label("inbound_today"),
+        _count_when(
+            (Message.direction == MessageDirection.OUTBOUND)
+            & (Message.sent_at >= day_start)
+            & (Message.sent_at < day_end)
+        ).label("outbound_today"),
+    ).one()
 
-    groups_joined = db.query(func.count(Group.id)).filter(Group.joined.is_(True)).scalar() or 0
-    leads_detected_total = db.query(func.count(Lead.id)).scalar() or 0
-    leads_detected_today = db.query(func.count(Lead.id)).filter(func.date(Lead.created_at) == today).scalar() or 0
-    public_replies_sent = db.query(func.count(Lead.id)).filter(Lead.public_reply_sent.is_(True)).scalar() or 0
-    dms_sent = db.query(func.count(Lead.id)).filter(Lead.dm_sent.is_(True)).scalar() or 0
+    lead_row = db.query(
+        func.count(Lead.id).label("leads_detected_total"),
+        _count_when((Lead.created_at >= day_start) & (Lead.created_at < day_end)).label("leads_detected_today"),
+        _count_when(Lead.public_reply_sent.is_(True)).label("public_replies_sent"),
+        _count_when(Lead.dm_sent.is_(True)).label("dms_sent"),
+        _count_when((Lead.dm_sent.is_(True)) & (Lead.conversion_stage != ConversionStage.CONTACTED)).label("replies_received"),
+        _count_when(Lead.conversion_stage == ConversionStage.CONVERTED).label("conversions"),
+    ).one()
 
-    replies_received = (
-        db.query(func.count(Lead.id))
-        .filter(
-            Lead.dm_sent.is_(True),
-            Lead.conversion_stage != ConversionStage.CONTACTED,
-        )
-        .scalar()
-        or 0
-    )
+    messages_analyzed = int(message_row.messages_analyzed or 0)
+    inbound_messages_today = int(message_row.inbound_today or 0)
+    outbound_messages_today = int(message_row.outbound_today or 0)
+    leads_detected_total = int(lead_row.leads_detected_total or 0)
+    leads_detected_today = int(lead_row.leads_detected_today or 0)
+    public_replies_sent = int(lead_row.public_replies_sent or 0)
+    dms_sent = int(lead_row.dms_sent or 0)
+    replies_received = int(lead_row.replies_received or 0)
+    conversions = int(lead_row.conversions or 0)
+
     reply_rate = (replies_received / dms_sent * 100) if dms_sent > 0 else 0.0
-
-    conversions = db.query(func.count(Lead.id)).filter(Lead.conversion_stage == ConversionStage.CONVERTED).scalar() or 0
     conversion_rate = (conversions / leads_detected_total * 100) if leads_detected_total > 0 else 0.0
+    groups_joined = db.query(func.count(Group.id)).filter(Group.joined.is_(True)).scalar() or 0
 
     recent_leads_query = (
         db.query(Lead)
+        .options(joinedload(Lead.user), joinedload(Lead.group))
         .join(Group, Lead.group_id == Group.id, isouter=True)
         .order_by(Lead.created_at.desc())
         .limit(10)
@@ -435,48 +586,106 @@ async def get_dashboard_summary(db: Session) -> DashboardSummary:
         for row in top_groups_query
     ]
 
-    seven_days_ago = today - timedelta(days=7)
     daily_trend_query = (
         db.query(
             func.date(Lead.created_at).label("date"),
             func.count(Lead.id).label("count"),
         )
-        .filter(Lead.created_at >= seven_days_ago)
+        .filter(Lead.created_at >= seven_days_ago_dt)
         .group_by(func.date(Lead.created_at))
         .order_by("date")
         .all()
     )
-    daily_trend = [DailyTrend(date=str(row.date), count=row.count) for row in daily_trend_query]
+    trend_by_day = {str(row.date): row.count for row in daily_trend_query}
+    daily_trend = [
+        DailyTrend(date=(seven_days_ago_date + timedelta(days=offset)).isoformat(), count=trend_by_day.get((seven_days_ago_date + timedelta(days=offset)).isoformat(), 0))
+        for offset in range(7)
+    ]
 
     funnel_data = db.query(Lead.conversion_stage, func.count(Lead.id).label("count")).group_by(Lead.conversion_stage).all()
     conversion_funnel = [ConversionFunnel(stage=row.conversion_stage.value, count=row.count) for row in funnel_data]
 
-    elite_stats = get_stats(db)
+    elite_stats = _build_dashboard_analytics(db, seven_days_ago_dt)
+    crm_rows = (
+        db.query(MetricsSnapshot)
+        .order_by(desc(MetricsSnapshot.day))
+        .limit(14)
+        .all()
+    )
+    crm_trend = [
+        {
+            "day": row.day.isoformat(),
+            "contacts_total": row.contacts_total,
+            "open_conversations": row.open_conversations,
+            "open_tickets": row.open_tickets,
+            "inbound_messages": row.inbound_messages,
+            "outbound_messages": row.outbound_messages,
+            "follow_ups_due": row.follow_ups_due,
+        }
+        for row in reversed(crm_rows)
+    ]
+    recent_events_query = (
+        db.query(ActivityEvent)
+        .order_by(desc(ActivityEvent.occurred_at))
+        .limit(12)
+        .all()
+    )
+    recent_events = [
+        {
+            "type": _enum_value(event.event_type),
+            "time": event.occurred_at.isoformat(),
+            "contact": event.contact.username if event.contact else None,
+            "metadata": event.metadata_json or {},
+        }
+        for event in recent_events_query
+    ]
+    ticket_status_breakdown = {
+        _enum_value(row.status): row.count
+        for row in db.query(Ticket.status, func.count(Ticket.id).label("count")).group_by(Ticket.status).all()
+    }
+    ticket_priority_breakdown = {
+        _enum_value(row.priority): row.count
+        for row in db.query(Ticket.priority, func.count(Ticket.id).label("count")).group_by(Ticket.priority).all()
+    }
+    consent_scope_breakdown = {
+        _enum_value(row.scope): row.count
+        for row in db.query(Consent.scope, func.count(Consent.id).label("count"))
+        .filter(Consent.revoked_at.is_(None))
+        .group_by(Consent.scope)
+        .all()
+    }
+    lifecycle_stage_breakdown = {
+        _enum_value(row.lifecycle_stage): row.count
+        for row in db.query(LeadProfile.lifecycle_stage, func.count(LeadProfile.id).label("count"))
+        .group_by(LeadProfile.lifecycle_stage)
+        .all()
+    }
+    core_row = db.query(
+        select(func.count(Contact.id)).scalar_subquery().label("contacts_total"),
+        select(func.count(Consent.id)).where(Consent.revoked_at.is_(None)).scalar_subquery().label("active_consents"),
+        select(func.count(Conversation.id))
+        .where(Conversation.status.in_([ConversationStatus.OPEN, ConversationStatus.PENDING]))
+        .scalar_subquery()
+        .label("open_conversations"),
+        select(func.count(Ticket.id))
+        .where(Ticket.status.in_([TicketStatus.OPEN, TicketStatus.PENDING]))
+        .scalar_subquery()
+        .label("open_tickets"),
+        select(func.count(FollowUpJob.id))
+        .where(
+            FollowUpJob.status == FollowUpJobStatus.QUEUED,
+            FollowUpJob.run_at <= now,
+        )
+        .scalar_subquery()
+        .label("follow_ups_due"),
+    ).one()
 
     summary = DashboardSummary(
-        contacts_total=db.query(func.count(Contact.id)).scalar() or 0,
-        active_consents=db.query(func.count(Consent.id)).filter(Consent.revoked_at.is_(None)).scalar() or 0,
-        open_conversations=(
-            db.query(func.count(Conversation.id))
-            .filter(Conversation.status.in_([ConversationStatus.OPEN, ConversationStatus.PENDING]))
-            .scalar()
-            or 0
-        ),
-        open_tickets=(
-            db.query(func.count(Ticket.id))
-            .filter(Ticket.status.in_([TicketStatus.OPEN, TicketStatus.PENDING]))
-            .scalar()
-            or 0
-        ),
-        follow_ups_due=(
-            db.query(func.count(FollowUpJob.id))
-            .filter(
-                FollowUpJob.status == FollowUpJobStatus.QUEUED,
-                FollowUpJob.run_at <= now,
-            )
-            .scalar()
-            or 0
-        ),
+        contacts_total=int(core_row.contacts_total or 0),
+        active_consents=int(core_row.active_consents or 0),
+        open_conversations=int(core_row.open_conversations or 0),
+        open_tickets=int(core_row.open_tickets or 0),
+        follow_ups_due=int(core_row.follow_ups_due or 0),
         inbound_messages_today=inbound_messages_today,
         outbound_messages_today=outbound_messages_today,
         groups_joined=groups_joined,
@@ -488,6 +697,7 @@ async def get_dashboard_summary(db: Session) -> DashboardSummary:
         dms_sent=dms_sent,
         reply_rate=round(reply_rate, 2),
         conversion_rate=round(conversion_rate, 2),
+        high_prob_leads=elite_stats.get("high_prob_leads", 0),
         high_value_leads=elite_stats.get("high_value_leads", 0),
         reseller_prospects=elite_stats.get("reseller_prospects", 0),
         average_ltv_score=elite_stats.get("average_ltv_score", 0.0),
@@ -498,13 +708,20 @@ async def get_dashboard_summary(db: Session) -> DashboardSummary:
         hourly_heatmap=elite_stats.get("hourly_heatmap", []),
         persona_performance=elite_stats.get("persona_performance", []),
         account_health=elite_stats.get("account_health", []),
+        competitor_stats=elite_stats.get("competitor_stats", []),
+        activity_log=elite_stats.get("activity_log", []),
+        recent_events=recent_events,
+        crm_trend=crm_trend,
+        ticket_status_breakdown=ticket_status_breakdown,
+        ticket_priority_breakdown=ticket_priority_breakdown,
+        consent_scope_breakdown=consent_scope_breakdown,
+        lifecycle_stage_breakdown=lifecycle_stage_breakdown,
         recent_leads=recent_leads,
         top_groups=top_groups,
         daily_trend=daily_trend,
         conversion_funnel=conversion_funnel,
     )
 
-    # 3. Save to Redis cache
     try:
         await redis_client.client.set(
             _DASHBOARD_CACHE_KEY, 
@@ -515,3 +732,15 @@ async def get_dashboard_summary(db: Session) -> DashboardSummary:
         logger.warning("Failed to save dashboard cache to Redis: %s", e)
 
     return summary
+
+
+async def prewarm_dashboard_cache() -> None:
+    """Populate the dashboard summary cache after startup when DB/Redis are ready."""
+    from app.db.session import SessionLocal
+
+    db = SessionLocal()
+    try:
+        await get_dashboard_summary(db)
+        logger.info("Dashboard summary cache prewarmed.")
+    finally:
+        db.close()

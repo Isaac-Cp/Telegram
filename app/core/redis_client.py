@@ -119,8 +119,11 @@ class RedisClient:
     @property
     def client(self) -> Any:
         if self._redis is None:
-            # Fallback for synchronous or early access
-            return MockRedis()
+            if self.settings.environment == "production":
+                raise RuntimeError("Redis client accessed before a real production Redis connection was established.")
+            # Fallback for synchronous or early access. Keep one mock instance so
+            # cache data survives across calls in local/dev verification.
+            self._redis = MockRedis()
         return self._redis
 
     async def disconnect(self):

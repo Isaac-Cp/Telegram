@@ -1,9 +1,9 @@
 import asyncio
 import logging
-import ssl
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.config import get_settings, normalize_database_url
+from app.db.ssl import build_verified_ssl_context
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,8 @@ REQUIRED_TABLES = [
     "leads",
     "lead_opportunities",
     "unified_conversations",
-    "lead_value_scores"
+    "lead_value_scores",
+    "dashboard_settings",
 ]
 
 async def verify_database_connection():
@@ -35,10 +36,7 @@ async def verify_database_connection():
     db_url_lower = db_url.lower() if db_url else ""
     # Enable SSL when the URL explicitly contains ssl-related parameters or points to a cloud provider
     if "postgresql" in db_url_lower and ("ssl=" in db_url_lower or "sslmode=" in db_url_lower or "neon" in db_url_lower):
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        engine_args["connect_args"]["ssl"] = ssl_context
+        engine_args["connect_args"]["ssl"] = build_verified_ssl_context(settings)
 
     engine = create_async_engine(db_url, **engine_args)
     

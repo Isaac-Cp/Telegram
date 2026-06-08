@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import String, Float, DateTime, Integer, Text, JSON
+from sqlalchemy import String, Float, DateTime, Index, Integer, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -10,6 +10,9 @@ class CompetitorInsight(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     Identify weaknesses in competing IPTV services based on user discussions.
     """
     __tablename__ = "competitor_insights"
+    __table_args__ = (
+        Index("ix_dashboard_competitor_insights_weakness", "weakness_score"),
+    )
 
     competitor_name: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     complaint_count: Mapped[int] = mapped_column(Integer, default=0)

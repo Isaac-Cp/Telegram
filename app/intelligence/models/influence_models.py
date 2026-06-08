@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import ForeignKey, String, Float, DateTime, Integer
+from sqlalchemy import ForeignKey, Index, String, Float, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -10,6 +10,9 @@ class InfluenceProfile(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     Identify influential users inside Telegram communities.
     """
     __tablename__ = "influence_profiles"
+    __table_args__ = (
+        Index("ix_dashboard_influence_profiles_level", "influence_level"),
+    )
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     group_id: Mapped[str] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"), index=True)

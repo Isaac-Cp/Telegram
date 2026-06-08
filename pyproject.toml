@@ -23,11 +23,14 @@ dependencies = [
   "telethon>=1.36.0",
   "praw>=7.7.1",
   "groq>=0.11.0",
-  "google-generativeai>=0.8.3",
+  "google-genai>=1.18.0",
   "PySocks>=1.7.1",
   "emoji>=2.14.0",
   "slowapi>=0.1.9",
   "sentry-sdk[fastapi]>=2.0.0",
+  "PyJWT>=2.8.0",
+  "passlib[bcrypt]>=1.7.4",
+  "certifi>=2024.8.30",
 ]
 
 [project.optional-dependencies]

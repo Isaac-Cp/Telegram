@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, Any
 
@@ -71,8 +71,14 @@ class DashboardSummary(BaseModel):
     hourly_heatmap: list[dict[str, Any]]
     persona_performance: list[dict[str, Any]]
     account_health: list[dict[str, Any]]
-    competitor_stats: list[dict[str, Any]] = []
-    activity_log: list[dict[str, Any]] = []
+    competitor_stats: list[dict[str, Any]] = Field(default_factory=list)
+    activity_log: list[dict[str, Any]] = Field(default_factory=list)
+    recent_events: list[dict[str, Any]] = Field(default_factory=list)
+    crm_trend: list[dict[str, Any]] = Field(default_factory=list)
+    ticket_status_breakdown: dict[str, int] = Field(default_factory=dict)
+    ticket_priority_breakdown: dict[str, int] = Field(default_factory=dict)
+    consent_scope_breakdown: dict[str, int] = Field(default_factory=dict)
+    lifecycle_stage_breakdown: dict[str, int] = Field(default_factory=dict)
     recent_leads: list[LeadStats]
     top_groups: list[GroupPerformance]
     daily_trend: list[DailyTrend]

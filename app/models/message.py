@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, BigInteger, Integer
+from sqlalchemy import JSON, DateTime, ForeignKey, Index, String, Text, BigInteger, Integer
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -16,6 +16,9 @@ if TYPE_CHECKING:
 
 class Message(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "messages"
+    __table_args__ = (
+        Index("ix_dashboard_messages_direction_sent_at", "direction", "sent_at"),
+    )
 
     conversation_id: Mapped[str | None] = mapped_column(ForeignKey("conversations.id", ondelete="CASCADE"), index=True)
     contact_id: Mapped[str | None] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)

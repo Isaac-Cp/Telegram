@@ -29,7 +29,15 @@ logger = logging.getLogger(__name__)
 
 RATE_LIMIT_WINDOW = 60  # seconds
 
-async def track_rate_limit_metrics(_request: Request):
+
+def validate_production_settings() -> None:
+    settings = get_settings()
+    production_issues = settings.production_issues()
+    if production_issues:
+        raise RuntimeError("Production configuration is not safe: " + " ".join(production_issues))
+
+
+async def track_rate_limit_metrics(_: Request):
     window = int(time.time()) // RATE_LIMIT_WINDOW
     key = f"rate_limit:metrics:{window}"
     try:
@@ -70,13 +78,14 @@ async def spawn_bg_task(label: str, fn: Callable[[], Any], max_retries: int = 5,
             logger.critical(f"Escalating critical failure in {label}. Application state is now DEGRADED.")
 
 @asynccontextmanager
-async def lifespan(_application: FastAPI):
+async def lifespan(_: FastAPI):
     # 1. Load and validate environment variables (Module 10 Prod)
     load_and_validate_env()
     
     # 2. Configure logging
     configure_logging()
     
+    validate_production_settings()
     settings = get_settings()
 
     async def startup_logic():
@@ -114,6 +123,13 @@ async def lifespan(_application: FastAPI):
 
         # 6. Initialize Redis (Non-blocking spawn)
         asyncio.create_task(spawn_bg_task("Redis Initialization", redis_client.connect, max_retries=1, escalate=False))
+
+        async def dashboard_cache_prewarm_bg():
+            await redis_client.connect()
+            from app.services.dashboard import prewarm_dashboard_cache
+            await prewarm_dashboard_cache()
+
+        asyncio.create_task(spawn_bg_task("Dashboard Cache Prewarm", dashboard_cache_prewarm_bg, max_retries=3, escalate=False))
 
         async def telegram_clients_bg():
             from app.services.telegram_client import telegram_client_manager
@@ -167,6 +183,7 @@ async def lifespan(_application: FastAPI):
 
 
 def create_app() -> FastAPI:
+    validate_production_settings()
     settings = get_settings()
     application = FastAPI(
         title="SLIE API",
@@ -181,18 +198,23 @@ def create_app() -> FastAPI:
     @application.middleware("http")
     async def add_security_headers(request: Request, call_next):
         response = await call_next(request)
+        connect_src = "'self' https://cdn.jsdelivr.net"
+        if settings.environment != "production":
+            connect_src = f"{connect_src} http://localhost:8000 http://127.0.0.1:8000"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data:; "
-            "connect-src 'self' http://localhost:8000;"
+            "img-src 'self' data: https://cdn.jsdelivr.net; "
+            f"connect-src {connect_src}; "
+            "worker-src 'self' blob:;"
         )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        if settings.environment == "production":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
     # 2. CORS Middleware
@@ -206,10 +228,7 @@ def create_app() -> FastAPI:
     )
 
     # 3. Trusted Host Middleware
-    allowed_hosts = settings.trusted_origins_list if settings.environment == "production" else ["*"]
-    if settings.environment == "production" and "localhost" not in allowed_hosts:
-        allowed_hosts.append("localhost")
-        allowed_hosts.append("127.0.0.1")
+    allowed_hosts = settings.trusted_hosts_list if settings.environment == "production" else ["*"]
         
     application.add_middleware(
         TrustedHostMiddleware, 
@@ -251,4 +270,3 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
-

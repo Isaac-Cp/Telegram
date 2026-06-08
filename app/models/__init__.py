@@ -2,6 +2,7 @@ from app.models.activity_event import ActivityEvent
 from app.models.consent import Consent
 from app.models.contact import Contact
 from app.models.conversation import Conversation
+from app.models.dashboard_setting import DashboardSetting
 from app.models.follow_up_job import FollowUpJob
 from app.models.group import Group
 from app.models.user import User
@@ -34,6 +35,7 @@ __all__ = [
     "Consent",
     "Contact",
     "Conversation",
+    "DashboardSetting",
     "UnifiedConversation",
     "FollowUpJob",
     "Group",

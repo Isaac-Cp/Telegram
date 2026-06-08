@@ -70,6 +70,13 @@ class ResponseEngine:
             "Your streaming question showed solid technical understanding. Most IPTV success comes down to infrastructure quality. Can I share how we approach this?",
         ]
 
+    def _safe_memory_context(self, lead_id: str) -> str:
+        try:
+            return memory_engine.get_ai_context(lead_id)
+        except Exception as exc:
+            logger.warning("Memory context unavailable for lead %s: %s", lead_id, exc)
+            return ""
+
     async def check_daily_limits(self, db: Session, action_type: str) -> bool:
         """
         Elite Module 4: Human Behavior Engine - Action Limits.
@@ -146,6 +153,10 @@ class ResponseEngine:
             logger.info(f"Current time {now} is outside configured active hours ({start_h}:00-{end_h}:00). Human Behavior Engine: SLEEP.")
         return is_active
 
+    def is_within_natural_active_hours(self) -> bool:
+        """Compatibility wrapper for callers that use the human-engine naming."""
+        return human_engine.is_within_natural_active_hours()
+
     async def apply_random_delay(self, action_type: str):
         """
         Elite Module 4: Human Behavior Engine - Random Delays.
@@ -191,7 +202,7 @@ class ResponseEngine:
         """
         Elite Module 15: Generate a public technical response with conversation context.
         """
-        context = memory_engine.get_ai_context(lead_id)
+        context = self._safe_memory_context(lead_id)
         
         system_prompt = f"""
         You are {persona['name']}, {persona['role']} for Streamexpert.
@@ -223,7 +234,7 @@ class ResponseEngine:
         """
         Elite Module 15: Generate a private DM based on LTV and Memory.
         """
-        context = memory_engine.get_ai_context(lead_id)
+        context = self._safe_memory_context(lead_id)
         
         system_prompt = f"""
         You are {persona['name']}, {persona['role']} for Streamexpert.
@@ -256,7 +267,7 @@ class ResponseEngine:
         Elite Module 15 & 16: Generate a personalized DM based on LTV and Memory.
         """
         persona = power_upgrades_service.select_persona(lead)
-        context = memory_engine.get_ai_context(lead.id)
+        context = self._safe_memory_context(lead.id)
         
         # Check if high value reseller prospect (Module 16)
         is_reseller = False

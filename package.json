@@ -1,0 +1,12 @@
+{
+  "name": "slie-dashboard-visual-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test:dashboard:visual": "playwright test",
+    "test:dashboard:visual:update": "playwright test --update-snapshots"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0"
+  }
+}

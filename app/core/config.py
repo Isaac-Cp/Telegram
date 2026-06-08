@@ -1,6 +1,7 @@
 import re
 import logging
 from functools import lru_cache
+from pathlib import Path
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
 from pydantic import Field, field_validator
@@ -35,12 +36,18 @@ def normalize_database_url(value: str) -> str:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     app_name: str = "Streamexpert Lead Intelligence Engine"
     environment: str = "development"
     api_v1_prefix: str = "/api/v1"
     database_url: str = Field("postgresql+asyncpg://postgres:postgres@localhost:5432/slie_db", alias="DATABASE_URL")
+    database_ssl_root_cert: str = Field("", alias="DATABASE_SSL_ROOT_CERT")
     
     @field_validator("database_url", mode="before")
     @classmethod
@@ -102,18 +109,86 @@ class Settings(BaseSettings):
     business_hours_end: int = Field(23, alias="BUSINESS_HOURS_END")
     background_workers_enabled: bool = Field(True, alias="BACKGROUND_WORKERS_ENABLED")
     dashboard_admin_password: str = Field("changeme", alias="DASHBOARD_ADMIN_PASSWORD")
+    dashboard_control_password: str = Field("control-changeme", alias="DASHBOARD_CONTROL_PASSWORD")
     trusted_origins: str | list[str] = Field("https://yourdomain.com", alias="TRUSTED_ORIGINS")
+    trusted_hosts: str | list[str] = Field("", alias="TRUSTED_HOSTS")
 
     # Security (Module 16 Remediation)
-    secret_key: str = "super-secret-key-change-in-production"
+    secret_key: str = Field("super-secret-key-change-in-production", alias="SECRET_KEY")
     access_token_expire_minutes: int = 60 * 24 * 7 # 1 week
-    dashboard_password_hash: str = "" # Hashed version of DASHBOARD_PASSWORD
+    dashboard_password_hash: str = Field("", alias="DASHBOARD_PASSWORD_HASH")
+    dashboard_control_password_hash: str = Field("", alias="DASHBOARD_CONTROL_PASSWORD_HASH")
 
     @property
     def trusted_origins_list(self) -> list[str]:
         if isinstance(self.trusted_origins, str):
             return [origin.strip() for origin in self.trusted_origins.split(",") if origin.strip()]
         return self.trusted_origins
+
+    @property
+    def trusted_hosts_list(self) -> list[str]:
+        raw_hosts = self.trusted_hosts
+        if isinstance(raw_hosts, str) and raw_hosts.strip():
+            return [host.strip() for host in raw_hosts.split(",") if host.strip()]
+        if isinstance(raw_hosts, list) and raw_hosts:
+            return raw_hosts
+
+        hosts: list[str] = []
+        for origin in self.trusted_origins_list:
+            parsed = urlparse(origin if "://" in origin else f"https://{origin}")
+            host = parsed.hostname or origin
+            if host and host not in hosts:
+                hosts.append(host)
+        return hosts
+
+    def production_issues(self) -> list[str]:
+        if self.environment.lower() != "production":
+            return []
+
+        issues: list[str] = []
+        secret_key_lower = (self.secret_key or "").lower()
+        if (
+            not self.secret_key
+            or secret_key_lower.startswith("replace-with")
+            or self.secret_key == "super-secret-key-change-in-production"
+            or len(self.secret_key) < 32
+        ):
+            issues.append("SECRET_KEY must be a unique production secret with at least 32 characters.")
+
+        password_hash_configured = bool(self.dashboard_password_hash.strip())
+        dashboard_password_lower = (self.dashboard_admin_password or "").lower()
+        password_is_default = dashboard_password_lower in {"", "changeme", "password", "admin"} or dashboard_password_lower.startswith("replace-with")
+        if not password_hash_configured and (password_is_default or len(self.dashboard_admin_password) < 12):
+            issues.append("Configure DASHBOARD_PASSWORD_HASH or a strong DASHBOARD_ADMIN_PASSWORD before production.")
+
+        control_hash_configured = bool(self.dashboard_control_password_hash.strip())
+        control_password_lower = (self.dashboard_control_password or "").lower()
+        control_password_is_default = (
+            control_password_lower in {"", "changeme", "control-changeme", "password", "admin"}
+            or control_password_lower.startswith("replace-with")
+        )
+        if not control_hash_configured and (control_password_is_default or len(self.dashboard_control_password) < 12):
+            issues.append("Configure DASHBOARD_CONTROL_PASSWORD_HASH or a strong DASHBOARD_CONTROL_PASSWORD before production.")
+
+        db_lower = (self.database_url or "").lower()
+        if not db_lower or "postgres:postgres@" in db_lower or "localhost:5432" in db_lower or "127.0.0.1:5432" in db_lower:
+            issues.append("DATABASE_URL must point to a real production database, not the local/default database.")
+        if self.database_ssl_root_cert.strip() and not Path(self.database_ssl_root_cert).exists():
+            issues.append("DATABASE_SSL_ROOT_CERT points to a file that does not exist.")
+
+        redis_lower = (self.redis_url or "").lower()
+        if not redis_lower or redis_lower.startswith("memory://") or "localhost:6379" in redis_lower:
+            issues.append("REDIS_URL must point to a real production Redis instance.")
+
+        origins = self.trusted_origins_list
+        if not origins or "*" in origins or any("yourdomain.com" in origin or "localhost" in origin or "127.0.0.1" in origin for origin in origins):
+            issues.append("TRUSTED_ORIGINS must contain the real production origin(s), not wildcard/placeholders.")
+
+        hosts = self.trusted_hosts_list
+        if not hosts or "*" in hosts or any("yourdomain.com" in host or host in {"localhost", "127.0.0.1"} for host in hosts):
+            issues.append("TRUSTED_HOSTS or TRUSTED_ORIGINS must resolve to real production hostnames.")
+
+        return issues
 
     # Database cleanup retention settings
     cleanup_enabled: bool = Field(True, alias="CLEANUP_ENABLED")

@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,6 +17,11 @@ if TYPE_CHECKING:
 
 class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "leads"
+    __table_args__ = (
+        Index("ix_dashboard_leads_created_at", "created_at"),
+        Index("ix_dashboard_leads_dm_stage", "dm_sent", "conversion_stage"),
+        Index("ix_dashboard_leads_persona_stage", "persona_id", "conversion_stage"),
+    )
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     group_id: Mapped[str | None] = mapped_column(ForeignKey("groups.id", ondelete="SET NULL"), index=True)

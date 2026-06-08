@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, DateTime, Integer, String, Boolean, Text
+from sqlalchemy import BigInteger, DateTime, Index, Integer, String, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -12,6 +12,9 @@ if TYPE_CHECKING:
 
 class Group(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "groups"
+    __table_args__ = (
+        Index("ix_dashboard_groups_joined_authority", "joined", "authority_score"),
+    )
 
     telegram_id: Mapped[int | None] = mapped_column(BigInteger, unique=True, index=True)
     name: Mapped[str] = mapped_column(String(255))

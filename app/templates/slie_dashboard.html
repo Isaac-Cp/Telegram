@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="SLIE Premium Revenue Command Dashboard">
     <meta name="theme-color" content="#010409">
+    <meta property="og:title" content="SLIE Intelligence Revenue Command">
+    <meta property="og:description" content="Live Telegram outreach, lead intelligence, persona, group, revenue, and system-control dashboard.">
+    <meta property="og:type" content="website">
     <title>SLIE Intelligence | Revenue Command</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="/dashboard/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
 </head>
 <body data-active-page="__ACTIVE_PAGE__">
     <div class="liquid-bg"></div>
@@ -19,12 +22,27 @@
     
     <!-- Mobile Header -->
     <header class="mobile-nav">
-        <div class="brand">
-            <h1 class="classic-text" style="font-size: 1.5rem; color: var(--accent);">SLIE</h1>
-        </div>
-        <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle Menu" style="background: none; border: none; color: var(--accent); cursor: pointer;">
-            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
+        <a class="mobile-brand" href="/api/v1/dashboard/overview" aria-label="SLIE dashboard overview">
+            <span class="mobile-brand__mark">S</span>
+            <span class="classic-text">SLIE</span>
+        </a>
+        <nav class="mobile-icon-nav" aria-label="Primary dashboard pages">
+            <a class="mobile-nav-link" href="/api/v1/dashboard/overview" aria-label="Overview" data-label="Overview">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </a>
+            <a class="mobile-nav-link" href="/api/v1/dashboard/activity" aria-label="Intelligence" data-label="Intel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </a>
+            <a class="mobile-nav-link" href="/api/v1/dashboard/pipeline" aria-label="Revenue" data-label="Revenue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </a>
+            <a class="mobile-nav-link" href="/api/v1/dashboard/targeting" aria-label="Targeting" data-label="Target">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </a>
+            <a class="mobile-nav-link" href="/api/v1/dashboard/settings" aria-label="Control" data-label="Control">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 7.04 4.3l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </a>
+        </nav>
     </header>
 
     <div class="app-shell">
@@ -91,84 +109,88 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main id="main-content" class="main-content">
             <div id="view-overview" class="dashboard-view">
-                <div class="hero">
-                    <h1 class="classic-text">Market Intelligence</h1>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; font-weight: 600; line-height: 1.6;">Command & Control Center for elite signal detection and automated community intelligence.</p>
-                </div>
-
-                <!-- KPI Grid -->
-                <section class="kpi-grid">
-                    <!-- Outreach -->
-                    <article class="clay-card kpi-card">
-                        <div class="icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+                <section class="hero command-hero" aria-labelledby="overview-hero-title">
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow">Overview Command</span>
+                        <h1 id="overview-hero-title" class="classic-text">Live revenue signal cockpit</h1>
+                        <div class="hero-live-grid" aria-label="Overview live metrics">
+                            <div><span>DMs</span><strong id="hero-overview-dms">0</strong></div>
+                            <div><span>Replies</span><strong id="hero-overview-replies">0</strong></div>
+                            <div><span>Leads</span><strong id="hero-overview-leads">0</strong></div>
+                            <div><span>Groups</span><strong id="hero-overview-groups">0</strong></div>
                         </div>
-                        <div class="content">
-                            <span class="label">Outreach</span>
-                            <strong class="value" id="kpi-dms">0</strong>
-                            <span class="trend">Total DMs</span>
+                    </div>
+                    <div class="hero-orbit" aria-hidden="true">
+                        <div class="hero-orbit__ring"></div>
+                        <div class="hero-orbit__ring hero-orbit__ring--wide"></div>
+                        <div class="hero-orbit__node hero-orbit__node--one"></div>
+                        <div class="hero-orbit__node hero-orbit__node--two"></div>
+                        <div class="hero-orbit__core">
+                            <span>Conversion</span>
+                            <strong id="hero-overview-rate">0.0%</strong>
+                            <small>live success rate</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ops-board" aria-label="CRM operations overview">
+                    <article class="clay-card ops-card">
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">CRM Operations</span>
+                                <h2 class="classic-text">Support, consent, and follow-up control</h2>
+                            </div>
+                            <span class="live-pill">LIVE</span>
+                        </div>
+                        <div class="ops-metrics">
+                            <div>
+                                <span>Contacts</span>
+                                <strong id="ops-contacts">0</strong>
+                                <small>Total CRM records</small>
+                            </div>
+                            <div>
+                                <span>Open Tickets</span>
+                                <strong id="ops-tickets">0</strong>
+                                <small>Needs handling</small>
+                            </div>
+                            <div>
+                                <span>Inbound</span>
+                                <strong id="ops-inbound">0</strong>
+                                <small>Messages today</small>
+                            </div>
+                            <div>
+                                <span>Outbound</span>
+                                <strong id="ops-outbound">0</strong>
+                                <small>Messages today</small>
+                            </div>
+                        </div>
+                        <div class="breakdown-board">
+                            <div>
+                                <span class="section-kicker">Tickets</span>
+                                <div id="ticketStatusBreakdown" class="breakdown-list"></div>
+                            </div>
+                            <div>
+                                <span class="section-kicker">Consent</span>
+                                <div id="consentScopeBreakdown" class="breakdown-list"></div>
+                            </div>
+                            <div>
+                                <span class="section-kicker">Lifecycle</span>
+                                <div id="lifecycleStageBreakdown" class="breakdown-list"></div>
+                            </div>
                         </div>
                     </article>
-
-                    <!-- Analyzed -->
-                    <article class="clay-card kpi-card">
-                        <div class="icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <article class="clay-card">
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">Daily Snapshots</span>
+                                <h2 class="classic-text">CRM movement trend</h2>
+                            </div>
+                            <span class="live-pill">14D</span>
                         </div>
-                        <div class="content">
-                            <span class="label">Analyzed</span>
-                            <strong class="value" id="kpi-analyzed">0</strong>
-                            <span class="trend">Messages Scanned</span>
-                        </div>
-                    </article>
-
-                    <!-- Leads -->
-                    <article class="clay-card kpi-card">
-                        <div class="icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
-                        </div>
-                        <div class="content">
-                            <span class="label">Leads Detected</span>
-                            <strong class="value" id="kpi-leads">0</strong>
-                            <span class="trend">Detected Today</span>
-                        </div>
-                    </article>
-
-                    <!-- Success -->
-                    <article class="clay-card kpi-card">
-                        <div class="icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.5 8.5L9 11l-7 7"/><path d="M16 7h6v6"/></svg>
-                        </div>
-                        <div class="content">
-                            <span class="label">Conversion Rate</span>
-                            <strong class="value" id="kpi-success">0%</strong>
-                            <span class="trend">Global Success</span>
-                        </div>
-                    </article>
-
-                    <!-- Groups -->
-                    <article class="clay-card kpi-card">
-                        <div class="icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        </div>
-                        <div class="content">
-                            <span class="label">Channels</span>
-                            <strong class="value" id="kpi-groups">0</strong>
-                            <span class="trend">Groups Monitored</span>
-                        </div>
-                    </article>
-
-                    <!-- High Value -->
-                    <article class="clay-card kpi-card">
-                        <div class="icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-                        </div>
-                        <div class="content">
-                            <span class="label">Elite</span>
-                            <strong class="value" id="kpi-hvl">0</strong>
-                            <span class="trend">High-Intent Leads</span>
+                        <div class="chart-wrap chart-wrap--compact">
+                            <canvas id="crmTrendChart"></canvas>
                         </div>
                     </article>
                 </section>
@@ -199,29 +221,41 @@
                     </article>
 
                     <article class="clay-card">
-                        <h2 class="classic-text" style="font-size: 1.8rem; margin-bottom: 2rem;">Persona Performance</h2>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Persona</th>
-                                        <th>Leads</th>
-                                        <th>Conv</th>
-                                        <th>Rate</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="personaTable"></tbody>
-                            </table>
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">AI Persona Flow</span>
+                                <h2 class="classic-text">Persona lead flow Sankey</h2>
+                            </div>
+                            <span class="live-pill">LIVE</span>
                         </div>
+                        <div id="personaSankey" class="sankey-panel" aria-live="polite"></div>
                     </article>
                 </div>
             </div>
 
             <div id="view-activity" class="dashboard-view" style="display: none;">
-                <div class="hero">
-                    <h1 class="classic-text">Signal Intelligence</h1>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; font-weight: 600; line-height: 1.6;">Deep-dive into community behavioral patterns and intent classification.</p>
-                </div>
+                <section class="hero command-hero command-hero--activity" aria-labelledby="activity-hero-title">
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow">Intelligence Deck</span>
+                        <h1 id="activity-hero-title" class="classic-text">Signals, activity, and intent heat</h1>
+                        <div class="hero-live-grid" aria-label="Activity live metrics">
+                            <div><span>Inbound</span><strong id="hero-activity-inbound">0</strong></div>
+                            <div><span>Analyzed</span><strong id="hero-activity-analyzed">0</strong></div>
+                            <div><span>Events</span><strong id="hero-activity-events">0</strong></div>
+                            <div><span>Influence</span><strong id="hero-activity-influence">0</strong></div>
+                        </div>
+                    </div>
+                    <div class="hero-orbit hero-orbit--wave" aria-hidden="true">
+                        <div class="hero-scanline"></div>
+                        <div class="hero-orbit__ring"></div>
+                        <div class="hero-orbit__node hero-orbit__node--one"></div>
+                        <div class="hero-orbit__core">
+                            <span>Pulse</span>
+                            <strong id="hero-activity-pulse">0</strong>
+                            <small>live signals</small>
+                        </div>
+                    </div>
+                </section>
 
                 <div class="dashboard-grid dashboard-grid--two">
                     <!-- Hourly Heatmap -->
@@ -263,13 +297,53 @@
                         </div>
                     </article>
                 </section>
+
+                <section style="margin-top: 3rem;">
+                    <article class="clay-card">
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">Backend Activity</span>
+                                <h2 class="classic-text">Automation event log</h2>
+                            </div>
+                            <span class="live-pill">LIVE</span>
+                        </div>
+                        <div id="backendActivityLog" class="activity-cards"></div>
+                    </article>
+                </section>
+
+                <section style="margin-top: 3rem;">
+                    <article class="clay-card">
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">Audit Trail</span>
+                                <h2 class="classic-text">Consent-safe system events</h2>
+                            </div>
+                            <span class="live-pill">SECURE</span>
+                        </div>
+                        <div id="auditEventLog" class="event-timeline"></div>
+                    </article>
+                </section>
             </div>
 
             <div id="view-pipeline" class="dashboard-view" style="display: none;">
-                <div class="hero">
-                    <h1 class="classic-text">Revenue Pipeline</h1>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; font-weight: 600; line-height: 1.6;">Track conversions, LTV distribution, and high-value lead acquisition.</p>
-                </div>
+                <section class="hero command-hero command-hero--pipeline" aria-labelledby="pipeline-hero-title">
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow">Revenue Flow</span>
+                        <h1 id="pipeline-hero-title" class="classic-text">Pipeline value and conversion control</h1>
+                        <div class="hero-live-grid" aria-label="Pipeline live metrics">
+                            <div><span>Conversions</span><strong id="hero-pipeline-conversions">0</strong></div>
+                            <div><span>High Value</span><strong id="hero-pipeline-highvalue">0</strong></div>
+                            <div><span>Hot Leads</span><strong id="hero-pipeline-hot">0</strong></div>
+                            <div><span>Avg LTV</span><strong id="hero-pipeline-ltv">0.0</strong></div>
+                        </div>
+                    </div>
+                    <div class="hero-flow" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                        <div class="hero-flow__card"><small>Lead</small><strong id="hero-flow-leads">0</strong></div>
+                        <div class="hero-flow__card hero-flow__card--mid"><small>Reply</small><strong id="hero-flow-replies">0</strong></div>
+                        <div class="hero-flow__card"><small>Convert</small><strong id="hero-flow-convert">0</strong></div>
+                    </div>
+                </section>
 
                 <div class="dashboard-grid dashboard-grid--two">
                     <!-- Conversion Funnel -->
@@ -316,13 +390,54 @@
                         </div>
                     </article>
                 </div>
+
+                <section style="margin-top: 3rem;">
+                    <article class="clay-card">
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">Competitor Weakness</span>
+                                <h2 class="classic-text">Market pressure signals</h2>
+                            </div>
+                            <span class="live-pill live-pill--warning">RISK</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Competitor</th>
+                                        <th>Weakness Score</th>
+                                        <th>Complaints</th>
+                                        <th>Opportunity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="competitorTable"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                </section>
             </div>
 
             <div id="view-targeting" class="dashboard-view" style="display: none;">
-                <div class="hero">
-                    <h1 class="classic-text">Market Targeting</h1>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; font-weight: 600; line-height: 1.6;">Monitor community saturation and discover high-authority growth opportunities.</p>
-                </div>
+                <section class="hero command-hero command-hero--targeting" aria-labelledby="targeting-hero-title">
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow">Group Portfolio</span>
+                        <h1 id="targeting-hero-title" class="classic-text">Channel quality and market coverage</h1>
+                        <div class="hero-live-grid" aria-label="Targeting live metrics">
+                            <div><span>Joined</span><strong id="hero-targeting-joined">0</strong></div>
+                            <div><span>Top Groups</span><strong id="hero-targeting-top">0</strong></div>
+                            <div><span>Competitors</span><strong id="hero-targeting-competitors">0</strong></div>
+                            <div><span>Scanned</span><strong id="hero-targeting-scanned">0</strong></div>
+                        </div>
+                    </div>
+                    <div class="hero-map" aria-hidden="true">
+                        <div class="hero-map__grid"></div>
+                        <span class="hero-map__pin hero-map__pin--one"></span>
+                        <span class="hero-map__pin hero-map__pin--two"></span>
+                        <span class="hero-map__pin hero-map__pin--three"></span>
+                        <strong id="hero-targeting-score">0</strong>
+                        <small>active groups</small>
+                    </div>
+                </section>
 
                 <div class="dashboard-grid dashboard-grid--two">
                     <!-- Market Saturation -->
@@ -341,7 +456,7 @@
                                     <tr>
                                         <th>Group</th>
                                         <th>Members</th>
-                                        <th>Leads</th>
+                                        <th>Score</th>
                                         <th>Density</th>
                                     </tr>
                                 </thead>
@@ -353,41 +468,143 @@
             </div>
 
             <div id="view-settings" class="dashboard-view" style="display: none;">
-                <div class="hero">
-                    <h1 class="classic-text">System Control</h1>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; font-weight: 600; line-height: 1.6;">Configure targeting tags, thresholds, and automated outreach parameters.</p>
-                </div>
+                <section class="hero command-hero command-hero--settings" aria-labelledby="settings-hero-title">
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow">Secure Control</span>
+                        <h1 id="settings-hero-title" class="classic-text">Configuration cockpit</h1>
+                        <div class="hero-live-grid" aria-label="Settings live metrics">
+                            <div><span>Threshold</span><strong id="hero-settings-threshold">70</strong></div>
+                            <div><span>DM Limit</span><strong id="hero-settings-dm-limit">50</strong></div>
+                            <div><span>Auto Join</span><strong id="hero-settings-auto">Off</strong></div>
+                            <div><span>Outreach</span><strong id="hero-settings-outreach">Off</strong></div>
+                        </div>
+                    </div>
+                    <div class="hero-console" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                        <strong>AUTH</strong>
+                        <small>protected runtime settings</small>
+                    </div>
+                </section>
 
-                <div class="clay-card" style="max-width: 900px; margin: 0 auto;">
-                    <form id="settingsForm" onsubmit="saveSettings(event)" style="display: grid; gap: 2rem;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <div class="clay-card settings-panel control-panel">
+                    <form id="settingsForm" class="control-form" onsubmit="saveSettings(event)">
+                        <div class="control-toolbar">
                             <div>
-                                <label class="label" style="display: block; margin-bottom: 1rem;">Target Tags (comma separated)</label>
-                                <textarea id="target_tags" style="width: 100%; min-height: 100px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; color: white; padding: 1rem;"></textarea>
+                                <span class="section-kicker">Live Controls</span>
+                                <h2 class="classic-text">Targeting command surface</h2>
                             </div>
-                            <div>
-                                <label class="label" style="display: block; margin-bottom: 1rem;">Search Terms</label>
-                                <textarea id="search_tags" style="width: 100%; min-height: 100px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; color: white; padding: 1rem;"></textarea>
+                            <div id="settingsStatus" class="control-status control-status--synced" role="status">
+                                <span></span>
+                                <strong>Synced</strong>
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-                            <div>
-                                <label class="label" style="display: block; margin-bottom: 1rem;">Lead Score Threshold</label>
-                                <input type="number" id="lead_threshold" style="width: 100%; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; color: white; padding: 1rem;">
-                            </div>
-                            <div>
-                                <label class="label" style="display: block; margin-bottom: 1rem;">Daily DM Limit</label>
-                                <input type="number" id="dm_limit" style="width: 100%; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; color: white; padding: 1rem;">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 1rem; padding-top: 2rem;">
-                                <input type="checkbox" id="auto_join" style="width: 20px; height: 20px;">
-                                <label class="label">Auto-Join Groups</label>
-                            </div>
+                        <div class="control-grid">
+                            <section class="control-card control-card--wide">
+                                <div class="control-card__head">
+                                    <span class="control-icon">TG</span>
+                                    <div>
+                                        <h3>Target groups</h3>
+                                        <p>Terms used to detect communities, intent, and brand signals.</p>
+                                    </div>
+                                </div>
+                                <div class="control-fields-grid">
+                                    <label class="control-field">
+                                        <span>Target Tags</span>
+                                        <textarea id="target_tags" placeholder="iptv, reseller, trial users"></textarea>
+                                        <div id="preview-target_tags" class="control-chip-row" aria-label="Target tag preview"></div>
+                                    </label>
+                                    <label class="control-field">
+                                        <span>Search Terms</span>
+                                        <textarea id="search_tags" placeholder="buffering, refund, best provider"></textarea>
+                                        <div id="preview-search_tags" class="control-chip-row" aria-label="Search term preview"></div>
+                                    </label>
+                                    <label class="control-field">
+                                        <span>Brand Tags</span>
+                                        <textarea id="brand_tags" placeholder="Streamexpert, support crm"></textarea>
+                                        <div id="preview-brand_tags" class="control-chip-row" aria-label="Brand tag preview"></div>
+                                    </label>
+                                    <label class="control-field">
+                                        <span>Watch Terms</span>
+                                        <textarea id="watch_terms" placeholder="downtime, migration, competitor"></textarea>
+                                        <div id="preview-watch_terms" class="control-chip-row" aria-label="Watch term preview"></div>
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="control-card">
+                                <div class="control-card__head">
+                                    <span class="control-icon">LS</span>
+                                    <div>
+                                        <h3>Lead score</h3>
+                                        <p>Minimum score required before a lead enters the priority queue.</p>
+                                    </div>
+                                </div>
+                                <div class="control-meter">
+                                    <strong id="leadThresholdValue">70</strong>
+                                    <input type="range" id="lead_threshold" min="0" max="100" step="1">
+                                </div>
+                            </section>
+
+                            <section class="control-card">
+                                <div class="control-card__head">
+                                    <span class="control-icon">DM</span>
+                                    <div>
+                                        <h3>Daily DM cap</h3>
+                                        <p>Upper limit for direct outreach sent by automation per day.</p>
+                                    </div>
+                                </div>
+                                <div class="control-meter">
+                                    <strong id="dmLimitValue">50</strong>
+                                    <input type="range" id="dm_limit" min="0" max="500" step="1">
+                                </div>
+                            </section>
+
+                            <section class="control-card">
+                                <div class="control-card__head">
+                                    <span class="control-icon">AJ</span>
+                                    <div>
+                                        <h3>Automation switches</h3>
+                                        <p>Turn runtime behaviors on only when credentials and safety checks are ready.</p>
+                                    </div>
+                                </div>
+                                <div class="control-switch-list">
+                                    <label class="control-switch">
+                                        <input type="checkbox" id="auto_join">
+                                        <span></span>
+                                        <strong>Auto-join groups</strong>
+                                    </label>
+                                    <label class="control-switch">
+                                        <input type="checkbox" id="telegram_enabled">
+                                        <span></span>
+                                        <strong>Telegram outreach</strong>
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="control-card">
+                                <div class="control-card__head">
+                                    <span class="control-icon">NT</span>
+                                    <div>
+                                        <h3>Operator notes</h3>
+                                        <p>Keep targeting rules and handoff context visible for the next session.</p>
+                                    </div>
+                                </div>
+                                <textarea id="settings_notes" class="control-notes" placeholder="Add operator notes..."></textarea>
+                            </section>
                         </div>
 
-                        <div style="text-align: right; margin-top: 1rem;">
-                            <button type="submit" class="clay-btn" style="padding: 1.25rem 3rem; background: var(--accent); color: var(--bg-deep);">SAVE CONFIGURATION</button>
+                        <div class="control-preview">
+                            <div>
+                                <span class="section-kicker">Preview</span>
+                                <h3 class="classic-text">Current targeting mix</h3>
+                            </div>
+                            <div id="controlPreviewTags" class="control-chip-row control-chip-row--large"></div>
+                        </div>
+
+                        <div class="control-actions">
+                            <button type="button" class="clay-btn control-secondary" onclick="loadSettings()">Reset from live data</button>
+                            <button type="submit" class="clay-btn control-primary">Save live configuration</button>
                         </div>
                     </form>
                 </div>
@@ -402,6 +619,145 @@
             font: { family: 'Manrope', size: 11, weight: '600' },
             grid: { color: 'rgba(255, 255, 255, 0.03)' }
         };
+        const chartInstances = {};
+        let dashboardRequestInFlight = false;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[char]);
+        }
+
+        function formatNumber(value) {
+            return Number(value || 0).toLocaleString();
+        }
+
+        function truncateLabel(value, maxLength = 18) {
+            const label = String(value ?? '');
+            return label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
+        }
+
+        function renderEmptyRow(target, colspan, label = 'No live data yet.') {
+            if (target) {
+                target.innerHTML = `<tr><td colspan="${colspan}" class="empty-cell">${label}</td></tr>`;
+            }
+        }
+
+        function renderBreakdownList(targetId, data, emptyLabel = 'No records yet') {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const entries = Object.entries(data || {}).filter(([, value]) => Number(value || 0) > 0);
+            target.innerHTML = entries.length ? entries.map(([label, value]) => `
+                <span class="breakdown-chip">
+                    <strong>${escapeHtml(label.replaceAll('_', ' '))}</strong>
+                    <em>${formatNumber(value)}</em>
+                </span>
+            `).join('') : `<span class="breakdown-empty">${escapeHtml(emptyLabel)}</span>`;
+        }
+
+        function mountChart(canvasId, config) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
+                delete chartInstances[canvasId];
+            }
+            if (!window.Chart) {
+                renderCanvasFallback(canvas, config);
+                return;
+            }
+            chartInstances[canvasId] = new Chart(canvas, config);
+        }
+
+        function renderCanvasFallback(canvas, config) {
+            const parent = canvas.parentElement;
+            const width = Math.max(320, parent?.clientWidth || 640);
+            const height = Math.max(260, parent?.clientHeight || 340);
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, width, height);
+            ctx.font = '700 12px Manrope';
+            ctx.fillStyle = '#94a3b8';
+            const labels = config.data?.labels || [];
+            const datasets = config.data?.datasets || [];
+            const values = datasets.flatMap((dataset) => dataset.data || []).map((value) => {
+                if (typeof value === 'object') return Number(value.y || value.r || 0);
+                return Number(value || 0);
+            });
+            const max = Math.max(1, ...values);
+            const left = 42;
+            const right = width - 20;
+            const top = 28;
+            const bottom = height - 44;
+            ctx.strokeStyle = 'rgba(255,255,255,.06)';
+            for (let i = 0; i <= 4; i++) {
+                const y = top + ((bottom - top) / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(left, y);
+                ctx.lineTo(right, y);
+                ctx.stroke();
+            }
+            if (['doughnut', 'pie'].includes(config.type)) {
+                const data = datasets[0]?.data || [];
+                const colors = datasets[0]?.backgroundColor || ['#3b82f6', '#10b981', '#f59e0b'];
+                const total = Math.max(1, data.reduce((sum, value) => sum + Number(value || 0), 0));
+                let start = -Math.PI / 2;
+                data.forEach((value, index) => {
+                    const slice = (Number(value || 0) / total) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(width / 2, height / 2);
+                    ctx.arc(width / 2, height / 2, Math.min(width, height) * .32, start, start + slice);
+                    ctx.closePath();
+                    ctx.fillStyle = Array.isArray(colors) ? colors[index % colors.length] : colors;
+                    ctx.fill();
+                    start += slice;
+                });
+                if (config.type === 'doughnut') {
+                    ctx.beginPath();
+                    ctx.arc(width / 2, height / 2, Math.min(width, height) * .2, 0, Math.PI * 2);
+                    ctx.fillStyle = '#020617';
+                    ctx.fill();
+                }
+                return;
+            }
+            datasets.forEach((dataset, datasetIndex) => {
+                const data = dataset.data || [];
+                const color = dataset.borderColor || dataset.backgroundColor || ['#3b82f6', '#10b981'][datasetIndex % 2];
+                ctx.strokeStyle = Array.isArray(color) ? color[0] : color;
+                ctx.fillStyle = Array.isArray(color) ? color[0] : color;
+                if (config.type === 'bar') {
+                    const barWidth = Math.max(8, (right - left) / Math.max(1, data.length) - 8);
+                    data.forEach((value, index) => {
+                        const x = left + index * (barWidth + 8);
+                        const h = (Number(value || 0) / max) * (bottom - top);
+                        ctx.fillRect(x, bottom - h, barWidth, h);
+                    });
+                } else {
+                    ctx.beginPath();
+                    data.forEach((value, index) => {
+                        const point = typeof value === 'object' ? value : { y: value };
+                        const x = left + ((right - left) / Math.max(1, data.length - 1)) * index;
+                        const y = bottom - (Number(point.y || point.r || point || 0) / max) * (bottom - top);
+                        if (index === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+                    ctx.stroke();
+                }
+            });
+            labels.slice(0, 8).forEach((label, index) => {
+                const x = left + ((right - left) / Math.max(1, labels.length - 1)) * index;
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(String(label).slice(0, 8), x - 8, height - 16);
+            });
+        }
 
         function getToken() { return localStorage.getItem('slie_token'); }
 
@@ -430,18 +786,25 @@
                 document.getElementById('loginModal').style.display = 'flex';
                 return;
             }
+            if (dashboardRequestInFlight) return;
+            dashboardRequestInFlight = true;
 
             // 1. View Switching Logic
-            const activePage = document.body.getAttribute('data-active-page') || 'overview';
+            let activePage = document.body.getAttribute('data-active-page') || 'overview';
+            if (!document.getElementById(`view-${activePage}`)) {
+                activePage = activePage === 'watch' ? 'targeting' : 'overview';
+            }
             document.querySelectorAll('.dashboard-view').forEach(view => {
-                view.style.display = view.id === `view-${activePage}` ? 'block' : 'none';
+                view.style.display = view.id === `view-${activePage}` ? 'grid' : 'none';
             });
+            revealActiveView(activePage);
 
             // Set active nav link
             const path = window.location.pathname;
-            document.querySelectorAll('.nav-link').forEach(link => {
+            document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
                 const href = link.getAttribute('href');
-                if (path === href || (href !== '/api/v1/dashboard/overview' && path.includes(href))) {
+                const isTargetingAlias = href.includes('/targeting') && path.includes('/watch');
+                if (path === href || isTargetingAlias || (href !== '/api/v1/dashboard/overview' && path.includes(href))) {
                     link.classList.add('active');
                 } else {
                     link.classList.remove('active');
@@ -460,19 +823,7 @@
                 }
                 const data = await response.json();
                 
-                // Update KPIs (Global)
-                const kpis = {
-                    'kpi-dms': data.dms_sent || 0,
-                    'kpi-analyzed': data.messages_analyzed || 0,
-                    'kpi-leads': data.leads_detected_today || 0,
-                    'kpi-success': (data.conversion_rate || 0) + '%',
-                    'kpi-groups': data.groups_joined || 0,
-                    'kpi-hvl': data.high_value_leads || 0
-                };
-                Object.entries(kpis).forEach(([id, val]) => {
-                    const el = document.getElementById(id);
-                    if (el) el.textContent = val;
-                });
+                updateHeroMetrics(data);
                 
                 // Render Page-Specific Data
                 if (activePage === 'overview') {
@@ -480,56 +831,135 @@
                 } else if (activePage === 'activity') {
                     updateActivity(data);
                 } else if (activePage === 'pipeline') {
-                    updatePipeline(data);
+                    await updatePipeline(data);
                 } else if (activePage === 'targeting') {
-                    updateTargeting(data);
+                    await updateTargeting(data);
                 } else if (activePage === 'settings') {
-                    loadSettings();
+                    await loadSettings();
                 }
 
                 // Global Data updates
                 updateCommonElements(data);
 
-            } catch (error) { console.error('Error loading data:', error); }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            } finally {
+                dashboardRequestInFlight = false;
+            }
         }
 
         function updateCommonElements(data) {
+            const ops = {
+                'ops-contacts': data.contacts_total || 0,
+                'ops-tickets': data.open_tickets || 0,
+                'ops-inbound': data.inbound_messages_today || 0,
+                'ops-outbound': data.outbound_messages_today || 0
+            };
+            Object.entries(ops).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = formatNumber(val);
+            });
+            renderBreakdownList('ticketStatusBreakdown', data.ticket_status_breakdown, 'No ticket activity');
+            renderBreakdownList('consentScopeBreakdown', data.consent_scope_breakdown, 'No active consent scopes');
+            renderBreakdownList('lifecycleStageBreakdown', data.lifecycle_stage_breakdown, 'No lifecycle stages yet');
+
             // Activity Feed (Used in Activity and Overview fallback)
             const aFeed = document.getElementById('activityFeed');
             if (aFeed) {
-                aFeed.innerHTML = (data.recent_leads || []).map(l => `
+                const leads = data.recent_leads || [];
+                if (!leads.length) {
+                    renderEmptyRow(aFeed, 5, 'No recent lead activity yet.');
+                } else {
+                    aFeed.innerHTML = leads.map(l => `
                     <tr>
-                        <td style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">${l.group_name || 'Global'}</td>
-                        <td style="font-weight: 700; color: var(--text-primary);">${l.username || 'Anonymous'}</td>
+                        <td style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">${escapeHtml(l.group_name || 'Global')}</td>
+                        <td style="font-weight: 700; color: var(--text-primary);">${escapeHtml(l.username || 'Anonymous')}</td>
                         <td><span style="padding: 0.35rem 0.75rem; border-radius: 12px; background: rgba(59, 130, 246, 0.1); color: var(--accent); font-weight: 800; font-size: 0.7rem; border: 1px solid rgba(59, 130, 246, 0.2);">${l.lead_score}</span></td>
-                        <td style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: ${l.status === 'converted' ? 'var(--success)' : 'var(--text-secondary)'}">${l.status}</td>
-                        <td><button class="clay-btn" onclick="viewDetails('${l.username}')">DETAILS</button></td>
+                        <td style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: ${l.status === 'converted' ? 'var(--success)' : 'var(--text-secondary)'}">${escapeHtml(l.status || 'new')}</td>
+                        <td><button class="clay-btn" type="button">DETAILS</button></td>
                     </tr>
-                `).join('');
+                    `).join('');
+                }
             }
+
+            const backendLog = document.getElementById('backendActivityLog');
+            if (backendLog) {
+                const logItems = data.activity_log || [];
+                backendLog.innerHTML = logItems.length ? logItems.map(item => `
+                    <article class="activity-card">
+                        <span>${escapeHtml(item.time || 'now')}</span>
+                        <strong>${escapeHtml(item.user || 'System')}</strong>
+                        <small>${escapeHtml(item.type || 'event')} · ${escapeHtml(item.text || 'No details captured.')}</small>
+                    </article>
+                `).join('') : `<div class="empty-card">No backend activity captured yet.</div>`;
+            }
+
+            const auditLog = document.getElementById('auditEventLog');
+            if (auditLog) {
+                const events = data.recent_events || [];
+                auditLog.innerHTML = events.length ? events.map(event => {
+                    const eventTime = event.time ? new Date(event.time).toLocaleString() : 'now';
+                    const metadata = event.metadata ? Object.entries(event.metadata).slice(0, 3).map(([key, value]) => `${key}: ${value}`).join(' - ') : '';
+                    return `
+                        <article class="event-item">
+                            <div>
+                                <span>${escapeHtml(eventTime)}</span>
+                                <strong>${escapeHtml(event.type || 'system_event')}</strong>
+                                <small>${escapeHtml(event.contact || 'System')}${metadata ? ` - ${escapeHtml(metadata)}` : ''}</small>
+                            </div>
+                        </article>
+                    `;
+                }).join('') : `<div class="empty-card">No audit events recorded yet.</div>`;
+            }
+        }
+
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
+        function updateHeroMetrics(data) {
+            const replies = data.public_replies_sent || data.inbound_messages_today || 0;
+            const influenceTotal = Object.values(data.influence_distribution || {}).reduce((sum, val) => sum + Number(val || 0), 0);
+
+            setText('hero-overview-dms', formatNumber(data.dms_sent || 0));
+            setText('hero-overview-replies', formatNumber(replies));
+            setText('hero-overview-leads', formatNumber(data.leads_detected_total || 0));
+            setText('hero-overview-groups', formatNumber(data.groups_joined || 0));
+            setText('hero-overview-rate', `${Number(data.conversion_rate || 0).toFixed(1)}%`);
+
+            setText('hero-activity-inbound', formatNumber(data.inbound_messages_today || 0));
+            setText('hero-activity-analyzed', formatNumber(data.messages_analyzed || 0));
+            setText('hero-activity-events', formatNumber((data.recent_events || []).length + (data.activity_log || []).length));
+            setText('hero-activity-influence', formatNumber(influenceTotal));
+            setText('hero-activity-pulse', formatNumber((data.hourly_heatmap || []).reduce((sum, row) => sum + Number(row.count || 0), 0)));
+
+            setText('hero-pipeline-conversions', formatNumber(data.conversions || 0));
+            setText('hero-pipeline-highvalue', formatNumber(data.high_value_leads || 0));
+            setText('hero-pipeline-hot', formatNumber(data.high_prob_leads || 0));
+            setText('hero-pipeline-ltv', Number(data.average_ltv_score || 0).toFixed(1));
+            setText('hero-flow-leads', formatNumber(data.leads_detected_total || 0));
+            setText('hero-flow-replies', formatNumber(replies));
+            setText('hero-flow-convert', formatNumber(data.conversions || 0));
+
+            setText('hero-targeting-joined', formatNumber(data.groups_joined || 0));
+            setText('hero-targeting-top', formatNumber((data.top_groups || []).length));
+            setText('hero-targeting-competitors', formatNumber((data.competitor_stats || []).length));
+            setText('hero-targeting-scanned', formatNumber(data.messages_analyzed || 0));
+            setText('hero-targeting-score', formatNumber(data.groups_joined || 0));
         }
 
         function updateOverview(data) {
             renderOverviewCharts(data);
-            
-            const pTable = document.getElementById('personaTable');
-            if (pTable) {
-                pTable.innerHTML = (data.persona_performance || []).map(p => `
-                    <tr>
-                        <td style="font-weight: 700; color: var(--text-primary);">${p.name}</td>
-                        <td>${p.leads}</td>
-                        <td>${p.conversions}</td>
-                        <td style="color: var(--accent); font-weight: 800;">${p.rate}%</td>
-                    </tr>
-                `).join('');
-            }
+            renderPersonaSankey(data);
 
             const hContainer = document.getElementById('accountHealth');
             if (hContainer) {
-                hContainer.innerHTML = (data.account_health || []).map(a => `
+                const accounts = data.account_health || [];
+                hContainer.innerHTML = accounts.length ? accounts.map(a => `
                     <div class="clay-card" style="padding: 1.25rem; border-radius: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                            <span style="font-weight: 800; font-size: 0.85rem; color: var(--text-primary);">${a.phone}</span>
+                            <span style="font-weight: 800; font-size: 0.85rem; color: var(--text-primary);">${escapeHtml(a.phone || 'Account')}</span>
                             <div style="width: 8px; height: 8px; border-radius: 50%; background: ${a.status === 'active' ? 'var(--success)' : 'var(--error)'}; box-shadow: 0 0 10px ${a.status === 'active' ? 'var(--success)' : 'var(--error)'};"></div>
                         </div>
                         <div style="display: flex; gap: 1.5rem; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">
@@ -538,8 +968,148 @@
                             <span style="color: ${a.proxy_status ? 'var(--success)' : 'var(--error)'}">Proxy: ${a.proxy_status ? 'OK' : 'ERR'}</span>
                         </div>
                     </div>
-                `).join('');
+                `).join('') : `<div class="empty-card">No Telegram accounts connected yet.</div>`;
             }
+        }
+
+        function renderPersonaSankey(data) {
+            const target = document.getElementById('personaSankey');
+            if (!target) return;
+
+            const personas = (data.persona_performance || [])
+                .map((persona) => ({
+                    name: persona.name || 'Unassigned',
+                    leads: Number(persona.leads || 0),
+                    conversions: Number(persona.conversions || 0),
+                    rate: Number(persona.rate || 0)
+                }))
+                .filter((persona) => persona.leads > 0 || persona.conversions > 0)
+                .slice(0, 6);
+
+            if (!personas.length) {
+                target.innerHTML = `
+                    <div class="sankey-empty">
+                        <strong>No AI persona flow yet</strong>
+                        <span>Persona performance appears when live leads are assigned.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const totalLeads = personas.reduce((sum, persona) => sum + persona.leads, 0);
+            const totalConversions = personas.reduce((sum, persona) => sum + persona.conversions, 0);
+            const openLeads = Math.max(0, totalLeads - totalConversions);
+            const height = Math.max(360, 190 + personas.length * 74);
+            const source = { x: 44, y: height / 2 - 58, width: 118, height: 116 };
+            const personaX = 382;
+            const outcomeX = 742;
+            const nodeWidth = 132;
+            const top = 78;
+            const bottom = height - 74;
+            const step = personas.length === 1 ? 0 : (bottom - top) / (personas.length - 1);
+            const convertedNode = { x: outcomeX, y: height * 0.28 - 44, width: nodeWidth, height: 88 };
+            const openNode = { x: outcomeX, y: height * 0.7 - 44, width: nodeWidth, height: 88 };
+
+            const personaNodes = personas.map((persona, index) => ({
+                ...persona,
+                x: personaX,
+                y: personas.length === 1 ? height / 2 - 35 : top + step * index - 35,
+                width: nodeWidth,
+                height: 70
+            }));
+
+            const path = (startX, startY, endX, endY) => {
+                const curve = Math.max(90, (endX - startX) * 0.48);
+                return `M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}`;
+            };
+
+            const widthFor = (value, base = totalLeads) => {
+                if (!value) return 0;
+                return Math.max(7, Math.min(42, (value / Math.max(1, base)) * 54));
+            };
+
+            const personaFlows = personaNodes.map((persona, index) => `
+                <path class="sankey-svg-flow sankey-svg-flow--persona sankey-svg-flow--${index % 5}"
+                    d="${path(source.x + source.width, source.y + source.height / 2, persona.x, persona.y + persona.height / 2)}"
+                    stroke-width="${widthFor(persona.leads).toFixed(2)}" />
+            `).join('');
+
+            const outcomeFlows = personaNodes.map((persona, index) => {
+                const converted = Math.max(0, persona.conversions);
+                const open = Math.max(0, persona.leads - converted);
+                const fromX = persona.x + persona.width;
+                const fromY = persona.y + persona.height / 2;
+                return `
+                    ${converted ? `<path class="sankey-svg-flow sankey-svg-flow--converted" d="${path(fromX, fromY - 5, convertedNode.x, convertedNode.y + convertedNode.height / 2)}" stroke-width="${widthFor(converted, totalLeads).toFixed(2)}" />` : ''}
+                    ${open ? `<path class="sankey-svg-flow sankey-svg-flow--open sankey-svg-flow--${index % 5}" d="${path(fromX, fromY + 5, openNode.x, openNode.y + openNode.height / 2)}" stroke-width="${widthFor(open, totalLeads).toFixed(2)}" />` : ''}
+                `;
+            }).join('');
+
+            const personaLabels = personaNodes.map((persona) => `
+                <g class="sankey-svg-node">
+                    <rect x="${persona.x}" y="${persona.y}" width="${persona.width}" height="${persona.height}" rx="18"></rect>
+                    <text x="${persona.x + 16}" y="${persona.y + 28}" class="sankey-svg-label">${escapeHtml(truncateLabel(persona.name, 16))}</text>
+                    <text x="${persona.x + 16}" y="${persona.y + 52}" class="sankey-svg-value">${formatNumber(persona.leads)} leads</text>
+                </g>
+            `).join('');
+
+            const legend = personas.map((persona, index) => `
+                <span><i class="sankey-legend-dot sankey-legend-dot--${index % 5}"></i>${escapeHtml(truncateLabel(persona.name, 18))} · ${formatNumber(persona.leads)}</span>
+            `).join('');
+
+            target.innerHTML = `
+                <div class="sankey-summary">
+                    <div><span>Total leads</span><strong>${formatNumber(totalLeads)}</strong></div>
+                    <div><span>Converted</span><strong>${formatNumber(totalConversions)}</strong></div>
+                    <div><span>Open flow</span><strong>${formatNumber(openLeads)}</strong></div>
+                </div>
+                <div class="sankey-svg-shell">
+                    <svg class="sankey-svg" viewBox="0 0 920 ${height}" role="img" aria-label="AI persona lead flow Sankey diagram" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <linearGradient id="sankeyLeadGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                                <stop offset="0%" stop-color="#64c7ff" stop-opacity="0.28"></stop>
+                                <stop offset="100%" stop-color="#64c7ff" stop-opacity="0.76"></stop>
+                            </linearGradient>
+                            <linearGradient id="sankeyOpenGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"></stop>
+                                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.62"></stop>
+                            </linearGradient>
+                            <linearGradient id="sankeyConvertedGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                                <stop offset="0%" stop-color="#48f2ff" stop-opacity="0.3"></stop>
+                                <stop offset="100%" stop-color="#10b981" stop-opacity="0.82"></stop>
+                            </linearGradient>
+                            <filter id="sankeyGlow">
+                                <feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur>
+                                <feMerge>
+                                    <feMergeNode in="blur"></feMergeNode>
+                                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <rect class="sankey-svg-backdrop" x="14" y="18" width="892" height="${height - 36}" rx="32"></rect>
+                        ${personaFlows}
+                        ${outcomeFlows}
+                        <g class="sankey-svg-node sankey-svg-node--source">
+                            <rect x="${source.x}" y="${source.y}" width="${source.width}" height="${source.height}" rx="24"></rect>
+                            <text x="${source.x + 18}" y="${source.y + 39}" class="sankey-svg-label">AI Engine</text>
+                            <text x="${source.x + 18}" y="${source.y + 72}" class="sankey-svg-value">${formatNumber(totalLeads)}</text>
+                            <text x="${source.x + 18}" y="${source.y + 96}" class="sankey-svg-meta">leads</text>
+                        </g>
+                        ${personaLabels}
+                        <g class="sankey-svg-node sankey-svg-node--converted">
+                            <rect x="${convertedNode.x}" y="${convertedNode.y}" width="${convertedNode.width}" height="${convertedNode.height}" rx="22"></rect>
+                            <text x="${convertedNode.x + 16}" y="${convertedNode.y + 34}" class="sankey-svg-label">Converted</text>
+                            <text x="${convertedNode.x + 16}" y="${convertedNode.y + 64}" class="sankey-svg-value">${formatNumber(totalConversions)}</text>
+                        </g>
+                        <g class="sankey-svg-node sankey-svg-node--open">
+                            <rect x="${openNode.x}" y="${openNode.y}" width="${openNode.width}" height="${openNode.height}" rx="22"></rect>
+                            <text x="${openNode.x + 16}" y="${openNode.y + 34}" class="sankey-svg-label">Open Leads</text>
+                            <text x="${openNode.x + 16}" y="${openNode.y + 64}" class="sankey-svg-value">${formatNumber(openLeads)}</text>
+                        </g>
+                    </svg>
+                    <div class="sankey-legend">${legend}</div>
+                </div>
+            `;
         }
 
         function updateActivity(data) {
@@ -558,14 +1128,42 @@
                 const buyers = await response.json();
                 const table = document.getElementById('eliteTargetsTable');
                 if (table) {
-                    table.innerHTML = buyers.map(b => `
+                    if (!buyers.length) {
+                        renderEmptyRow(table, 4, 'No high-intent buyers detected yet.');
+                    } else {
+                        table.innerHTML = buyers.map(b => {
+                            const score = Number(b.score || 0);
+                            return `
                         <tr>
-                            <td style="font-weight: 700; color: var(--text-primary);">${b.username}</td>
-                            <td><span style="color: var(--accent); font-weight: 800;">${b.lead_score}</span></td>
-                            <td><span style="color: ${b.lead_score > 80 ? 'var(--error)' : 'var(--warning)'}">${b.lead_score > 80 ? 'HOT' : 'WARM'}</span></td>
-                            <td style="font-size: 0.75rem; color: var(--text-secondary);">${b.last_contact_at || 'Never'}</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">${escapeHtml(b.username || 'Anonymous')}</td>
+                            <td><span style="color: var(--accent); font-weight: 800;">${score}</span></td>
+                            <td><span style="color: ${score > 80 ? 'var(--error)' : 'var(--warning)'}">${score > 80 ? 'HOT' : 'WARM'}</span></td>
+                            <td style="font-size: 0.75rem; color: var(--text-secondary);">${escapeHtml(b.timestamp || 'Never')}</td>
                         </tr>
-                    `).join('');
+                            `;
+                        }).join('');
+                    }
+                }
+            }
+
+            const competitorTable = document.getElementById('competitorTable');
+            if (competitorTable) {
+                const competitors = data.competitor_stats || [];
+                if (!competitors.length) {
+                    renderEmptyRow(competitorTable, 4, 'No competitor weakness signals detected yet.');
+                } else {
+                    competitorTable.innerHTML = competitors.map(c => {
+                        const score = Number(c.score || 0);
+                        const opportunity = score >= 75 ? 'High' : score >= 40 ? 'Medium' : 'Watch';
+                        return `
+                            <tr>
+                                <td style="font-weight: 700; color: var(--text-primary);">${escapeHtml(c.name || 'Unknown')}</td>
+                                <td><span style="color: var(--accent); font-weight: 800;">${score.toFixed(1)}</span></td>
+                                <td>${formatNumber(c.complaints)}</td>
+                                <td style="color: ${opportunity === 'High' ? 'var(--success)' : 'var(--warning)'}; font-weight: 800;">${opportunity}</td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
             }
         }
@@ -581,20 +1179,84 @@
                 
                 const table = document.getElementById('topGroupsTable');
                 if (table) {
-                    table.innerHTML = groups.map(g => `
+                    if (!groups.length) {
+                        renderEmptyRow(table, 4, 'No joined groups available yet.');
+                    } else {
+                        table.innerHTML = groups.map(g => `
                         <tr>
-                            <td style="font-weight: 700; color: var(--text-primary);">${g.name}</td>
-                            <td>${g.members}</td>
-                            <td>${g.leads}</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">${escapeHtml(g.name || 'Unknown group')}</td>
+                            <td>${formatNumber(g.members)}</td>
+                            <td>${Number(g.score || 0).toFixed(1)}</td>
                             <td style="color: var(--accent); font-weight: 800;">${(g.density * 100).toFixed(1)}%</td>
                         </tr>
-                    `).join('');
+                        `).join('');
+                    }
                 }
             }
         }
 
+        const controlFieldIds = ['target_tags', 'search_tags', 'brand_tags', 'watch_terms'];
+
+        function splitTags(value) {
+            return String(value || '').split(',').map((item) => item.trim()).filter(Boolean);
+        }
+
+        function renderControlChips(targetId, tags, maxItems = 8) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const visible = tags.slice(0, maxItems);
+            const extra = tags.length - visible.length;
+            target.innerHTML = visible.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')
+                + (extra > 0 ? `<span>+${extra}</span>` : '');
+        }
+
+        function setControlStatus(mode, label) {
+            const status = document.getElementById('settingsStatus');
+            if (!status) return;
+            status.className = `control-status control-status--${mode}`;
+            const text = status.querySelector('strong');
+            if (text) text.textContent = label;
+        }
+
+        function syncControlPanel(markDirty = false) {
+            const leadThreshold = Number(document.getElementById('lead_threshold')?.value || 0);
+            const dmLimit = Number(document.getElementById('dm_limit')?.value || 0);
+            const autoJoin = Boolean(document.getElementById('auto_join')?.checked);
+            const telegramEnabled = Boolean(document.getElementById('telegram_enabled')?.checked);
+
+            setText('leadThresholdValue', formatNumber(leadThreshold));
+            setText('dmLimitValue', formatNumber(dmLimit));
+            setText('hero-settings-threshold', formatNumber(leadThreshold));
+            setText('hero-settings-dm-limit', formatNumber(dmLimit));
+            setText('hero-settings-auto', autoJoin ? 'On' : 'Off');
+            setText('hero-settings-outreach', telegramEnabled ? 'On' : 'Off');
+
+            const allTags = [];
+            controlFieldIds.forEach((fieldId) => {
+                const tags = splitTags(document.getElementById(fieldId)?.value);
+                allTags.push(...tags);
+                renderControlChips(`preview-${fieldId}`, tags, 6);
+            });
+            renderControlChips('controlPreviewTags', allTags, 18);
+
+            if (markDirty) {
+                setControlStatus('dirty', 'Unsaved');
+            }
+        }
+
+        function bindControlPanel() {
+            const form = document.getElementById('settingsForm');
+            if (!form || form.dataset.bound === 'true') return;
+            form.dataset.bound = 'true';
+            form.querySelectorAll('textarea, input').forEach((input) => {
+                input.addEventListener('input', () => syncControlPanel(true));
+                input.addEventListener('change', () => syncControlPanel(true));
+            });
+        }
+
         async function loadSettings() {
             const token = getToken();
+            setControlStatus('loading', 'Loading');
             const response = await fetch('/api/v1/dashboard/settings-config', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -602,9 +1264,17 @@
                 const config = await response.json();
                 document.getElementById('target_tags').value = (config.target_tags || []).join(', ');
                 document.getElementById('search_tags').value = (config.search_tags || []).join(', ');
+                document.getElementById('brand_tags').value = (config.brand_tags || []).join(', ');
+                document.getElementById('watch_terms').value = (config.watch_terms || []).join(', ');
                 document.getElementById('lead_threshold').value = config.lead_score_threshold || 50;
                 document.getElementById('dm_limit').value = config.daily_dm_limit || 20;
                 document.getElementById('auto_join').checked = config.auto_join_groups || false;
+                document.getElementById('telegram_enabled').checked = config.telegram_outreach_enabled || false;
+                document.getElementById('settings_notes').value = config.notes || '';
+                syncControlPanel(false);
+                setControlStatus('synced', 'Synced');
+            } else {
+                setControlStatus('error', 'Auth needed');
             }
         }
 
@@ -614,11 +1284,16 @@
             const payload = {
                 target_tags: document.getElementById('target_tags').value.split(',').map(s => s.trim()).filter(s => s),
                 search_tags: document.getElementById('search_tags').value.split(',').map(s => s.trim()).filter(s => s),
-                lead_score_threshold: parseInt(document.getElementById('lead_threshold').value),
-                daily_dm_limit: parseInt(document.getElementById('dm_limit').value),
-                auto_join_groups: document.getElementById('auto_join').checked
+                brand_tags: document.getElementById('brand_tags').value.split(',').map(s => s.trim()).filter(s => s),
+                watch_terms: document.getElementById('watch_terms').value.split(',').map(s => s.trim()).filter(s => s),
+                lead_score_threshold: parseInt(document.getElementById('lead_threshold').value, 10) || 0,
+                daily_dm_limit: parseInt(document.getElementById('dm_limit').value, 10) || 0,
+                auto_join_groups: document.getElementById('auto_join').checked,
+                telegram_outreach_enabled: document.getElementById('telegram_enabled').checked,
+                notes: document.getElementById('settings_notes').value.trim()
             };
 
+            setControlStatus('saving', 'Saving');
             const response = await fetch('/api/v1/dashboard/settings-config', {
                 method: 'PUT',
                 headers: { 
@@ -629,17 +1304,30 @@
             });
 
             if (response.ok) {
-                alert('Configuration synchronized successfully.');
+                const config = await response.json();
+                document.getElementById('target_tags').value = (config.target_tags || []).join(', ');
+                document.getElementById('search_tags').value = (config.search_tags || []).join(', ');
+                document.getElementById('brand_tags').value = (config.brand_tags || []).join(', ');
+                document.getElementById('watch_terms').value = (config.watch_terms || []).join(', ');
+                document.getElementById('lead_threshold').value = config.lead_score_threshold || 0;
+                document.getElementById('dm_limit').value = config.daily_dm_limit || 0;
+                document.getElementById('auto_join').checked = config.auto_join_groups || false;
+                document.getElementById('telegram_enabled').checked = config.telegram_outreach_enabled || false;
+                document.getElementById('settings_notes').value = config.notes || '';
+                syncControlPanel(false);
+                setControlStatus('synced', 'Saved');
             } else {
-                alert('Failed to update system configuration.');
+                setControlStatus('error', 'Save failed');
             }
         }
 
         function renderOverviewCharts(data) {
-            Chart.defaults.color = chartDefaults.color;
-            Chart.defaults.font = chartDefaults.font;
+            if (window.Chart) {
+                Chart.defaults.color = chartDefaults.color;
+                Chart.defaults.font = chartDefaults.font;
+            }
 
-            new Chart(document.getElementById('performanceChart'), {
+            mountChart('performanceChart', {
                 type: 'line',
                 data: {
                     labels: (data.daily_trend || []).map(d => d.date),
@@ -670,7 +1358,7 @@
             const dates = Object.keys(sentimentData).sort();
             const categories = [...new Set(dates.flatMap(d => Object.keys(sentimentData[d])))];
             
-            new Chart(document.getElementById('sentimentTrendChart'), {
+            mountChart('sentimentTrendChart', {
                 type: 'line',
                 data: {
                     labels: dates,
@@ -692,11 +1380,57 @@
                     }
                 }
             });
+
+            const crmTrend = data.crm_trend || [];
+            mountChart('crmTrendChart', {
+                type: 'line',
+                data: {
+                    labels: crmTrend.map(row => row.day),
+                    datasets: [
+                        {
+                            label: 'Contacts',
+                            data: crmTrend.map(row => row.contacts_total || 0),
+                            borderColor: '#60a5fa',
+                            backgroundColor: 'rgba(96, 165, 250, 0.08)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Open Tickets',
+                            data: crmTrend.map(row => row.open_tickets || 0),
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.06)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Follow-ups Due',
+                            data: crmTrend.map(row => row.follow_ups_due || 0),
+                            borderColor: '#34d399',
+                            backgroundColor: 'rgba(52, 211, 153, 0.06)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14 } } },
+                    scales: {
+                        y: { grid: { color: chartDefaults.grid.color }, border: { display: false }, beginAtZero: true },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
         }
 
         function renderActivityCharts(data) {
             const heatmap = data.hourly_heatmap || [];
-            new Chart(document.getElementById('heatmapChart'), {
+            mountChart('heatmapChart', {
                 type: 'bar',
                 data: {
                     labels: Array.from({length: 24}, (_, i) => `${i}:00`),
@@ -722,7 +1456,7 @@
             });
 
             const influence = data.influence_distribution || {};
-            new Chart(document.getElementById('influenceChart'), {
+            mountChart('influenceChart', {
                 type: 'radar',
                 data: {
                     labels: Object.keys(influence),
@@ -750,7 +1484,7 @@
 
         function renderPipelineCharts(data) {
             const funnel = data.conversion_funnel || [];
-            new Chart(document.getElementById('sentimentChart'), {
+            mountChart('sentimentChart', {
                 type: 'doughnut',
                 data: {
                     labels: funnel.map(f => f.stage),
@@ -770,7 +1504,7 @@
             });
 
             const ltv = data.ltv_distribution || {};
-            new Chart(document.getElementById('ltvChart'), {
+            mountChart('ltvChart', {
                 type: 'bar',
                 data: {
                     labels: Object.keys(ltv),
@@ -792,7 +1526,7 @@
             });
 
             const problems = data.problem_distribution || {};
-            new Chart(document.getElementById('problemChart'), {
+            mountChart('problemChart', {
                 type: 'pie',
                 data: {
                     labels: Object.keys(problems),
@@ -811,7 +1545,7 @@
         }
 
         function renderMarketChart(groups) {
-            new Chart(document.getElementById('marketChart'), {
+            mountChart('marketChart', {
                 type: 'bubble',
                 data: {
                     datasets: [{
@@ -863,8 +1597,42 @@
             overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
         }
 
-        window.addEventListener('DOMContentLoaded', loadDashboardData);
+        function setupScrollAnimations() {
+            const targets = document.querySelectorAll('.dashboard-view > *, .clay-card, .command-hero');
+            targets.forEach((target) => target.classList.add('scroll-reveal'));
+            if (!('IntersectionObserver' in window)) {
+                targets.forEach((target) => target.classList.add('is-visible'));
+                return;
+            }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+            targets.forEach((target) => observer.observe(target));
+        }
+
+        function revealActiveView(activePage) {
+            const activeView = document.getElementById(`view-${activePage}`);
+            if (!activeView) return;
+            activeView.querySelectorAll('.scroll-reveal').forEach((target, index) => {
+                target.style.transitionDelay = `${Math.min(index, 8) * 35}ms`;
+                requestAnimationFrame(() => target.classList.add('is-visible'));
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            bindControlPanel();
+            setupScrollAnimations();
+            loadDashboardData();
+            const activePage = document.body.getAttribute('data-active-page') || 'overview';
+            if (activePage !== 'settings') {
+                window.setInterval(loadDashboardData, 30000);
+            }
+        });
     </script>
 </body>
 </html>
-

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,6 +14,9 @@ if TYPE_CHECKING:
 
 class Consent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "consents"
+    __table_args__ = (
+        Index("ix_dashboard_consents_scope_revoked", "scope", "revoked_at"),
+    )
 
     contact_id: Mapped[str] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
     channel: Mapped[ConsentChannel] = mapped_column(SQLEnum(ConsentChannel, name="consent_channel"), nullable=False)
@@ -24,4 +27,3 @@ class Consent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     contact: Mapped["Contact"] = relationship(back_populates="consents")
-

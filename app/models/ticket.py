@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -16,6 +16,9 @@ if TYPE_CHECKING:
 
 class Ticket(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "tickets"
+    __table_args__ = (
+        Index("ix_dashboard_tickets_status_priority", "status", "priority"),
+    )
 
     contact_id: Mapped[str] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
     conversation_id: Mapped[str | None] = mapped_column(ForeignKey("conversations.id", ondelete="SET NULL"), index=True)
@@ -38,4 +41,3 @@ class Ticket(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     contact: Mapped["Contact"] = relationship(back_populates="tickets")
     conversation: Mapped["Conversation | None"] = relationship(back_populates="tickets")
     follow_up_jobs: Mapped[list["FollowUpJob"]] = relationship(back_populates="ticket", cascade="all, delete-orphan")
-

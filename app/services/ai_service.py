@@ -1,14 +1,10 @@
 import logging
 import json
 from typing import Any, Optional
-import warnings
 import openai
 from groq import AsyncGroq
-
-# Suppress the google.generativeai deprecation warning
-warnings.filterwarnings("ignore", message="All support for the `google.generativeai` package has ended", category=FutureWarning)
-
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -18,6 +14,7 @@ class AIService:
         self.settings = get_settings()
         self.openai_client = None
         self.groq_client = None
+        self.gemini_client = None
         self._setup_clients()
 
     def _setup_clients(self):
@@ -28,7 +25,7 @@ class AIService:
             self.groq_client = AsyncGroq(api_key=self.settings.groq_api_key)
         
         if self.settings.gemini_api_key:
-            genai.configure(api_key=self.settings.gemini_api_key)
+            self.gemini_client = genai.Client(api_key=self.settings.gemini_api_key)
 
     async def chat_completion(self, prompt: str, system_prompt: str = None, response_format: str = "text", timeout: int = 30) -> Optional[str]:
         """
@@ -94,30 +91,27 @@ class AIService:
                 logger.error(f"Groq completion failed: {e}")
 
         # 3. Fallback to Gemini
-        if self.settings.gemini_api_key:
+        if self.gemini_client:
             try:
                 logger.info("Attempting AI completion via Gemini...")
-                model = genai.GenerativeModel('gemini-1.5-flash')
                 full_prompt = prompt
                 if system_prompt:
                     full_prompt = f"{system_prompt}\n\nUser: {prompt}"
                 
-                generation_config = {}
-                if response_format == "json_object":
-                    generation_config["response_mime_type"] = "application/json"
+                generation_config = types.GenerateContentConfig(
+                    temperature=0.8,
+                    response_mime_type="application/json" if response_format == "json_object" else None,
+                )
 
                 response = await asyncio.wait_for(
-                    asyncio.to_thread(
-                        model.generate_content,
-                        full_prompt,
-                        generation_config=genai.types.GenerationConfig(
-                            temperature=0.8,
-                            **generation_config
-                        )
+                    self.gemini_client.aio.models.generate_content(
+                        model="gemini-1.5-flash",
+                        contents=full_prompt,
+                        config=generation_config,
                     ),
                     timeout=timeout
                 )
-                return response.text.strip()
+                return (response.text or "").strip()
             except asyncio.TimeoutError:
                 logger.warning(f"Gemini timeout after {timeout}s")
             except Exception as e:

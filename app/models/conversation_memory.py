@@ -1,11 +1,14 @@
 from datetime import datetime
-from sqlalchemy import ForeignKey, String, DateTime, Text
+from sqlalchemy import ForeignKey, Index, String, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 class UnifiedConversation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "unified_conversations"
+    __table_args__ = (
+        Index("ix_dashboard_unified_conversations_timestamp", "timestamp"),
+    )
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     group_id: Mapped[str | None] = mapped_column(ForeignKey("groups.id", ondelete="SET NULL"))
@@ -17,6 +20,9 @@ class UnifiedConversation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 class ConversationSummary(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "conversation_summary"
+    __table_args__ = (
+        Index("ix_dashboard_conversation_summary_problem_type", "problem_type"),
+    )
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
     summary_text: Mapped[str | None] = mapped_column(Text) # Summarized history
@@ -31,6 +37,9 @@ class ConversationSummary(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 class LeadValueScore(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "lead_value_scores"
+    __table_args__ = (
+        Index("ix_dashboard_lead_value_scores_tier_score", "ltv_tier", "ltv_score"),
+    )
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
     ltv_score: Mapped[float] = mapped_column(default=0.0)

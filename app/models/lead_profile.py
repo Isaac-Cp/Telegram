@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer
+from sqlalchemy import DateTime, ForeignKey, Index, Integer
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,6 +14,9 @@ if TYPE_CHECKING:
 
 class LeadProfile(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "lead_profiles"
+    __table_args__ = (
+        Index("ix_dashboard_lead_profiles_lifecycle", "lifecycle_stage"),
+    )
 
     contact_id: Mapped[str] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), unique=True, index=True)
     lifecycle_stage: Mapped[LifecycleStage] = mapped_column(
@@ -25,4 +28,3 @@ class LeadProfile(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     last_scored_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     contact: Mapped["Contact"] = relationship(back_populates="lead_profile")
-

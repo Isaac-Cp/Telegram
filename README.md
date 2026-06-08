@@ -41,10 +41,18 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-6. Open the local dashboard at:
+6. Open the local dashboard overview at:
 
 ```bash
-http://localhost:8000/dashboard/
+http://localhost:8000/api/v1/dashboard/overview
+```
+
+7. Run the dashboard visual checks:
+
+```bash
+npm install
+npm run test:dashboard:visual:update
+npm run test:dashboard:visual
 ```
 
 ## Safe Product Boundaries
@@ -64,6 +72,23 @@ http://localhost:8000/dashboard/
 - `POST /api/v1/conversations`
 - `POST /api/v1/messages/inbound`
 - `GET /api/v1/dashboard/summary`
+
+## Production Readiness Checklist
+
+Before setting `ENVIRONMENT=production`, configure real deployment values and run migrations:
+
+```bash
+alembic upgrade head
+```
+
+- Set a unique `SECRET_KEY` with at least 32 characters.
+- Prefer `DASHBOARD_PASSWORD_HASH` over a plain `DASHBOARD_ADMIN_PASSWORD`.
+- Protect the Settings/Control page with `DASHBOARD_CONTROL_PASSWORD_HASH` or a separate strong `DASHBOARD_CONTROL_PASSWORD`.
+- Point `DATABASE_URL` to the production PostgreSQL database and enable verified TLS with `DATABASE_SSL_ROOT_CERT` when your provider requires a custom CA.
+- Point `REDIS_URL` to a real production Redis instance. Production startup refuses local/mock Redis.
+- Set `TRUSTED_ORIGINS` and `TRUSTED_HOSTS` to the real production domains only.
+- Keep `AUTO_CREATE_TABLES=false`; schema changes should come from Alembic migrations.
+- Run `pytest -q` and `npm run test:dashboard:visual` before deployment.
 
 ## Key Docs
 
