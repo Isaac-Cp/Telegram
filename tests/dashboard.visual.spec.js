@@ -147,7 +147,7 @@ for (const dashboardPage of pages) {
 
     const activeView = dashboardPage.name === "watch" ? "targeting" : dashboardPage.name;
     const screenshotTarget = dashboardPage.name === "overview"
-      ? page.locator("#personaSankey")
+      ? page.locator("#personaSankey .sankey-svg-shell")
       : page.locator(`#view-${activeView} .command-hero`);
 
     await expect(screenshotTarget).toHaveScreenshot(`${dashboardPage.name}.png`, {

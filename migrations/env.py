@@ -17,6 +17,15 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+EXTERNAL_TABLES = {"apscheduler_jobs"}
+
+
+def include_object(object_, name, type_, reflected, compare_to):
+    if type_ == "table" and name in EXTERNAL_TABLES:
+        return False
+    if type_ == "index" and object_.table.name in EXTERNAL_TABLES:
+        return False
+    return True
 
 
 def run_migrations_offline() -> None:
@@ -24,6 +33,7 @@ def run_migrations_offline() -> None:
     context.configure(
         url=url,
         target_metadata=target_metadata,
+        include_object=include_object,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=True,
@@ -37,6 +47,7 @@ def do_run_migrations(connection):
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
+        include_object=include_object,
         render_as_batch=True,
     )
 
@@ -66,4 +77,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     asyncio.run(run_migrations_online())
-
