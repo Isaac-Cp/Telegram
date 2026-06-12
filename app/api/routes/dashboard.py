@@ -344,7 +344,13 @@ def _build_settings_auth_gate_html() -> str:
     <div class="liquid-bg"></div>
     <main class="control-auth-shell">
         <section class="clay-card control-auth-card" aria-labelledby="control-auth-title">
-            <div class="control-auth-mark">S</div>
+            <div class="control-auth-mark brand-emblem brand-emblem--auth" aria-hidden="true">
+                <svg viewBox="0 0 64 64" focusable="false">
+                    <path class="emblem-shield" d="M32 5 53 14v16c0 13.4-8.8 24.3-21 29-12.2-4.7-21-15.6-21-29V14L32 5Z"/>
+                    <path class="emblem-bolt" d="M36.5 10.5 19 35.4h12.2l-3.7 18.1L46 27.6H33.5l3-17.1Z"/>
+                    <path class="emblem-orbit" d="M19 20.5c7.5-7.2 18.7-7.2 26 0M17 43.4c8.5 7.5 21.1 7.5 30 0"/>
+                </svg>
+            </div>
             <span class="section-kicker">Secure Control</span>
             <h1 id="control-auth-title" class="classic-text">Control page locked</h1>
             <p>Enter the Control access key to manage live targeting, outreach, and runtime settings.</p>

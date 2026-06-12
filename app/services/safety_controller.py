@@ -1,13 +1,10 @@
 import logging
-import time
 import asyncio
 import random
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, Optional
-from sqlalchemy import func, select, and_
+from typing import Dict
+from sqlalchemy import func, select
 from app.core.config import get_settings
-from app.core.redis_client import redis_client
-from app.db.session import SessionLocal
 from app.models.lead import Lead
 from app.models.group import Group
 from app.models.telegram_account import TelegramAccount

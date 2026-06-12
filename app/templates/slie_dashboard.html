@@ -23,7 +23,13 @@
     <!-- Mobile Header -->
     <header class="mobile-nav">
         <a class="mobile-brand" href="/api/v1/dashboard/overview" aria-label="SLIE dashboard overview">
-            <span class="mobile-brand__mark">S</span>
+            <span class="mobile-brand__mark brand-emblem" aria-hidden="true">
+                <svg viewBox="0 0 64 64" focusable="false">
+                    <path class="emblem-shield" d="M32 5 53 14v16c0 13.4-8.8 24.3-21 29-12.2-4.7-21-15.6-21-29V14L32 5Z"/>
+                    <path class="emblem-bolt" d="M36.5 10.5 19 35.4h12.2l-3.7 18.1L46 27.6H33.5l3-17.1Z"/>
+                    <path class="emblem-orbit" d="M19 20.5c7.5-7.2 18.7-7.2 26 0M17 43.4c8.5 7.5 21.1 7.5 30 0"/>
+                </svg>
+            </span>
             <span class="classic-text">SLIE</span>
         </a>
         <nav class="mobile-icon-nav" aria-label="Primary dashboard pages">
@@ -65,9 +71,18 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
-                <div class="brand">
-                    <h1 class="classic-text" style="font-size: 2.2rem; color: var(--accent);">SLIE</h1>
-                    <p style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 800; margin-top: -0.5rem;">Intelligence</p>
+                <div class="brand brand--premium">
+                    <span class="brand-emblem brand-emblem--sidebar" aria-hidden="true">
+                        <svg viewBox="0 0 64 64" focusable="false">
+                            <path class="emblem-shield" d="M32 5 53 14v16c0 13.4-8.8 24.3-21 29-12.2-4.7-21-15.6-21-29V14L32 5Z"/>
+                            <path class="emblem-bolt" d="M36.5 10.5 19 35.4h12.2l-3.7 18.1L46 27.6H33.5l3-17.1Z"/>
+                            <path class="emblem-orbit" d="M19 20.5c7.5-7.2 18.7-7.2 26 0M17 43.4c8.5 7.5 21.1 7.5 30 0"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h1 class="classic-text" style="font-size: 2.2rem; color: var(--accent);">SLIE</h1>
+                        <p style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 800; margin-top: -0.5rem;">Intelligence</p>
+                    </div>
                 </div>
                 <button class="mobile-close" onclick="toggleMobileMenu()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; display: none;">
                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -266,12 +281,15 @@
                         </div>
                     </article>
 
-                    <!-- Influence Mapping -->
-                    <article class="clay-card">
-                        <h2 class="classic-text" style="font-size: 1.8rem; margin-bottom: 2rem;">Influence Mapping</h2>
-                        <div class="chart-wrap">
-                            <canvas id="influenceChart"></canvas>
+                    <article class="clay-card influence-card scroll-reveal">
+                        <div class="chart-card-head">
+                            <div>
+                                <span class="section-kicker">Influence Mapping</span>
+                                <h2 class="classic-text">Community impact network</h2>
+                            </div>
+                            <span class="chart-pill">Live</span>
                         </div>
+                        <div id="influenceMap" class="influence-map" aria-live="polite"></div>
                     </article>
                 </div>
 
@@ -1428,6 +1446,123 @@
             });
         }
 
+        function influenceLabel(value) {
+            const labels = {
+                leader: 'Leaders',
+                power_user: 'Power Users',
+                regular: 'Regulars'
+            };
+            const key = String(value || '').toLowerCase();
+            return labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+        }
+
+        function renderInfluenceMap(influence) {
+            const target = document.getElementById('influenceMap');
+            if (!target) return;
+
+            const entries = Object.entries(influence || {})
+                .map(([key, value]) => ({ key, label: influenceLabel(key), value: Number(value || 0) }))
+                .filter((entry) => entry.value >= 0)
+                .sort((a, b) => b.value - a.value);
+            const total = entries.reduce((sum, entry) => sum + entry.value, 0);
+
+            if (!entries.length || total <= 0) {
+                target.innerHTML = `
+                    <div class="influence-empty">
+                        <strong>No influence data yet</strong>
+                        <span>Influence segments appear after messages and leads are analyzed.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            const palette = ['#67d5ff', '#4be8c6', '#a78bfa', '#f8c66a', '#f472b6', '#93c5fd'];
+            const positions = [
+                { x: 320, y: 72 },
+                { x: 505, y: 158 },
+                { x: 430, y: 292 },
+                { x: 210, y: 292 },
+                { x: 135, y: 158 },
+                { x: 320, y: 318 },
+            ];
+            const nodes = entries.slice(0, 6).map((entry, index) => {
+                const share = entry.value / total;
+                return {
+                    ...entry,
+                    share,
+                    color: palette[index % palette.length],
+                    radius: 18 + Math.min(30, share * 58),
+                    ...positions[index % positions.length],
+                };
+            });
+
+            const links = nodes.map((node, index) => {
+                const width = Math.max(4, Math.min(22, node.share * 30));
+                const curveX = 320 + (node.x - 320) * 0.42;
+                const curveY = 185 + (node.y - 185) * 0.18;
+                return `
+                    <path class="influence-link influence-link--${index}" d="M320 185 C ${curveX} ${curveY}, ${curveX} ${node.y}, ${node.x} ${node.y}" stroke="${node.color}" stroke-width="${width}">
+                        <title>${escapeHtml(node.label)}: ${formatNumber(node.value)} users</title>
+                    </path>
+                `;
+            }).join('');
+
+            const nodeMarkup = nodes.map((node) => {
+                const percent = Math.round(node.share * 100);
+                const labelY = node.y + node.radius + 20;
+                return `
+                    <g class="influence-node" transform="translate(${node.x} ${node.y})">
+                        <circle r="${node.radius + 10}" fill="${node.color}" opacity="0.08"></circle>
+                        <circle r="${node.radius}" fill="${node.color}" opacity="0.9"></circle>
+                        <circle r="${Math.max(8, node.radius - 8)}" fill="rgba(1, 8, 29, 0.62)"></circle>
+                        <text y="5" text-anchor="middle">${formatNumber(node.value)}</text>
+                        <title>${escapeHtml(node.label)} - ${percent}% share</title>
+                    </g>
+                    <text class="influence-node-label" x="${node.x}" y="${labelY}" text-anchor="middle">${escapeHtml(node.label)}</text>
+                    <text class="influence-node-share" x="${node.x}" y="${labelY + 18}" text-anchor="middle">${percent}% share</text>
+                `;
+            }).join('');
+
+            target.innerHTML = `
+                <div class="influence-map__summary">
+                    <div><span>Total mapped</span><strong>${formatNumber(total)}</strong></div>
+                    <div><span>Top segment</span><strong>${escapeHtml(nodes[0].label)}</strong></div>
+                    <div><span>Segments</span><strong>${formatNumber(nodes.length)}</strong></div>
+                </div>
+                <div class="influence-map__stage">
+                    <svg viewBox="0 0 640 380" role="img" aria-label="Influence distribution network">
+                        <defs>
+                            <filter id="influenceGlow" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur stdDeviation="5" result="blur"></feGaussianBlur>
+                                <feMerge>
+                                    <feMergeNode in="blur"></feMergeNode>
+                                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle class="influence-orbit influence-orbit--outer" cx="320" cy="185" r="146"></circle>
+                        <circle class="influence-orbit influence-orbit--inner" cx="320" cy="185" r="88"></circle>
+                        ${links}
+                        <g class="influence-core" transform="translate(320 185)">
+                            <circle r="48"></circle>
+                            <text y="-3" text-anchor="middle">Impact</text>
+                            <text y="20" text-anchor="middle">${formatNumber(total)}</text>
+                        </g>
+                        ${nodeMarkup}
+                    </svg>
+                </div>
+                <div class="influence-map__legend">
+                    ${nodes.map((node) => `
+                        <div>
+                            <span style="--dot:${node.color}"></span>
+                            <strong>${escapeHtml(node.label)}</strong>
+                            <small>${formatNumber(node.value)} users · ${Math.round(node.share * 100)}%</small>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
         function renderActivityCharts(data) {
             const heatmap = data.hourly_heatmap || [];
             mountChart('heatmapChart', {
@@ -1455,31 +1590,7 @@
                 }
             });
 
-            const influence = data.influence_distribution || {};
-            mountChart('influenceChart', {
-                type: 'radar',
-                data: {
-                    labels: Object.keys(influence),
-                    datasets: [{
-                        label: 'User Impact',
-                        data: Object.values(influence),
-                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                        borderColor: '#8b5cf6',
-                        pointBackgroundColor: '#8b5cf6'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            grid: { color: chartDefaults.grid.color },
-                            angleLines: { color: chartDefaults.grid.color },
-                            pointLabels: { font: { size: 12, weight: '700' } }
-                        }
-                    }
-                }
-            });
+            renderInfluenceMap(data.influence_distribution || {});
         }
 
         function renderPipelineCharts(data) {

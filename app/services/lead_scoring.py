@@ -284,7 +284,7 @@ class LeadScoringEngine:
             leads = db.execute(stmt).scalars().all()
             return list(leads)
 
-    async def calculate_lead_score(self, lead_id: str, message_text: str, ai_result: dict = None) -> tuple[int, str]:
+    async def calculate_lead_score(self, lead_id: str, message_text: str, _ai_result: dict = None) -> tuple[int, str]:
         """
         Unified scoring entry point.
         """
@@ -296,7 +296,7 @@ class LeadScoringEngine:
                 return lead.lead_score, lead.lead_temperature or "COLD"
         return score, "COLD"
 
-    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, message_id: str = None, ai_analysis: dict = None, pain_signals: dict = None):
+    async def create_lead(self, user_id: int, username: str, group_id: str, message_text: str, _message_id: str = None, ai_analysis: dict = None, _pain_signals: dict = None):
         """
         Performs full pipeline: Analyze -> Score -> Create Lead
         """

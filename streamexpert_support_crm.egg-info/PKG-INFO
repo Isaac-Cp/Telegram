@@ -10,15 +10,22 @@ Requires-Dist: fastapi>=0.115.0
 Requires-Dist: openai>=1.54.0
 Requires-Dist: pydantic-settings>=2.6.0
 Requires-Dist: psycopg[binary]>=3.2.0
+Requires-Dist: asyncpg>=0.29.0
 Requires-Dist: redis>=5.1.0
 Requires-Dist: sqlalchemy>=2.0.36
+Requires-Dist: aiosqlite>=0.17.0
 Requires-Dist: uvicorn[standard]>=0.32.0
 Requires-Dist: telethon>=1.36.0
 Requires-Dist: praw>=7.7.1
 Requires-Dist: groq>=0.11.0
-Requires-Dist: google-generativeai>=0.8.3
+Requires-Dist: google-genai>=1.18.0
 Requires-Dist: PySocks>=1.7.1
 Requires-Dist: emoji>=2.14.0
+Requires-Dist: slowapi>=0.1.9
+Requires-Dist: sentry-sdk[fastapi]>=2.0.0
+Requires-Dist: PyJWT>=2.8.0
+Requires-Dist: passlib[bcrypt]>=1.7.4
+Requires-Dist: certifi>=2024.8.30
 Provides-Extra: dev
 Requires-Dist: httpx>=0.27.2; extra == "dev"
 Requires-Dist: pytest>=8.3.3; extra == "dev"
@@ -38,11 +45,15 @@ Compliant Telegram IPTV support and CRM scaffold built for opt-in workflows only
 ## Quick Start
 
 1. Copy `.env.example` to `.env` and fill in the values you need.
-2. Start dependencies:
+2. Start the full stack with Docker:
 
 ```bash
-docker compose up -d postgres redis
+docker compose up -d
 ```
+
+This starts `api`, `postgres`, and `redis` together. The `api` service runs both the FastAPI website and the Telegram bot background tasks in the same process, so the bot and dashboard start together.
+
+The compose file configures `REDIS_URL=redis://redis:6379/0` for the API service and persists Redis data in `redis_data`.
 
 3. Install the app:
 
@@ -62,6 +73,20 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
+6. Open the local dashboard overview at:
+
+```bash
+http://localhost:8000/api/v1/dashboard/overview
+```
+
+7. Run the dashboard visual checks:
+
+```bash
+npm install
+npm run test:dashboard:visual:update
+npm run test:dashboard:visual
+```
+
 ## Safe Product Boundaries
 
 - No unsolicited outreach
@@ -79,6 +104,22 @@ uvicorn app.main:app --reload
 - `POST /api/v1/conversations`
 - `POST /api/v1/messages/inbound`
 - `GET /api/v1/dashboard/summary`
+
+## Production Readiness Checklist
+
+Before setting `ENVIRONMENT=production`, configure real deployment values and run migrations:
+
+```bash
+alembic upgrade head
+```
+
+- Set a unique `SECRET_KEY` with at least 32 characters.
+- Prefer `DASHBOARD_PASSWORD_HASH` over a plain `DASHBOARD_ADMIN_PASSWORD`.
+- Point `DATABASE_URL` to the production PostgreSQL database and enable verified TLS with `DATABASE_SSL_ROOT_CERT` when your provider requires a custom CA.
+- Point `REDIS_URL` to a real production Redis instance. Production startup refuses local/mock Redis.
+- Set `TRUSTED_ORIGINS` and `TRUSTED_HOSTS` to the real production domains only.
+- Keep `AUTO_CREATE_TABLES=false`; schema changes should come from Alembic migrations.
+- Run `pytest -q` and `npm run test:dashboard:visual` before deployment.
 
 ## Key Docs
 

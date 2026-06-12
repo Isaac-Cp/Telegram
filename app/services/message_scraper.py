@@ -152,8 +152,6 @@ class MessageScraper:
             # STEP 2: INVITE LINK EXTRACTION (Continuous Discovery)
             await handle_message_for_invite_links(event)
 
-            message_text = event.message.message or ""
-            
             # 2. Elite Module 1: Noise Filtering
             if not self.filter_message_noise(event):
                 return

@@ -168,7 +168,7 @@ class TelegramClientManager:
         self._clients[phone] = client
         return client
 
-    async def _on_connection_event(self, _event):
+    async def _on_connection_event(self):
         """Internal handler for logging connection events."""
         # Telethon doesn't have a simple 'on_connect' event for add_event_handler
         # but we can log state changes if we use more advanced connection listeners.
@@ -182,7 +182,7 @@ async def connect_client():
     return await telegram_client_manager.get_client()
 
 async def disconnect_client():
-    for phone, client in telegram_client_manager._clients.items():
+    for client in telegram_client_manager._clients.values():
         if client.is_connected():
             await client.disconnect()
 
