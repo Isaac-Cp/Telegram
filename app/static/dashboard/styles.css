@@ -80,6 +80,21 @@ html {
     scrollbar-gutter: stable;
 }
 
+button,
+a,
+input,
+textarea {
+    font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(100, 199, 255, 0.75);
+    outline-offset: 3px;
+}
+
 .app-shell {
     width: 100%;
     max-width: 100vw;
@@ -238,8 +253,8 @@ h1, h2, h3, .classic-text {
 
     .app-shell {
         display: grid;
-        grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
-        gap: clamp(1.25rem, 2vw, 2.5rem);
+        grid-template-columns: minmax(250px, 292px) minmax(0, 1fr);
+        gap: clamp(1rem, 1.6vw, 2rem);
         max-width: none;
         width: 100%;
         margin: 0 auto;
@@ -335,7 +350,7 @@ h1, h2, h3, .classic-text {
 
 @media (min-width: 1024px) {
     .dashboard-view {
-        gap: clamp(2rem, 3vw, 4rem);
+        gap: clamp(1.5rem, 2.2vw, 3rem);
     }
 
     .dashboard-view > .clay-card,
@@ -468,6 +483,93 @@ h1, h2, h3, .classic-text {
 .breakdown-chip em {
     font-style: normal;
     color: var(--accent-secondary);
+}
+
+.decision-board {
+    width: 100%;
+    min-width: 0;
+}
+
+.decision-card {
+    display: grid;
+    gap: 1.1rem;
+}
+
+.brain-summary {
+    max-width: 980px;
+    margin: -0.75rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.65;
+}
+
+.brain-decision-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 1rem;
+}
+
+.brain-decision {
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 197, 255, 0.16);
+    background: rgba(2, 8, 28, 0.52);
+    box-shadow: var(--clay-shadow-inner-sm);
+}
+
+.brain-decision--critical,
+.brain-decision--high {
+    border-color: rgba(248, 113, 113, 0.36);
+    background: rgba(127, 29, 29, 0.18);
+}
+
+.brain-decision--medium {
+    border-color: rgba(251, 191, 36, 0.34);
+    background: rgba(113, 63, 18, 0.18);
+}
+
+.brain-decision span,
+.brain-decision small {
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.brain-decision strong {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.brain-decision p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.55;
+}
+
+.brain-decision footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.brain-decision footer small {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.8rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(90, 184, 255, 0.08);
+    border: 1px solid rgba(148, 197, 255, 0.12);
 }
 
 .chart-wrap--compact {
@@ -927,7 +1029,7 @@ h1, h2, h3, .classic-text {
     .hero h1 {
         font-size: clamp(4.8rem, 7.2vw, 8.8rem);
         line-height: 0.86;
-        letter-spacing: -0.055em;
+        letter-spacing: 0;
         max-width: 980px;
     }
 
@@ -1617,6 +1719,202 @@ button.clay-btn:active {
 .nav-link span {
     position: relative;
     z-index: 1;
+}
+
+.runtime-card p,
+.login-footnote,
+.login-error {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.runtime-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 197, 255, 0.16);
+    background: rgba(2, 8, 28, 0.56);
+    color: var(--text-primary);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.runtime-status__dot {
+    width: 0.58rem;
+    height: 0.58rem;
+    border-radius: 999px;
+    background: var(--warning);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.72);
+}
+
+.runtime-status--running .runtime-status__dot {
+    background: var(--success);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.78);
+}
+
+.runtime-status--stopped .runtime-status__dot {
+    background: var(--error);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.78);
+}
+
+.runtime-status--idle .runtime-status__dot {
+    background: var(--text-secondary);
+    box-shadow: 0 0 14px rgba(148, 163, 184, 0.62);
+}
+
+.runtime-card .runtime-status {
+    margin-bottom: 0.55rem;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 500px;
+    padding: clamp(1.25rem, 5vw, 2.5rem);
+    text-align: center;
+}
+
+.login-field {
+    display: grid;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.login-field > span,
+.login-options {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.login-field input {
+    width: 100%;
+    min-height: 3.35rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    color: white;
+    outline: none;
+    font-weight: 800;
+}
+
+.login-field--password {
+    position: relative;
+}
+
+.login-field--password input {
+    padding-right: 3.5rem;
+}
+
+.login-field--password button {
+    position: absolute;
+    right: 0.8rem;
+    bottom: 0.48rem;
+    display: inline-grid;
+    place-items: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.35rem 0 1rem;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.login-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.login-card a {
+    color: var(--accent-secondary);
+}
+
+.login-error {
+    margin: 0.5rem 0 1rem;
+    color: var(--error);
+}
+
+.login-submit {
+    width: 100%;
+    min-height: 3.45rem;
+    margin-top: 0.35rem;
+    background: var(--accent) !important;
+    color: var(--bg-deep) !important;
+    font-size: 0.82rem !important;
+}
+
+.social-login {
+    margin-top: 1rem;
+}
+
+.login-footnote {
+    margin-top: 1rem;
+}
+
+button.clay-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(100, 199, 255, 0.46);
+    box-shadow:
+        10px 14px 28px rgba(0, 0, 0, 0.34),
+        0 0 26px rgba(100, 199, 255, 0.14),
+        var(--clay-shadow-inner-sm);
+}
+
+button.clay-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+input[type="range"],
+.control-meter input[type="range"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    opacity: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    .scroll-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+    }
 }
 
 .nav-link svg,

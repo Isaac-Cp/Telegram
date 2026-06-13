@@ -133,12 +133,14 @@ async def lifespan(_: FastAPI):
 
         async def telegram_clients_bg():
             from app.services.telegram_client import telegram_client_manager
-            if settings.telegram_session_string:
+            if settings.telegram_enabled and settings.telegram_session_string:
                 try:
                     await telegram_client_manager.get_client()
                     logger.info("Elite Telegram Client initialized.")
                 except Exception as e:
                     logger.error(f"Telegram Client Initialization failed: {e}")
+            elif not settings.telegram_enabled:
+                logger.info("Telegram client initialization skipped (TELEGRAM_ENABLED=false).")
 
         asyncio.create_task(spawn_bg_task("Telegram Clients Initialization", telegram_clients_bg, max_retries=5, escalate=False))
 
@@ -152,10 +154,13 @@ async def lifespan(_: FastAPI):
         # 7. Start schedulers and background tasks
         if settings.scheduler_enabled and os.getenv("DEVELOPMENT", "").lower() != "true":
             scheduler.start()
-            asyncio.create_task(spawn_bg_task("Message Scanning", slie_message_scanning, max_retries=5, escalate=False))
-            asyncio.create_task(spawn_bg_task("Response Engine Active Hours", response_engine.manage_active_hours, max_retries=5, escalate=False))
-            from app.services.proxy_manager import proxy_manager
-            asyncio.create_task(spawn_bg_task("Proxy Validation", proxy_manager.run_background_validation, max_retries=5, escalate=False))
+            if settings.telegram_enabled:
+                asyncio.create_task(spawn_bg_task("Message Scanning", slie_message_scanning, max_retries=5, escalate=False))
+                asyncio.create_task(spawn_bg_task("Response Engine Active Hours", response_engine.manage_active_hours, max_retries=5, escalate=False))
+                from app.services.proxy_manager import proxy_manager
+                asyncio.create_task(spawn_bg_task("Proxy Validation", proxy_manager.run_background_validation, max_retries=5, escalate=False))
+            else:
+                logger.info("Telegram background tasks skipped (TELEGRAM_ENABLED=false).")
             if settings.background_workers_enabled:
                 asyncio.create_task(spawn_bg_task("Follow-Up Worker", follow_up_worker.start, max_retries=5, escalate=False))
                 logger.info("Follow-Up Worker background task started.")

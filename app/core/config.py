@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     telegram_phone: str = Field("", alias="PHONE_NUMBER")
     telegram_session_string: str | None = Field(None, alias="SESSION_STRING")
     telegram_session_name: str = "slie_session"
+    telegram_enabled: bool = Field(True, alias="TELEGRAM_ENABLED")
     
     # Proxy Settings (Module 2)
     telegram_proxy_host: str | None = Field(None, alias="TELEGRAM_PROXY_HOST")

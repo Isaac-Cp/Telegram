@@ -1,7 +1,8 @@
 import json
 import logging
-import json
 import os
+import time
+from secrets import compare_digest
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.config import get_settings
 from app.core import security
+from app.core.redis_client import redis_client
 from app.models.dashboard_setting import DashboardSetting
 from app.schemas.dashboard import DashboardSummary
 from app.services.dashboard import (
@@ -25,12 +27,14 @@ from app.services.dashboard import (
     get_stats,
     get_high_intent_buyers_elite,
 )
+from app.services.performance_brain import performance_brain
 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-security_scheme = HTTPBearer()
+security_scheme = HTTPBearer(auto_error=False)
+STARTED_AT = time.time()
 
 SETTINGS_PATH = Path(__file__).resolve().parents[2] / "data" / "dashboard_settings.json"
 TOKEN_TTL_SECONDS = 60 * 60 * 24
@@ -165,11 +169,21 @@ def _control_password() -> str:
 def _password_matches(plain_password: str, configured_password: str, configured_hash: str = "") -> bool:
     if configured_hash:
         return security.verify_password(plain_password, configured_hash)
-    return plain_password == configured_password
+    return compare_digest(plain_password, configured_password)
 
 
-def get_current_admin(token: HTTPAuthorizationCredentials = Depends(security_scheme)) -> dict:
-    payload = security.decode_token(token.credentials)
+def get_current_admin(
+    request: Request,
+    token: HTTPAuthorizationCredentials | None = Depends(security_scheme),
+) -> dict:
+    credential = token.credentials if token else request.cookies.get(DASHBOARD_AUTH_COOKIE)
+    if not credential:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing authorization token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    payload = security.decode_token(credential)
     if not payload:
         raise HTTPException(
             status_code=401,
@@ -355,13 +369,39 @@ def _build_settings_auth_gate_html() -> str:
             <h1 id="control-auth-title" class="classic-text">Control page locked</h1>
             <p>Enter the Control access key to manage live targeting, outreach, and runtime settings.</p>
             <form id="controlAuthForm" class="control-auth-form">
-                <input id="controlPassword" type="password" autocomplete="current-password" placeholder="Access key" required>
+                <div style="position: relative; width: 100%;">
+                    <input id="controlPassword" type="password" autocomplete="current-password" placeholder="Access key" required style="padding-right: 3rem;">
+                    <button type="button" id="toggleControlPassword" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.5rem;">
+                        <svg id="controlEyeIcon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        </svg>
+                    </button>
+                </div>
                 <button class="clay-btn" type="submit">Unlock Control</button>
                 <small id="controlAuthError" role="alert"></small>
             </form>
         </section>
     </main>
     <script>
+        function toggleControlPasswordVisibility() {
+            const input = document.getElementById('controlPassword');
+            const eyeIcon = document.getElementById('controlEyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke-linecap="round" stroke-linejoin="round"></line>
+                `;
+            } else {
+                input.type = 'password';
+                eyeIcon.innerHTML = `
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                `;
+            }
+        }
+        document.getElementById('toggleControlPassword').addEventListener('click', toggleControlPasswordVisibility);
         document.getElementById('controlAuthForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const error = document.getElementById('controlAuthError');
@@ -371,6 +411,7 @@ def _build_settings_auth_gate_html() -> str:
                 const response = await fetch('/api/v1/dashboard/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ password, scope: 'control' })
                 });
                 if (!response.ok) {
@@ -378,7 +419,8 @@ def _build_settings_auth_gate_html() -> str:
                     return;
                 }
                 const data = await response.json();
-                localStorage.setItem('slie_token', data.token);
+                sessionStorage.setItem('slie_token', data.token);
+                document.getElementById('controlPassword').value = '';
                 window.location.replace('/api/v1/dashboard/settings');
             } catch (errorValue) {
                 error.textContent = 'Unable to unlock Control right now.';
@@ -426,9 +468,42 @@ def dashboard_login(payload: DashboardLoginRequest, response: Response):
     return {"token": access_token, "scope": scope, "expires_in": settings.access_token_expire_minutes * 60}
 
 
+@router.get("/runtime-status", dependencies=[Depends(get_current_admin)])
+async def dashboard_runtime_status(response: Response) -> dict[str, Any]:
+    now = time.time()
+    issues: list[str] = []
+    services: dict[str, str] = {}
+
+    try:
+        await redis_client.client.ping()
+        services["redis"] = "running"
+    except Exception:
+        services["redis"] = "degraded"
+        issues.append("redis_unreachable")
+
+    state = "running" if not issues else "degraded"
+    if issues:
+        response.status_code = 207
+
+    return {
+        "state": state,
+        "label": "Running" if state == "running" else "Degraded",
+        "checked_at": int(now),
+        "uptime_seconds": int(now - STARTED_AT),
+        "idle_after_seconds": 120,
+        "issues": issues,
+        "services": services,
+    }
+
+
 @router.get("/settings-config", dependencies=[Depends(get_current_admin)])
 def dashboard_settings_config(db: Session = Depends(get_db)):
     return _load_settings(db)
+
+
+@router.get("/performance-decisions", dependencies=[Depends(get_current_admin)])
+def dashboard_performance_decisions(db: Session = Depends(get_db)):
+    return performance_brain.analyze(db, _load_settings(db))
 
 
 @router.put("/settings-config", dependencies=[Depends(get_current_admin)])

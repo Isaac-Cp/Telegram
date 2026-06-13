@@ -97,18 +97,30 @@ class MessageScraper:
             logger.error(f"Error generating AI reply: {e}")
             return random.choice(AI_REPLY_FALLBACKS)
 
+    @staticmethod
+    def _message_text(message) -> str:
+        if isinstance(message, str):
+            return message
+
+        for attr in ("raw_text", "text"):
+            value = getattr(message, attr, None)
+            if isinstance(value, str):
+                return value
+
+        nested = getattr(message, "message", None)
+        if isinstance(nested, str):
+            return nested
+        if nested is not None and nested is not message:
+            return MessageScraper._message_text(nested)
+
+        return str(message or "")
+
     def filter_message_noise(self, message) -> bool:
         """
         STEP 2 — NOISE FILTERING (Message Intelligence Engine)
         Ignore messages that are low value.
         """
-        # Handle both Telethon event objects and raw strings
-        if hasattr(message, 'message'):
-            message_text = message.message or ""
-        else:
-            message_text = str(message)
-
-        text = message_text.strip()
+        text = self._message_text(message).strip()
         
         # 1. message length < 5 characters
         if len(text) < 5:

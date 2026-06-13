@@ -9,6 +9,7 @@ from app.models.activity_event import ActivityEvent
 from app.models.consent import Consent
 from app.models.contact import Contact
 from app.models.conversation import Conversation
+from app.models.dashboard_setting import DashboardSetting
 from app.models.follow_up_job import FollowUpJob
 from app.models.lead_profile import LeadProfile
 from app.models.message import Message
@@ -34,6 +35,7 @@ from app.services.power_upgrades import power_upgrades_service
 from app.services.group_discovery.discovery_engine import discovery_engine
 from app.services.ltv_engine import ltv_engine
 from app.services.database_cleanup import DatabaseCleanupService
+from app.services.performance_brain import performance_brain
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,23 @@ async def slie_score_decay():
     """Module 16: Decay lead scores based on recency (Every 24h)."""
     logger.info("Running SLIE Score Decay task...")
     await lead_scoring.decay_lead_scores()
+
+
+def slie_performance_brain():
+    """Review recent bot performance and log bounded decisions for operator review."""
+    logger.info("Running SLIE performance brain analysis...")
+    with SessionLocal() as db:
+        row = db.query(DashboardSetting).filter(DashboardSetting.key == "main").one_or_none()
+        report = performance_brain.analyze(db, row.value if row else None)
+        top_decision = (report.get("decisions") or [{}])[0]
+        logger.info(
+            "Performance brain mode=%s summary=%s top_decision=%s action=%s",
+            report.get("mode"),
+            report.get("summary"),
+            top_decision.get("title", "None"),
+            top_decision.get("action", "No action"),
+        )
+        return report
 
 
 async def slie_power_upgrades():

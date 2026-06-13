@@ -18,12 +18,12 @@
 </head>
 <body data-active-page="__ACTIVE_PAGE__">
     <div class="liquid-bg"></div>
-    <div id="sidebarOverlay" onclick="toggleMobileMenu()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1500;"></div>
+    <div id="sidebarOverlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1500;"></div>
     
     <!-- Mobile Header -->
     <header class="mobile-nav">
         <a class="mobile-brand" href="/api/v1/dashboard/overview" aria-label="SLIE dashboard overview">
-            <span class="mobile-brand__mark brand-emblem" aria-hidden="true">
+            <span class="mobile-brand__mark brand-emblem" aria-hidden="true" style="position: relative;">
                 <svg viewBox="0 0 64 64" focusable="false">
                     <path class="emblem-shield" d="M32 5 53 14v16c0 13.4-8.8 24.3-21 29-12.2-4.7-21-15.6-21-29V14L32 5Z"/>
                     <path class="emblem-bolt" d="M36.5 10.5 19 35.4h12.2l-3.7 18.1L46 27.6H33.5l3-17.1Z"/>
@@ -32,6 +32,10 @@
             </span>
             <span class="classic-text">SLIE</span>
         </a>
+        <div class="runtime-status runtime-status--idle" role="status" aria-live="polite" aria-atomic="true">
+            <span class="runtime-status__dot" aria-hidden="true"></span>
+            <strong id="mobileRuntimeStatus">Idle</strong>
+        </div>
         <nav class="mobile-icon-nav" aria-label="Primary dashboard pages">
             <a class="mobile-nav-link" href="/api/v1/dashboard/overview" aria-label="Overview" data-label="Overview">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -54,18 +58,38 @@
     <div class="app-shell">
         <!-- Login Modal -->
         <div id="loginModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: var(--bg-deep); align-items: center; justify-content: center; backdrop-filter: blur(20px); padding: 1.5rem;">
-            <div class="clay-card" style="width: 100%; max-width: 450px; padding: 2.5rem; text-align: center;">
-                <div class="icon-box" style="margin: 0 auto 2rem; width: 64px; height: 64px;">
-                    <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <form id="loginForm" class="clay-card login-card" novalidate>
+                <div class="icon-box" style="margin: 0 auto 2rem; width: 72px; height: 72px;">
+                    <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
-                <h2 class="classic-text" style="font-size: 2.5rem; margin-bottom: 1rem;">System Lock</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2.5rem; font-weight: 600;">Secure Command Authentication Required</p>
-                <div style="margin-bottom: 2rem;">
-                    <input type="password" id="adminPassword" placeholder="Access Key" style="width: 100%; padding: 1.25rem; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: white; font-family: var(--font-modern); outline: none; text-align: center; font-weight: 700; letter-spacing: 0.2em;">
+                <h2 class="classic-text" style="font-size: 2.75rem; margin-bottom: 1rem;">System Lock</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; font-weight: 600;">Secure Command Authentication Required</p>
+                
+                <label class="login-field" for="adminEmail">
+                    <span>Email or username</span>
+                    <input type="text" id="adminEmail" name="username" autocomplete="username" inputmode="text" placeholder="promise" value="promise" required>
+                </label>
+                <label class="login-field login-field--password" for="adminPassword">
+                    <span>Access key</span>
+                    <input type="password" id="adminPassword" name="password" autocomplete="current-password" placeholder="Enter access key" required minlength="1" aria-describedby="loginError">
+                    <button type="button" id="togglePassword" aria-label="Show password" aria-pressed="false">
+                        <svg id="eyeIcon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        </svg>
+                    </button>
+                </label>
+                <div class="login-options">
+                    <label><input type="checkbox" id="rememberSession"> <span>Remember me</span></label>
+                    <a href="mailto:admin@example.com?subject=SLIE%20Dashboard%20Password%20Reset">Forgot Password</a>
                 </div>
-                <button onclick="handleLogin()" class="clay-btn" style="width: 100%; padding: 1.25rem; border-radius: 20px; background: var(--accent); color: var(--bg-deep); font-size: 0.9rem; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);">INITIALIZE ACCESS</button>
-                <p id="loginError" style="color: var(--error); font-size: 0.85rem; margin-top: 1.5rem; font-weight: 700; display: none;">ACCESS DENIED: INVALID KEY</p>
-            </div>
+                <p id="loginError" class="login-error" role="alert" hidden>Access denied. Check your credentials and try again.</p>
+                <button type="submit" class="clay-btn login-submit">Initialize Access</button>
+                <div class="social-login" aria-label="Social login options">
+                    <button type="button" class="clay-btn control-secondary" disabled aria-disabled="true">SSO unavailable</button>
+                </div>
+                <p class="login-footnote">Need an account? <a href="mailto:admin@example.com?subject=SLIE%20Dashboard%20Access">Request access</a></p>
+            </form>
         </div>
 
         <!-- Sidebar -->
@@ -84,7 +108,7 @@
                         <p style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 800; margin-top: -0.5rem;">Intelligence</p>
                     </div>
                 </div>
-                <button class="mobile-close" onclick="toggleMobileMenu()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; display: none;">
+                <button class="mobile-close" type="button" aria-label="Close navigation" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; display: none;">
                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -113,12 +137,12 @@
             </nav>
             
             <div style="margin-top: auto; padding-top: 2rem;">
-                <div class="clay-card" style="padding: 1.25rem; border-radius: 24px;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                        <div class="animate-pulse" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 12px var(--success);"></div>
-                        <span style="font-weight: 800; font-size: 0.75rem; letter-spacing: 0.05em; color: var(--text-primary);">SYSTEM ACTIVE</span>
+                <div class="clay-card runtime-card" style="padding: 1.25rem; border-radius: 24px;">
+                    <div class="runtime-status runtime-status--idle" role="status" aria-live="polite" aria-atomic="true">
+                        <span class="runtime-status__dot" aria-hidden="true"></span>
+                        <strong id="runtimeStatusLabel">Idle</strong>
                     </div>
-                    <p style="color: var(--text-secondary); font-size: 0.65rem; font-weight: 600;">Nodes operational: 12/12</p>
+                    <p id="runtimeStatusMeta">Waiting for runtime heartbeat.</p>
                 </div>
             </div>
         </aside>
@@ -207,6 +231,20 @@
                         <div class="chart-wrap chart-wrap--compact">
                             <canvas id="crmTrendChart"></canvas>
                         </div>
+                    </article>
+                </section>
+
+                <section class="decision-board" aria-label="Performance decision engine">
+                    <article class="clay-card decision-card">
+                        <div class="section-head">
+                            <div>
+                                <span class="section-kicker">Decision Engine</span>
+                                <h2 class="classic-text">Bot performance brain</h2>
+                            </div>
+                            <span id="brainMode" class="live-pill">OBSERVE</span>
+                        </div>
+                        <p id="brainSummary" class="brain-summary">Analyzing recent lead, outreach, and account health signal.</p>
+                        <div id="brainDecisionList" class="brain-decision-list" aria-live="polite"></div>
                     </article>
                 </section>
 
@@ -560,7 +598,7 @@
                                 </div>
                                 <div class="control-meter">
                                     <strong id="leadThresholdValue">70</strong>
-                                    <input type="range" id="lead_threshold" min="0" max="100" step="1">
+                                    <input type="range" id="lead_threshold" min="0" max="100" step="1" style="display: none;">
                                 </div>
                             </section>
 
@@ -574,7 +612,7 @@
                                 </div>
                                 <div class="control-meter">
                                     <strong id="dmLimitValue">50</strong>
-                                    <input type="range" id="dm_limit" min="0" max="500" step="1">
+                                    <input type="range" id="dm_limit" min="0" max="500" step="1" style="display: none;">
                                 </div>
                             </section>
 
@@ -621,7 +659,7 @@
                         </div>
 
                         <div class="control-actions">
-                            <button type="button" class="clay-btn control-secondary" onclick="loadSettings()">Reset from live data</button>
+                            <button type="button" id="resetSettingsButton" class="clay-btn control-secondary">Reset from live data</button>
                             <button type="submit" class="clay-btn control-primary">Save live configuration</button>
                         </div>
                     </form>
@@ -639,6 +677,8 @@
         };
         const chartInstances = {};
         let dashboardRequestInFlight = false;
+        let dashboardToken = sessionStorage.getItem('slie_token') || '';
+        let lastDashboardActivity = Date.now();
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -777,25 +817,154 @@
             });
         }
 
-        function getToken() { return localStorage.getItem('slie_token'); }
+        function getToken() {
+            return dashboardToken || sessionStorage.getItem('slie_token') || localStorage.getItem('slie_token') || '';
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('adminPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            const toggle = document.getElementById('togglePassword');
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle?.setAttribute('aria-label', 'Hide password');
+                toggle?.setAttribute('aria-pressed', 'true');
+                eyeIcon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke-linecap="round" stroke-linejoin="round"></line>
+                `;
+            } else {
+                input.type = 'password';
+                toggle?.setAttribute('aria-label', 'Show password');
+                toggle?.setAttribute('aria-pressed', 'false');
+                eyeIcon.innerHTML = `
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                `;
+            }
+        }
 
         async function handleLogin() {
-            const password = document.getElementById('adminPassword').value;
+            const form = document.getElementById('loginForm');
+            if (form && !form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            const passwordInput = document.getElementById('adminPassword');
+            const password = passwordInput.value;
             const errorEl = document.getElementById('loginError');
-            errorEl.style.display = 'none'; // Reset error state
+            errorEl.hidden = true;
             try {
                 const response = await fetch('/api/v1/dashboard/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ password })
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    localStorage.setItem('slie_token', data.token);
+                    dashboardToken = data.token || '';
+                    sessionStorage.setItem('slie_token', dashboardToken);
+                    if (document.getElementById('rememberSession')?.checked) {
+                        localStorage.setItem('slie_token', dashboardToken);
+                    } else {
+                        localStorage.removeItem('slie_token');
+                    }
+                    passwordInput.value = '';
                     document.getElementById('loginModal').style.display = 'none';
                     loadDashboardData();
-                } else { errorEl.style.display = 'block'; }
-            } catch (err) { errorEl.style.display = 'block'; }
+                } else { errorEl.hidden = false; }
+            } catch (err) { errorEl.hidden = false; }
+        }
+
+        function updateRuntimeStatus(state, label, meta) {
+            const normalized = ['running', 'degraded', 'stopped', 'idle'].includes(state) ? state : 'idle';
+            document.querySelectorAll('.runtime-status').forEach((status) => {
+                status.className = `runtime-status runtime-status--${normalized}`;
+            });
+            ['runtimeStatusLabel', 'mobileRuntimeStatus'].forEach((id) => setText(id, label));
+            setText('runtimeStatusMeta', meta);
+        }
+
+        async function refreshRuntimeStatus() {
+            const token = getToken();
+            if (!token) {
+                updateRuntimeStatus('stopped', 'Locked', 'Authenticate to read runtime state.');
+                return;
+            }
+            const idleMs = Date.now() - lastDashboardActivity;
+            if (idleMs > 120000) {
+                updateRuntimeStatus('idle', 'Idle', 'No operator activity for 2+ minutes.');
+                return;
+            }
+            try {
+                const response = await fetch('/api/v1/dashboard/runtime-status', {
+                    credentials: 'same-origin',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                if (response.status === 401) {
+                    updateRuntimeStatus('stopped', 'Locked', 'Runtime status requires authentication.');
+                    return;
+                }
+                const data = await response.json();
+                const issues = (data.issues || []).length;
+                const meta = issues
+                    ? `${issues} runtime issue${issues === 1 ? '' : 's'} detected.`
+                    : `Uptime ${Math.floor(Number(data.uptime_seconds || 0) / 60)}m.`;
+                updateRuntimeStatus(data.state || 'running', data.label || 'Running', meta);
+            } catch (error) {
+                updateRuntimeStatus('stopped', 'Stopped', 'Runtime heartbeat unavailable.');
+            }
+        }
+
+        async function updatePerformanceBrain() {
+            const list = document.getElementById('brainDecisionList');
+            if (!list) return;
+            const token = getToken();
+            if (!token) {
+                setText('brainMode', 'LOCKED');
+                setText('brainSummary', 'Authenticate to read bot performance decisions.');
+                list.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/dashboard/performance-decisions', {
+                    credentials: 'same-origin',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Performance decision fetch failed.');
+                const data = await response.json();
+                const mode = String(data.mode || 'observe').toUpperCase();
+                const decisions = Array.isArray(data.decisions) ? data.decisions.slice(0, 3) : [];
+
+                setText('brainMode', mode);
+                setText('brainSummary', data.summary || 'Tracking performance and waiting for stronger signal.');
+                list.innerHTML = decisions.length ? decisions.map((decision) => {
+                    const priority = String(decision.priority || 'low').toLowerCase();
+                    const confidence = Math.round(Number(decision.confidence || 0) * 100);
+                    const settingChanges = Object.entries(decision.setting_changes || {})
+                        .map(([key, value]) => `${key.replaceAll('_', ' ')}: ${value}`)
+                        .join(' | ');
+                    return `
+                        <article class="brain-decision brain-decision--${escapeHtml(priority)}">
+                            <div>
+                                <span>${escapeHtml(priority)} priority</span>
+                                <strong>${escapeHtml(decision.title || 'Review performance')}</strong>
+                            </div>
+                            <p>${escapeHtml(decision.action || decision.reason || 'Keep monitoring current performance.')}</p>
+                            <footer>
+                                <small>${confidence}% confidence</small>
+                                ${settingChanges ? `<small>${escapeHtml(settingChanges)}</small>` : ''}
+                            </footer>
+                        </article>
+                    `;
+                }).join('') : '<div class="empty-card">No decisions available yet.</div>';
+            } catch (error) {
+                setText('brainMode', 'DEGRADED');
+                setText('brainSummary', 'Performance decision analysis is temporarily unavailable.');
+                list.innerHTML = '<div class="empty-card">Decision engine could not be reached.</div>';
+            }
         }
 
         async function loadDashboardData() {
@@ -832,9 +1001,12 @@
             try {
                 // 2. Fetch Core Data (Summary)
                 const response = await fetch('/api/v1/dashboard/summary', {
+                    credentials: 'same-origin',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.status === 401) {
+                    dashboardToken = '';
+                    sessionStorage.removeItem('slie_token');
                     localStorage.removeItem('slie_token');
                     document.getElementById('loginModal').style.display = 'flex';
                     return;
@@ -858,9 +1030,10 @@
 
                 // Global Data updates
                 updateCommonElements(data);
+                await updatePerformanceBrain();
 
             } catch (error) {
-                console.error('Error loading data:', error);
+                updateRuntimeStatus('degraded', 'Degraded', 'Dashboard data refresh failed.');
             } finally {
                 dashboardRequestInFlight = false;
             }
@@ -894,11 +1067,23 @@
                         <td style="font-weight: 700; color: var(--text-primary);">${escapeHtml(l.username || 'Anonymous')}</td>
                         <td><span style="padding: 0.35rem 0.75rem; border-radius: 12px; background: rgba(59, 130, 246, 0.1); color: var(--accent); font-weight: 800; font-size: 0.7rem; border: 1px solid rgba(59, 130, 246, 0.2);">${l.lead_score}</span></td>
                         <td style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: ${l.status === 'converted' ? 'var(--success)' : 'var(--text-secondary)'}">${escapeHtml(l.status || 'new')}</td>
-                        <td><button class="clay-btn" type="button">DETAILS</button></td>
+                        <td><button class="clay-btn lead-details-btn" type="button" data-username="${escapeHtml(l.username || 'Anonymous')}" data-score="${Number(l.lead_score || 0)}" data-status="${escapeHtml(l.status || 'new')}">DETAILS</button></td>
                     </tr>
                     `).join('');
                 }
             }
+            document.querySelectorAll('.lead-details-btn').forEach((button) => {
+                if (button.dataset.bound === 'true') return;
+                button.dataset.bound = 'true';
+                button.addEventListener('click', () => {
+                    const message = [
+                        `Lead Details for: ${button.dataset.username || 'Anonymous'}`,
+                        `Score: ${button.dataset.score || '0'}`,
+                        `Status: ${button.dataset.status || 'new'}`
+                    ].join('\n');
+                    window.alert(message);
+                });
+            });
 
             const backendLog = document.getElementById('backendActivityLog');
             if (backendLog) {
@@ -1140,6 +1325,7 @@
             // Fetch High Intent Buyers
             const token = getToken();
             const response = await fetch('/api/v1/dashboard/high-intent-buyers', {
+                credentials: 'same-origin',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -1189,6 +1375,7 @@
         async function updateTargeting(data) {
             const token = getToken();
             const response = await fetch('/api/v1/dashboard/groups', {
+                credentials: 'same-origin',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -1276,6 +1463,7 @@
             const token = getToken();
             setControlStatus('loading', 'Loading');
             const response = await fetch('/api/v1/dashboard/settings-config', {
+                credentials: 'same-origin',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -1314,6 +1502,7 @@
             setControlStatus('saving', 'Saving');
             const response = await fetch('/api/v1/dashboard/settings-config', {
                 method: 'PUT',
+                credentials: 'same-origin',
                 headers: { 
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -1711,6 +1900,10 @@
         function setupScrollAnimations() {
             const targets = document.querySelectorAll('.dashboard-view > *, .clay-card, .command-hero');
             targets.forEach((target) => target.classList.add('scroll-reveal'));
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                targets.forEach((target) => target.classList.add('is-visible'));
+                return;
+            }
             if (!('IntersectionObserver' in window)) {
                 targets.forEach((target) => target.classList.add('is-visible'));
                 return;
@@ -1729,6 +1922,10 @@
         function revealActiveView(activePage) {
             const activeView = document.getElementById(`view-${activePage}`);
             if (!activeView) return;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                activeView.querySelectorAll('.scroll-reveal').forEach((target) => target.classList.add('is-visible'));
+                return;
+            }
             activeView.querySelectorAll('.scroll-reveal').forEach((target, index) => {
                 target.style.transitionDelay = `${Math.min(index, 8) * 35}ms`;
                 requestAnimationFrame(() => target.classList.add('is-visible'));
@@ -1738,7 +1935,20 @@
         window.addEventListener('DOMContentLoaded', () => {
             bindControlPanel();
             setupScrollAnimations();
+            document.getElementById('loginForm')?.addEventListener('submit', (event) => {
+                event.preventDefault();
+                handleLogin();
+            });
+            document.getElementById('togglePassword')?.addEventListener('click', togglePasswordVisibility);
+            document.getElementById('sidebarOverlay')?.addEventListener('click', toggleMobileMenu);
+            document.querySelector('.mobile-close')?.addEventListener('click', toggleMobileMenu);
+            document.getElementById('resetSettingsButton')?.addEventListener('click', loadSettings);
+            ['click', 'keydown', 'pointermove', 'input'].forEach((eventName) => {
+                window.addEventListener(eventName, () => { lastDashboardActivity = Date.now(); }, { passive: true });
+            });
             loadDashboardData();
+            refreshRuntimeStatus();
+            window.setInterval(refreshRuntimeStatus, 15000);
             const activePage = document.body.getAttribute('data-active-page') || 'overview';
             if (activePage !== 'settings') {
                 window.setInterval(loadDashboardData, 30000);

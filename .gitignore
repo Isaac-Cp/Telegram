@@ -1,4 +1,24 @@
-*.sqlite
+I will systematically address all website issues and enhancements in the following sequential order, ensuring thorough code analysis, research, and testing before implementing any changes:
+
+1. For `div` : Investigate and resolve the critical security vulnerability causing website passwords to be displayed in plain text. Conduct a full code audit to identify the root cause of password exposure in input fields, console logs, or rendered DOM elements, then implement proper input masking, secure data handling, and encryption to prevent future password disclosure.
+
+2. For `div` : Debug and repair all broken scrolling animations and effects across the website. After fixing existing scroll functionality, add polished, performant hover animations and effects to all interactive UI elements (buttons, links, cards, forms) that meet accessibility standards (supporting reduced motion preferences) and do not impact page load performance.
+
+3. For `nav` : Design and implement new UI components to replace outdated or non-functional elements, ensuring they align with the website’s overall design system, are responsive across all device sizes, and maintain consistent styling with existing brand guidelines.
+
+4. For `span` : Remove all extraneous <span> tags from the specified element, retaining only the SVG element as the sole visible content. Ensure the SVG maintains its full functionality, correct sizing, positioning, and interactivity after the span elements are removed, with no layout shifts or broken rendering.
+
+5. For `div` : Redesign and improve the page layout and structural hierarchy specifically for desktop viewports (1024px and above). Optimize content spacing, grid alignment, element sizing, and navigation flow to enhance desktop user experience, improve information architecture, and eliminate unused whitespace while maintaining responsive behavior for smaller screen sizes.
+
+6. For `section` : Add all critical, industry-standard elements to transform the existing section into a fully functional, secure login section. Required elements include: properly labeled username/email and password input fields with validation, a "show/hide password" toggle, a primary login submit button, a "Forgot Password" link, a "Remember Me" checkbox, social login options (if applicable), error message display containers, and a link to create a new account, all compliant with WCAG accessibility standards.
+
+7. For `div` : Hide all sliders across the entire website by modifying the relevant CSS and component logic to ensure they are not visible to users, while preserving all underlying slider functionality for future use if needed. Ensure that hiding sliders does not cause layout shifts, broken content rendering, or negatively impact any other website features.
+
+8. For `button` : Conduct a full code and functionality audit of all specified buttons to document their intended use, test if they are currently functional, and resolve any unresponsive or non-working buttons. Remove any unused, redundant buttons that serve no purpose, and add clear, accessible labels and functionality to all remaining buttons to ensure they operate as intended for all users.
+
+9. For `header` : First conduct a comprehensive readthrough of the entire codebase to understand its architecture, runtime environment, and state management systems. Research best practices for implementing real-time code status indicators in web applications, then design and add a persistent status indicator in the website’s navbar that accurately displays the code’s current runtime state: actively running, stopped, idle (dominant for a specified period), or any other relevant statuses. Ensure the implementation does not introduce crashes, performance bottlenecks, or security vulnerabilities.
+
+10. Analyze `5 logs` alongside all website code to identify all existing bugs across the codebase. Research each bug’s root cause, prioritize fixes by severity (critical security bugs first, followed by functionality, performance, and UI bugs), implement validated fixes, and conduct end-to-end testing to confirm all issues are resolved without introducing new regressions.*.sqlite
 *.log
 .venv/
 __pycache__/

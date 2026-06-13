@@ -55,6 +55,20 @@ npm run test:dashboard:visual:update
 npm run test:dashboard:visual
 ```
 
+## Deployment Notes
+
+This app is a long-running FastAPI service with APScheduler jobs and a Telethon Telegram client. Do not deploy it to Vercel or another serverless function platform for bot work; serverless instances are short-lived and will not keep the Telegram listener/scheduler running.
+
+For Render, use an always-on paid service for production bot work. Render Free web services are acceptable for previewing the dashboard, but they spin down when idle and are not reliable for a Telegram listener or scheduled background jobs. If you only want to run the dashboard, set `TELEGRAM_ENABLED=false`. If you want the bot to run, set `TELEGRAM_ENABLED=true`, provide a fresh `SESSION_STRING`, and use a host that stays running.
+
+Recommended production shape:
+
+- One always-on web service or worker process running `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+- A real PostgreSQL database.
+- A real Redis instance.
+- `ENVIRONMENT=production`, `SCHEDULER_ENABLED=true`, `BACKGROUND_WORKERS_ENABLED=true`, and `TELEGRAM_ENABLED=true`.
+- A Telegram `SESSION_STRING` generated for this deployment only. Do not reuse the same session string from a local machine and a deployed host at the same time.
+
 ## Safe Product Boundaries
 
 - No unsolicited outreach
@@ -87,6 +101,7 @@ alembic upgrade head
 - Point `DATABASE_URL` to the production PostgreSQL database and enable verified TLS with `DATABASE_SSL_ROOT_CERT` when your provider requires a custom CA.
 - Point `REDIS_URL` to a real production Redis instance. Production startup refuses local/mock Redis.
 - Set `TRUSTED_ORIGINS` and `TRUSTED_HOSTS` to the real production domains only.
+- Set `TELEGRAM_ENABLED=true` only on the always-on service that should own the Telegram session.
 - Keep `AUTO_CREATE_TABLES=false`; schema changes should come from Alembic migrations.
 - Run `pytest -q` and `npm run test:dashboard:visual` before deployment.
 
