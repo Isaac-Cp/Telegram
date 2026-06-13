@@ -294,7 +294,10 @@ h1, h2, h3, .classic-text {
     padding: 1.5rem; /* Reduced base padding for mobile */
     box-shadow: var(--clay-shadow-outer), var(--clay-shadow-inner);
     border: 1px solid var(--glass-border);
-    transition: var(--transition-smooth);
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
     position: relative;
     width: 100%;
     max-width: 100%;
@@ -302,6 +305,7 @@ h1, h2, h3, .classic-text {
     overflow: hidden;
     backdrop-filter: blur(26px) saturate(120%);
     transform: translateZ(0);
+    will-change: auto;
 }
 
 .clay-card::before {
@@ -336,7 +340,6 @@ h1, h2, h3, .classic-text {
 .dashboard-view {
     display: grid;
     gap: clamp(1.5rem, 2.4vw, 3rem);
-    scroll-snap-type: y proximity;
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -353,23 +356,6 @@ h1, h2, h3, .classic-text {
         gap: clamp(1.5rem, 2.2vw, 3rem);
     }
 
-    .dashboard-view > .clay-card,
-    .dashboard-view > .dashboard-grid,
-    .dashboard-view > .ops-board {
-        animation: sectionRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-        scroll-snap-align: start;
-    }
-}
-
-@keyframes sectionRise {
-    from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.985);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
 }
 
 /* Responsive Grids for Visuals */
@@ -388,8 +374,7 @@ h1, h2, h3, .classic-text {
 
 .dashboard-view > .clay-card,
 .dashboard-grid {
-    content-visibility: auto;
-    contain-intrinsic-size: 420px;
+    min-height: 0;
 }
 
 .ops-board {
@@ -1772,17 +1757,50 @@ button.clay-btn:active {
     margin-bottom: 0.55rem;
 }
 
+.login-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(0.75rem, 2.5vw, 1.5rem);
+    overflow-y: auto;
+    background: var(--bg-deep);
+    backdrop-filter: blur(20px);
+}
+
 .login-card {
     width: 100%;
-    max-width: 500px;
-    padding: clamp(1.25rem, 5vw, 2.5rem);
+    max-width: 440px;
+    max-height: calc(100vh - 1.5rem);
+    padding: clamp(1rem, 3.5vw, 1.65rem);
+    overflow-y: auto;
     text-align: center;
+}
+
+.login-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 1rem;
+}
+
+.login-title {
+    margin-bottom: 0.35rem;
+    font-size: clamp(2rem, 8vw, 2.45rem);
+}
+
+.login-subtitle {
+    margin: 0 0 1.15rem;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    font-weight: 700;
 }
 
 .login-field {
     display: grid;
-    gap: 0.55rem;
-    margin-bottom: 1rem;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
     text-align: left;
 }
 
@@ -1797,9 +1815,9 @@ button.clay-btn:active {
 
 .login-field input {
     width: 100%;
-    min-height: 3.35rem;
-    padding: 1rem 1.1rem;
-    border-radius: 18px;
+    min-height: 2.85rem;
+    padding: 0.78rem 1rem;
+    border-radius: 16px;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--glass-border);
     color: white;
@@ -1812,13 +1830,13 @@ button.clay-btn:active {
 }
 
 .login-field--password input {
-    padding-right: 3.5rem;
+    padding-right: 3.25rem;
 }
 
 .login-field--password button {
     position: absolute;
-    right: 0.8rem;
-    bottom: 0.48rem;
+    right: 0.65rem;
+    bottom: 0.32rem;
     display: inline-grid;
     place-items: center;
     width: 2.35rem;
@@ -1835,7 +1853,7 @@ button.clay-btn:active {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin: 0.35rem 0 1rem;
+    margin: 0.2rem 0 0.8rem;
     letter-spacing: 0;
     text-transform: none;
 }
@@ -1851,25 +1869,36 @@ button.clay-btn:active {
 }
 
 .login-error {
-    margin: 0.5rem 0 1rem;
+    margin: 0.35rem 0 0.75rem;
     color: var(--error);
 }
 
 .login-submit {
     width: 100%;
-    min-height: 3.45rem;
-    margin-top: 0.35rem;
+    min-height: 3rem;
+    margin-top: 0.2rem;
     background: var(--accent) !important;
     color: var(--bg-deep) !important;
     font-size: 0.82rem !important;
 }
 
 .social-login {
-    margin-top: 1rem;
+    margin-top: 0.75rem;
 }
 
 .login-footnote {
-    margin-top: 1rem;
+    margin-top: 0.75rem;
+}
+
+@media (max-height: 680px) {
+    .social-login,
+    .login-footnote {
+        display: none;
+    }
+
+    .login-card {
+        max-width: 420px;
+    }
 }
 
 button.clay-btn:hover:not(:disabled) {
@@ -1919,7 +1948,7 @@ input[type="range"],
 
 .nav-link svg,
 .mobile-nav-link svg {
-    transition: transform 0.35s ease, filter 0.35s ease;
+    transition: transform 0.18s ease, filter 0.18s ease;
 }
 
 .nav-link:hover svg,
@@ -1927,8 +1956,8 @@ input[type="range"],
 .mobile-nav-link:hover svg,
 .mobile-nav-link:focus-visible svg,
 .mobile-nav-link.active svg {
-    transform: scale(1.08);
-    filter: drop-shadow(0 0 14px rgba(100, 199, 255, 0.58));
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 8px rgba(100, 199, 255, 0.38));
 }
 
 .mobile-nav-link.active::before {
@@ -1948,23 +1977,23 @@ input[type="range"],
 
 .clay-card:hover,
 .command-hero:hover {
-    transform: translateY(-4px);
-    border-color: rgba(100, 199, 255, 0.3);
+    transform: translateY(-2px);
+    border-color: rgba(100, 199, 255, 0.24);
 }
 
 .scroll-reveal {
     opacity: 0;
-    transform: translateY(22px) scale(0.992);
+    transform: translate3d(0, 12px, 0);
     transition:
-        opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-        box-shadow 0.5s ease,
-        border-color 0.5s ease;
+        opacity 0.32s ease,
+        transform 0.32s ease;
+    will-change: opacity, transform;
 }
 
 .scroll-reveal.is-visible {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0);
+    will-change: auto;
 }
 
 .settings-panel {
