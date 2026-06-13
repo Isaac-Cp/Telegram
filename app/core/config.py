@@ -159,7 +159,7 @@ class Settings(BaseSettings):
         password_hash_configured = bool(self.dashboard_password_hash.strip())
         dashboard_password_lower = (self.dashboard_admin_password or "").lower()
         password_is_default = dashboard_password_lower in {"", "changeme", "password", "admin"} or dashboard_password_lower.startswith("replace-with")
-        if not password_hash_configured and (password_is_default or len(self.dashboard_admin_password) < 12):
+        if password_is_default or (not password_hash_configured and len(self.dashboard_admin_password) < 12):
             issues.append("Configure DASHBOARD_PASSWORD_HASH or a strong DASHBOARD_ADMIN_PASSWORD before production.")
 
         control_hash_configured = bool(self.dashboard_control_password_hash.strip())
@@ -168,7 +168,7 @@ class Settings(BaseSettings):
             control_password_lower in {"", "changeme", "control-changeme", "password", "admin"}
             or control_password_lower.startswith("replace-with")
         )
-        if not control_hash_configured and (control_password_is_default or len(self.dashboard_control_password) < 12):
+        if control_password_is_default or (not control_hash_configured and len(self.dashboard_control_password) < 12):
             issues.append("Configure DASHBOARD_CONTROL_PASSWORD_HASH or a strong DASHBOARD_CONTROL_PASSWORD before production.")
 
         db_lower = (self.database_url or "").lower()
