@@ -99,7 +99,7 @@ alembic upgrade head
 - Prefer `DASHBOARD_PASSWORD_HASH` over a plain `DASHBOARD_ADMIN_PASSWORD`.
 - Protect the Settings/Control page with `DASHBOARD_CONTROL_PASSWORD_HASH` or a separate strong `DASHBOARD_CONTROL_PASSWORD`.
 - Point `DATABASE_URL` to the production PostgreSQL database and enable verified TLS with `DATABASE_SSL_ROOT_CERT` when your provider requires a custom CA.
-- Point `REDIS_URL` to a real production Redis instance. Production startup refuses local/mock Redis.
+- Point `REDIS_URL` to a real production Redis instance (optional, mock fallback is allowed for production if needed). For Redis Cloud, get your full connection string from the Redis Cloud dashboard (looks like `redis://default:<password>@<endpoint>:<port>`).
 - Set `TRUSTED_ORIGINS` and `TRUSTED_HOSTS` to the real production domains only.
 - Set `TELEGRAM_ENABLED=true` only on the always-on service that should own the Telegram session.
 - Keep `AUTO_CREATE_TABLES=false`; schema changes should come from Alembic migrations.
