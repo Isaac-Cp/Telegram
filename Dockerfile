@@ -10,8 +10,8 @@ RUN adduser --disabled-password --gecos "" appuser
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ && rm -rf /var/lib/apt/lists/*
+# Install system dependencies (including curl for healthcheck)
+RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ curl && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies first (for caching)
 COPY requirements.txt .
@@ -33,6 +33,10 @@ USER appuser
 
 # Expose port (Render will set PORT env var)
 EXPOSE 8000
+
+# Healthcheck to tell Render the service is running
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
 # Run the app with non-root user, listen on all interfaces
 CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"]

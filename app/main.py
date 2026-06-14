@@ -262,6 +262,11 @@ def create_app() -> FastAPI:
         prefix="/api/v1",
     )
 
+    @application.get("/health", include_in_schema=False)
+    async def simple_healthcheck():
+        # Simple healthcheck for Render that doesn't require DB/Redis
+        return {"status": "ok"}
+
     @application.get("/", include_in_schema=False)
     async def root_redirect():
         # Use the richer command dashboard as the primary landing page.
