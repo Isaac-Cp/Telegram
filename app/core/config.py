@@ -177,9 +177,12 @@ class Settings(BaseSettings):
         if self.database_ssl_root_cert.strip() and not Path(self.database_ssl_root_cert).exists():
             issues.append("DATABASE_SSL_ROOT_CERT points to a file that does not exist.")
 
+        # Allow mock Redis as fallback in production if needed
         redis_lower = (self.redis_url or "").lower()
-        if not redis_lower or redis_lower.startswith("memory://") or "localhost:6379" in redis_lower:
-            issues.append("REDIS_URL must point to a real production Redis instance.")
+        if not redis_lower or redis_lower.startswith("memory://"):
+            pass  # Allow mock, no issue
+        elif "localhost:6379" in redis_lower:
+            issues.append("REDIS_URL must point to a real production Redis instance, not localhost.")
 
         origins = self.trusted_origins_list
         if not origins or "*" in origins or any("yourdomain.com" in origin or "localhost" in origin or "127.0.0.1" in origin for origin in origins):

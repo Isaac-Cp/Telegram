@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: slie-dashboard
+    runtime: docker
+    plan: starter
+    repo: https://github.com/Isaac-Cp/Telegram
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 8000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: slie-db
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: slie-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: TRUSTED_ORIGINS
+        fromService:
+          type: web
+          name: slie-dashboard
+          property: host
+      - key: TRUSTED_HOSTS
+        fromService:
+          type: web
+          name: slie-dashboard
+          property: host
+
+databases:
+  - name: slie-db
+    databaseName: slie_db
+    user: slie_user
+    plan: starter
+  - name: slie-redis
+    databaseName: slie_redis
+    plan: starter
