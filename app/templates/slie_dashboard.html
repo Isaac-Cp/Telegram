@@ -181,7 +181,7 @@
                                 <span class="section-kicker">CRM Operations</span>
                                 <h2 class="classic-text">Support, consent, and follow-up control</h2>
                             </div>
-                            <span class="live-pill">LIVE</span>
+                            <span id="opsLiveMeta" class="live-pill">LIVE DATA</span>
                         </div>
                         <div class="ops-metrics">
                             <div>
@@ -208,14 +208,17 @@
                         <div class="breakdown-board">
                             <div>
                                 <span class="section-kicker">Tickets</span>
+                                <small id="ticketStatusMeta" class="breakdown-meta">Loading database totals</small>
                                 <div id="ticketStatusBreakdown" class="breakdown-list"></div>
                             </div>
                             <div>
                                 <span class="section-kicker">Consent</span>
+                                <small id="consentScopeMeta" class="breakdown-meta">Loading database totals</small>
                                 <div id="consentScopeBreakdown" class="breakdown-list"></div>
                             </div>
                             <div>
                                 <span class="section-kicker">Lifecycle</span>
+                                <small id="lifecycleStageMeta" class="breakdown-meta">Loading database totals</small>
                                 <div id="lifecycleStageBreakdown" class="breakdown-list"></div>
                             </div>
                         </div>
@@ -245,6 +248,7 @@
                         </div>
                         <p id="brainSummary" class="brain-summary">Analyzing recent lead, outreach, and account health signal.</p>
                         <div id="brainDecisionList" class="brain-decision-list" aria-live="polite"></div>
+                        <div id="brainMetricsStrip" class="brain-metrics-strip" aria-live="polite"></div>
                     </article>
                 </section>
 
@@ -319,7 +323,7 @@
                         </div>
                     </article>
 
-                    <article class="clay-card influence-card scroll-reveal">
+                    <article class="clay-card influence-card">
                         <div class="chart-card-head">
                             <div>
                                 <span class="section-kicker">Influence Mapping</span>
@@ -694,6 +698,16 @@
             return Number(value || 0).toLocaleString();
         }
 
+        function sumValues(data) {
+            return Object.values(data || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+        }
+
+        function formatTimestamp(value) {
+            if (!value) return 'just now';
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? 'just now' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         function truncateLabel(value, maxLength = 18) {
             const label = String(value ?? '');
             return label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
@@ -714,7 +728,7 @@
                     <strong>${escapeHtml(label.replaceAll('_', ' '))}</strong>
                     <em>${formatNumber(value)}</em>
                 </span>
-            `).join('') : `<span class="breakdown-empty">${escapeHtml(emptyLabel)}</span>`;
+            `).join('') : `<span class="breakdown-empty">0 live records - ${escapeHtml(emptyLabel)}</span>`;
         }
 
         function mountChart(canvasId, config) {
@@ -919,12 +933,14 @@
 
         async function updatePerformanceBrain() {
             const list = document.getElementById('brainDecisionList');
+            const metricsStrip = document.getElementById('brainMetricsStrip');
             if (!list) return;
             const token = getToken();
             if (!token) {
                 setText('brainMode', 'LOCKED');
                 setText('brainSummary', 'Authenticate to read bot performance decisions.');
                 list.innerHTML = '';
+                if (metricsStrip) metricsStrip.innerHTML = '';
                 return;
             }
 
@@ -937,9 +953,22 @@
                 const data = await response.json();
                 const mode = String(data.mode || 'observe').toUpperCase();
                 const decisions = Array.isArray(data.decisions) ? data.decisions.slice(0, 3) : [];
+                const metrics = data.metrics || {};
 
                 setText('brainMode', mode);
                 setText('brainSummary', data.summary || 'Tracking performance and waiting for stronger signal.');
+                if (metricsStrip) {
+                    metricsStrip.innerHTML = [
+                        ['Leads', metrics.leads],
+                        ['Contacted', metrics.contacted],
+                        ['Responses', metrics.responses],
+                        ['Conversions', metrics.conversions],
+                        ['Active accounts', metrics.active_accounts],
+                        ['Window', `${metrics.window_days || 7}d`]
+                    ].map(([label, value]) => `
+                        <span><strong>${escapeHtml(label)}</strong><em>${escapeHtml(value ?? 0)}</em></span>
+                    `).join('');
+                }
                 list.innerHTML = decisions.length ? decisions.map((decision) => {
                     const priority = String(decision.priority || 'low').toLowerCase();
                     const confidence = Math.round(Number(decision.confidence || 0) * 100);
@@ -964,6 +993,7 @@
                 setText('brainMode', 'DEGRADED');
                 setText('brainSummary', 'Performance decision analysis is temporarily unavailable.');
                 list.innerHTML = '<div class="empty-card">Decision engine could not be reached.</div>';
+                if (metricsStrip) metricsStrip.innerHTML = '';
             }
         }
 
@@ -1050,6 +1080,12 @@
                 const el = document.getElementById(id);
                 if (el) el.textContent = formatNumber(val);
             });
+            const generatedAt = formatTimestamp(data.generated_at);
+            const source = data.data_source || 'database';
+            setText('opsLiveMeta', `LIVE ${generatedAt}`);
+            setText('ticketStatusMeta', `${formatNumber(sumValues(data.ticket_status_breakdown))} ${source} tickets`);
+            setText('consentScopeMeta', `${formatNumber(sumValues(data.consent_scope_breakdown))} active ${source} consents`);
+            setText('lifecycleStageMeta', `${formatNumber(sumValues(data.lifecycle_stage_breakdown))} ${source} profiles`);
             renderBreakdownList('ticketStatusBreakdown', data.ticket_status_breakdown, 'No ticket activity');
             renderBreakdownList('consentScopeBreakdown', data.consent_scope_breakdown, 'No active consent scopes');
             renderBreakdownList('lifecycleStageBreakdown', data.lifecycle_stage_breakdown, 'No lifecycle stages yet');

@@ -123,8 +123,13 @@ class Settings(BaseSettings):
     @property
     def trusted_origins_list(self) -> list[str]:
         if isinstance(self.trusted_origins, str):
-            return [origin.strip() for origin in self.trusted_origins.split(",") if origin.strip()]
-        return self.trusted_origins
+            origins = [origin.strip() for origin in self.trusted_origins.split(",") if origin.strip()]
+        else:
+            origins = self.trusted_origins
+        return [
+            origin if origin == "*" or "://" in origin else f"https://{origin}"
+            for origin in origins
+        ]
 
     @property
     def trusted_hosts_list(self) -> list[str]:
@@ -177,11 +182,8 @@ class Settings(BaseSettings):
         if self.database_ssl_root_cert.strip() and not Path(self.database_ssl_root_cert).exists():
             issues.append("DATABASE_SSL_ROOT_CERT points to a file that does not exist.")
 
-        # Allow mock Redis as fallback in production if needed
         redis_lower = (self.redis_url or "").lower()
-        if not redis_lower or redis_lower.startswith("memory://"):
-            pass  # Allow mock, no issue
-        elif "localhost:6379" in redis_lower:
+        if not redis_lower or redis_lower.startswith("memory://") or "localhost:6379" in redis_lower:
             issues.append("REDIS_URL must point to a real production Redis instance, not localhost.")
 
         origins = self.trusted_origins_list

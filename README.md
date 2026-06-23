@@ -65,9 +65,15 @@ Recommended production shape:
 
 - One always-on web service or worker process running `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 - A real PostgreSQL database.
-- A real Redis instance.
+- A real Render Key Value/Redis-compatible instance. Use its internal `redis://...` connection string for `REDIS_URL`.
 - `ENVIRONMENT=production`, `SCHEDULER_ENABLED=true`, `BACKGROUND_WORKERS_ENABLED=true`, and `TELEGRAM_ENABLED=true`.
 - A Telegram `SESSION_STRING` generated for this deployment only. Do not reuse the same session string from a local machine and a deployed host at the same time.
+
+Render notes:
+
+- If Render shows `failed to configure registry cache importer ... buildcache: not found`, trigger a manual deploy with the build cache cleared. Docker documents that missing registry cache imports are cache-state failures, not application code failures.
+- If Render shows `Port scan timeout reached`, confirm the service is a `web` service and the start command binds to `0.0.0.0` and `${PORT:-10000}`. This repo's Dockerfile does that.
+- If logs show Redis connecting to `localhost:6379`, the `REDIS_URL` environment variable is missing or wrong. Use Render Key Value's internal connection string.
 
 ## Safe Product Boundaries
 
@@ -99,7 +105,7 @@ alembic upgrade head
 - Prefer `DASHBOARD_PASSWORD_HASH` over a plain `DASHBOARD_ADMIN_PASSWORD`.
 - Protect the Settings/Control page with `DASHBOARD_CONTROL_PASSWORD_HASH` or a separate strong `DASHBOARD_CONTROL_PASSWORD`.
 - Point `DATABASE_URL` to the production PostgreSQL database and enable verified TLS with `DATABASE_SSL_ROOT_CERT` when your provider requires a custom CA.
-- Point `REDIS_URL` to a real production Redis instance (optional, mock fallback is allowed for production if needed). For Redis Cloud, get your full connection string from the Redis Cloud dashboard (looks like `redis://default:<password>@<endpoint>:<port>`).
+- Point `REDIS_URL` to a real production Redis/Render Key Value instance. Mock Redis is for local development only.
 - Set `TRUSTED_ORIGINS` and `TRUSTED_HOSTS` to the real production domains only.
 - Set `TELEGRAM_ENABLED=true` only on the always-on service that should own the Telegram session.
 - Keep `AUTO_CREATE_TABLES=false`; schema changes should come from Alembic migrations.

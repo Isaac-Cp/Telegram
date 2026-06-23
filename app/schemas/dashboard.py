@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Any
 
 class LeadStats(BaseModel):
@@ -42,6 +42,8 @@ class AccountHealth(BaseModel):
     cooldown_until: Optional[datetime] = None
 
 class DashboardSummary(BaseModel):
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    data_source: str = "database"
     contacts_total: int
     active_consents: int
     open_conversations: int

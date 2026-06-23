@@ -681,6 +681,8 @@ async def get_dashboard_summary(db: Session) -> DashboardSummary:
     ).one()
 
     summary = DashboardSummary(
+        generated_at=now,
+        data_source="database",
         contacts_total=int(core_row.contacts_total or 0),
         active_consents=int(core_row.active_consents or 0),
         open_conversations=int(core_row.open_conversations or 0),

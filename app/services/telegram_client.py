@@ -63,7 +63,7 @@ class TelegramClientManager:
             acc = db.execute(
                 select(TelegramAccount).where(TelegramAccount.phone_number == phone_number)
             ).scalar_one_or_none()
-            
+
             if acc:
                 if action_type == "group_join":
                     acc.groups_joined += 1
@@ -71,7 +71,7 @@ class TelegramClientManager:
                     acc.daily_dm_count += 1
                 elif action_type == "public_reply":
                     acc.daily_reply_count += 1
-                
+
                 db.commit()
                 logger.info(f"Updated limits for account {phone_number} after {action_type} action.")
 
@@ -79,7 +79,7 @@ class TelegramClientManager:
         """Module 8: Returns a connected Telethon client for a specific account or the next available one."""
         async with self._lock:
             settings = get_settings()
-            
+
             acc = None
             if not phone_number:
                 acc = await self.rotate_account(action_type)
@@ -129,18 +129,39 @@ class TelegramClientManager:
                 proxy=proxy,
                 device_model="Desktop",
                 system_version="Windows 10",
-                app_version="4.8.4"
+                app_version="4.8.4",
+                connection_retries=5,  # Retry failed connections
+                retry_delay=2,  # Initial retry delay (seconds)
+                timeout=15,  # Connection timeout
             )
-            
-            await client.connect()
+
+            # Connect with retries and exponential backoff
+            await self._connect_with_retries(client, phone_number)
             self._clients[phone_number] = client
             return client
+
+    async def _connect_with_retries(self, client: TelegramClient, phone_number: str, max_retries: int = 3):
+        """Attempt to connect with exponential backoff retry logic."""
+        for attempt in range(1, max_retries + 1):
+            try:
+                logger.debug(f"Connecting to Telegram for {phone_number} (attempt {attempt}/{max_retries})")
+                await client.connect()
+                logger.info(f"Successfully connected client for {phone_number}")
+                return
+            except Exception as e:
+                wait_time = min(2 ** (attempt - 1), 30)  # Exponential backoff: 1s, 2s, 4s
+                if attempt < max_retries:
+                    logger.warning(f"Connection attempt {attempt} failed for {phone_number}: {e}. Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                else:
+                    log_error(logger, e, context=f"Connection failed for {phone_number} after {max_retries} attempts")
+                    raise ConnectionError(f"Failed to connect to Telegram for {phone_number} after {max_retries} retries") from e
 
     async def _connect_env_client_locked(self) -> TelegramClient:
         """Internal connect using fallback .env session string (Assumes lock is held)."""
         settings = get_settings()
         phone = settings.telegram_phone
-        
+
         if phone in self._clients:
             client = self._clients[phone]
             if client.is_connected():
@@ -150,10 +171,10 @@ class TelegramClientManager:
                 return client
             except Exception as e:
                 logger.warning(f"Failed to reconnect existing env client: {e}. Creating new instance...")
-            
+
         # Get global proxy for env client
         proxy = proxy_manager.get_proxy_config()
-        
+
         await asyncio.sleep(5) # Breathe for Telegram
         client = TelegramClient(
             StringSession(settings.telegram_session_string),
@@ -162,9 +183,12 @@ class TelegramClientManager:
             proxy=proxy,
             device_model="Desktop",
             system_version="Windows 10",
-            app_version="4.8.4"
+            app_version="4.8.4",
+            connection_retries=5,
+            retry_delay=2,
+            timeout=15,
         )
-        await client.connect()
+        await self._connect_with_retries(client, phone)
         self._clients[phone] = client
         return client
 

@@ -26,11 +26,17 @@ class MockRedisSync:
 @lru_cache
 def get_redis_client() -> Redis:
     settings = get_settings()
+    if settings.redis_url.lower().startswith("memory://"):
+        if settings.environment.lower() == "production":
+            raise RuntimeError("memory:// Redis is not allowed in production.")
+        logger.warning("[SLIE Redis] Using configured synchronous in-memory mock Redis.")
+        return MockRedisSync()
     try:
         client = Redis.from_url(settings.redis_url, decode_responses=True)
         client.ping()
         return client
     except Exception as e:
+        if settings.environment.lower() == "production":
+            raise RuntimeError(f"Real Redis is mandatory in production. Error: {e}") from e
         logger.error(f"Redis connection failed: {e}. Falling back to mock.")
         return MockRedisSync()
-

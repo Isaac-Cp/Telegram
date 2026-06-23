@@ -103,6 +103,12 @@ class RedisClient:
         """
         Initialize Redis connection and validate it.
         """
+        if self.settings.redis_url.lower().startswith("memory://"):
+            if self.settings.environment.lower() == "production":
+                raise RuntimeError("memory:// Redis is not allowed in production.")
+            logger.warning("[SLIE Redis] Using configured in-memory mock Redis.")
+            self._redis = MockRedis()
+            return
         try:
             self._redis = redis.from_url(self.settings.redis_url, decode_responses=True)
             # Validate connection
